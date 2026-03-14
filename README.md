@@ -68,19 +68,6 @@ bun run deploy
 
 ---
 
-## 🔬 Testing
-
-The project maintains high reliability with a comprehensive test suite:
-
-- **Unit Tests**: 150+ tests covering core logic, KV access, and utility functions.
-- **E2E Tests**: Full journey verification using Playwright.
-
-```bash
-bun test:unit
-```
-
----
-
 ## 🤝 Community
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a pull request.

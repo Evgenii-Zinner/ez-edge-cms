@@ -51,158 +51,173 @@ export const BlockEditor = ({ content }: BlockEditorProps) => {
       {html`
         <script>
           (function () {
-            const container = document.getElementById("editorjs-container");
-            const input = document.getElementById("editorjs-content-input");
-            if (!container || !input) return;
+            const initEditor = () => {
+              const container = document.getElementById("editorjs-container");
+              const input = document.getElementById("editorjs-content-input");
+              if (!container || !input) return;
 
-            // Stop 'Enter' from submitting the parent form while editing blocks
-            container.addEventListener("keydown", (e) => {
-              if (e.key === "Enter") {
-                e.stopPropagation();
-              }
-            });
+              // Prevent double initialization
+              if (window.currentEditor) return;
 
-            let initialData = { blocks: [] };
-            try {
-              if (input.value) {
-                initialData = JSON.parse(input.value);
-
-                // CRITICAL: Every block MUST have a unique ID for drag-and-drop
-                // and internal state management to work correctly without duplication.
-                if (initialData.blocks) {
-                  initialData.blocks = initialData.blocks.map((block) => ({
-                    ...block,
-                    id: block.id || Math.random().toString(36).substring(2, 12),
-                  }));
+              // Stop 'Enter' from submitting the parent form while editing blocks
+              container.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                  e.stopPropagation();
                 }
-              }
-            } catch (e) {
-              console.error("Failed to parse initial Editor.js data", e);
-            }
-
-            /**
-             * Helper to resolve Editor.js plugins from global scope.
-             * Supports various naming conventions used by standard plugins.
-             */
-            const getTool = (name) => {
-              if (name === "Image")
-                return window.ImageTool || window.SimpleImage;
-              return (
-                window[name] ||
-                window["Editorjs" + name] ||
-                window["cdx" + name]
-              );
-            };
-
-            /**
-             * Resizes an image to specified dimensions and quality.
-             */
-            const resizeImage = (file, maxWidth, quality = 0.8) => {
-              return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                  const img = new Image();
-                  img.src = event.target.result;
-                  img.onload = () => {
-                    const canvas = document.createElement("canvas");
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > maxWidth) {
-                      height = Math.round((height * maxWidth) / width);
-                      width = maxWidth;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL("image/webp", quality));
-                  };
-                };
               });
-            };
 
-            const editor = new EditorJS({
-              holder: "editorjs-container",
-              data: initialData,
-              tools: {
-                header: {
-                  class: getTool("Header"),
-                  inlineToolbar: ["link"],
-                  config: {
-                    placeholder: "Enter a heading",
-                    levels: [1, 2, 3, 4],
-                    defaultLevel: 2,
+              let initialData = { blocks: [] };
+              try {
+                if (input.value) {
+                  initialData = JSON.parse(input.value);
+
+                  // CRITICAL: Every block MUST have a unique ID for drag-and-drop
+                  // and internal state management to work correctly without duplication.
+                  if (initialData.blocks) {
+                    initialData.blocks = initialData.blocks.map((block) => ({
+                      ...block,
+                      id:
+                        block.id || Math.random().toString(36).substring(2, 12),
+                    }));
+                  }
+                }
+              } catch (e) {
+                console.error("Failed to parse initial Editor.js data", e);
+              }
+
+              /**
+               * Helper to resolve Editor.js plugins from global scope.
+               * Supports various naming conventions used by standard plugins.
+               */
+              const getTool = (name) => {
+                if (name === "Image")
+                  return window.ImageTool || window.SimpleImage;
+                return (
+                  window[name] ||
+                  window["Editorjs" + name] ||
+                  window["cdx" + name]
+                );
+              };
+
+              /**
+               * Resizes an image to specified dimensions and quality.
+               */
+              const resizeImage = (file, maxWidth, quality = 0.8) => {
+                return new Promise((resolve) => {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+                  reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                      const canvas = document.createElement("canvas");
+                      let width = img.width;
+                      let height = img.height;
+
+                      if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                      }
+
+                      canvas.width = width;
+                      canvas.height = height;
+                      const ctx = canvas.getContext("2d");
+                      ctx.drawImage(img, 0, 0, width, height);
+                      resolve(canvas.toDataURL("image/webp", quality));
+                    };
+                  };
+                });
+              };
+
+              const editor = new EditorJS({
+                holder: "editorjs-container",
+                data: initialData,
+                tools: {
+                  header: {
+                    class: getTool("Header"),
+                    inlineToolbar: ["link"],
+                    config: {
+                      placeholder: "Enter a heading",
+                      levels: [1, 2, 3, 4],
+                      defaultLevel: 2,
+                    },
                   },
-                },
-                list: {
-                  class: getTool("List"),
-                  inlineToolbar: true,
-                },
-                image: {
-                  class: getTool("Image"),
-                  inlineToolbar: true,
-                  config: {
-                    uploader: {
-                      uploadByFile: async (file) => {
-                        const base64 = await resizeImage(file, 1440, 0.85);
+                  list: {
+                    class: getTool("List"),
+                    inlineToolbar: true,
+                  },
+                  image: {
+                    class: getTool("Image"),
+                    inlineToolbar: true,
+                    config: {
+                      uploader: {
+                        uploadByFile: async (file) => {
+                          const base64 = await resizeImage(file, 1440, 0.85);
 
-                        return {
-                          success: 1,
-                          file: {
-                            url: base64,
-                          },
-                        };
-                      },
-                      uploadByUrl: (url) => {
-                        return {
-                          success: 1,
-                          file: {
-                            url: url,
-                          },
-                        };
+                          return {
+                            success: 1,
+                            file: {
+                              url: base64,
+                            },
+                          };
+                        },
+                        uploadByUrl: (url) => {
+                          return {
+                            success: 1,
+                            file: {
+                              url: url,
+                            },
+                          };
+                        },
                       },
                     },
                   },
-                },
-                quote: {
-                  class: getTool("Quote"),
-                  inlineToolbar: true,
-                  shortcut: "CMD+SHIFT+O",
-                  config: {
-                    quotePlaceholder: "Enter a quote",
-                    captionPlaceholder: "Quote's author",
+                  quote: {
+                    class: getTool("Quote"),
+                    inlineToolbar: true,
+                    shortcut: "CMD+SHIFT+O",
+                    config: {
+                      quotePlaceholder: "Enter a quote",
+                      captionPlaceholder: "Quote's author",
+                    },
                   },
                 },
-              },
-              /**
-               * OnReady Hook:
-               * Ensures all blocks have unique IDs for stable internal state.
-               */
-              onReady: () => {
-                const DragDropPlugin =
-                  window.DragDrop || window.EditorjsDragDrop;
-                if (DragDropPlugin) {
-                  new DragDropPlugin(editor);
-                } else {
-                  console.warn(
-                    "Editor.js DragDrop plugin not found in global scope.",
-                  );
-                }
-              },
-              /**
-               * Synchronization Hook:
-               * Whenever content changes, serialize the editor state back to
-               * the hidden input and mark the admin HUD as having unsaved changes.
-               */
-              onChange: async (api) => {
-                const outputData = await api.saver.save();
-                input.value = JSON.stringify(outputData);
-                window.adminHasChanges = true;
-              },
-            });
+                /**
+                 * OnReady Hook:
+                 * Ensures all blocks have unique IDs for stable internal state.
+                 */
+                onReady: () => {
+                  const DragDropPlugin =
+                    window.DragDrop || window.EditorjsDragDrop;
+                  if (DragDropPlugin) {
+                    new DragDropPlugin(editor);
+                  } else {
+                    console.warn(
+                      "Editor.js DragDrop plugin not found in global scope.",
+                    );
+                  }
+                },
+                /**
+                 * Synchronization Hook:
+                 * Whenever content changes, serialize the editor state back to
+                 * the hidden input and mark the admin HUD as having unsaved changes.
+                 */
+                onChange: async (api) => {
+                  const outputData = await api.saver.save();
+                  input.value = JSON.stringify(outputData);
+                  window.adminHasChanges = true;
+                },
+              });
+
+              window.currentEditor = editor;
+            };
+
+            // Wait for deferred EditorJS scripts to load
+            if (window.EditorJS) {
+              initEditor();
+            } else {
+              document.addEventListener("DOMContentLoaded", initEditor);
+            }
           })();
         </script>
       `}
