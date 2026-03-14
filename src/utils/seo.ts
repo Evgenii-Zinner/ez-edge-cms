@@ -61,16 +61,7 @@ export const generateMetaTags = (
   const baseUrl = getNormalizedBaseUrl(site, detectedUrl);
   const url = getPageUrl(baseUrl, page);
 
-  // Determine final title:
-  // 1. Page SEO override
-  // 2. Page title
-  // 3. Site title (ultimate fallback)
   const metaTitle = page?.seo?.metaTitle || page?.title || site.title;
-
-  // Determine final description:
-  // 1. Page SEO override
-  // 2. Page description
-  // 3. Site tagline (ultimate fallback)
   const metaDescription =
     page?.seo?.metaDescription || page?.description || site.tagline || "";
 
@@ -83,12 +74,14 @@ export const generateMetaTags = (
     { property: "og:url", content: url },
     { property: "og:type", content: type },
     { name: "description", content: metaDescription },
-    { name: "twitter:card", content: "summary_large_image" },
   ];
 
   if (image) {
     const finalImage = image.startsWith("/") ? `${baseUrl}${image}` : image;
     tags.push({ property: "og:image", content: finalImage });
+    tags.push({ name: "twitter:card", content: "summary_large_image" });
+  } else {
+    tags.push({ name: "twitter:card", content: "summary" });
   }
 
   // Optional: Twitter handle for attribution

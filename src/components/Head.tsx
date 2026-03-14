@@ -65,11 +65,29 @@ export const Head = (props: HeadProps) => {
     theme.values.font_mono,
   ]);
 
+  const fontString = Array.from(fonts)
+    .map((f) => f.replace(/\s+/g, "+"))
+    .join(":wght@400;700&family=");
+
+  const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontString}:wght@400;700&display=swap`;
+
   return (
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>{displayTitle}</title>
+
+      {/* Connectivity Hints */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin="anonymous"
+      />
+      <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+      <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+      <link rel="dns-prefetch" href="https://unpkg.com" />
+      <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
 
       {/* Primary SEO Meta Tags */}
       {metaTags.map((tag) =>
@@ -95,32 +113,52 @@ export const Head = (props: HeadProps) => {
         />
       )}
 
-      {/* External Assets: Google Fonts */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      {/* Optimized Google Fonts: Non-blocking load pattern */}
       <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin="anonymous"
-      />
-      <link
-        href={`https://fonts.googleapis.com/css2?family=${Array.from(fonts)
-          .map((f) => f.replace(/\s+/g, "+"))
-          .join(":wght@400;700&family=")}:wght@400;700&display=swap`}
         rel="stylesheet"
+        href={googleFontsUrl}
+        media="print"
+        // @ts-ignore - Hono/JSX handles this properly
+        onload="this.media='all'"
+      />
+      <noscript>
+        <link rel="stylesheet" href={googleFontsUrl} />
+      </noscript>
+
+      {/* Core Scripts: HTMX (Deferred) */}
+      <script
+        src="https://unpkg.com/htmx.org@2.0.4"
+        crossorigin="anonymous"
+        defer
       />
 
-      {/* Core Scripts: HTMX */}
-      <script src="https://unpkg.com/htmx.org@2.0.4" crossorigin="anonymous" />
-
-      {/* Administrative Assets */}
+      {/* Administrative Assets (Deferred) */}
       {isAdmin && isEditor && (
         <>
-          <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest" />
-          <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8" />
-          <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.9.3" />
-          <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.2" />
-          <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.6.0" />
-          <script src="https://cdn.jsdelivr.net/npm/editorjs-drag-drop@1.1.18" />
+          <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"
+            defer
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8"
+            defer
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.9.3"
+            defer
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.2"
+            defer
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.6.0"
+            defer
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/editorjs-drag-drop@1.1.18"
+            defer
+          />
         </>
       )}
 

@@ -432,10 +432,9 @@ export default defineConfig({
       "font-header text-0.55rem tracking-1px color-[var(--theme-text-dim)] group-hover:color-[var(--theme-text-main)]",
     "branding-badge":
       "ml-1.5 flex items-center bg-[var(--theme-accent)] px-1 py-0.2",
-    "branding-badge-item":
-      "font-header text-0.6rem font-bold color-[var(--theme-bg)]",
+    "branding-badge-item": "font-header text-0.6rem font-bold color-white",
     "branding-badge-edge":
-      "font-nav text-0.5rem ml-0.5 font-bold color-[var(--theme-bg)] opacity-80",
+      "font-nav text-0.5rem ml-0.5 font-bold color-white opacity-90",
 
     "bento-grid":
       "grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] auto-rows-min gap-[clamp(1rem,3vw,1.5rem)] my-8 lg:auto-rows-200px",

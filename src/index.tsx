@@ -96,6 +96,10 @@ app.get("/sitemap.xml", async (c) => {
 
 /**
  * Robots.txt with automatic sitemap link.
+ * Ensures the 'Sitemap:' directive provides an absolute URL as required by search engine standards.
+ *
+ * @param c - Hono context.
+ * @returns A promise resolving to the plain-text robots.txt content.
  */
 app.get("/robots.txt", async (c) => {
   const site = c.var.site;
@@ -103,6 +107,10 @@ app.get("/robots.txt", async (c) => {
   const content =
     site.txtFiles?.robots || "User-agent: *\nAllow: /\nDisallow: /admin/";
 
+  /**
+   * If the content already contains a Sitemap directive, we leave it untouched.
+   * Otherwise, we append the absolute URL to the sitemap.xml.
+   */
   const finalContent = content.includes("Sitemap:")
     ? content
     : `${content}\nSitemap: ${baseUrl}/sitemap.xml`;
