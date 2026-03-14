@@ -32,8 +32,9 @@ jobs:
 
       - name: Merge Upstream Changes
         run: |
-          # We use --allow-unrelated-histories to handle standalone clones
-          git merge upstream/${{ github.event.inputs.upstream_branch }} --allow-unrelated-histories -m "chore: sync latest version from main cms"
+          # We use --allow-unrelated-histories to handle standalone clones.
+          # We use -X theirs to automatically resolve conflicts by favoring the main CMS core.
+          git merge upstream/${{ github.event.inputs.upstream_branch }} --allow-unrelated-histories -X theirs -m "chore: sync latest version from main cms"
 
       - name: Push Updates
         run: |
