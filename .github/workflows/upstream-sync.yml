@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       upstream_branch:
-        description: 'Branch to sync from'
+        description: "Branch to sync from"
         required: true
-        default: 'main'
+        default: "main"
 
 jobs:
   sync:
