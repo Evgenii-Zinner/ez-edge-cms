@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       upstream_branch:
-        description: "Branch to sync from"
+        description: 'Branch to sync from'
         required: true
-        default: "main"
+        default: 'main'
 
 jobs:
   sync:
@@ -30,12 +30,13 @@ jobs:
           git remote add upstream https://github.com/Evgenii-Zinner/ez-edge-cms.git
           git fetch upstream ${{ github.event.inputs.upstream_branch }}
 
-      - name: Merge Upstream Changes
+      - name: Force Sync Upstream
         run: |
           # We use --allow-unrelated-histories to handle standalone clones.
-          # We use -X theirs to automatically resolve conflicts by favoring the main CMS core.
-          git merge upstream/${{ github.event.inputs.upstream_branch }} --allow-unrelated-histories -X theirs -m "chore: sync latest version from main cms"
+          # We use recursive strategy with 'theirs' to force overwrite all conflicts.
+          git merge upstream/${{ github.event.inputs.upstream_branch }} --allow-unrelated-histories -s recursive -X theirs -m "chore: sync latest version from main cms"
 
       - name: Push Updates
         run: |
           git push origin ${{ github.ref_name }}
+
