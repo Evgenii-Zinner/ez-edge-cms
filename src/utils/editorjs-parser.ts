@@ -53,19 +53,6 @@ const renderListItems = (items: any[], tag: "ul" | "ol" = "ul"): string => {
 };
 
 /**
- * Normalizes a URL by converting absolute development or site URLs into relative paths.
- * This prevents environment-specific URLs from being hardcoded into the rendered content.
- *
- * @param text - The raw HTML string from an Editor.js block.
- * @returns The HTML string with normalized links.
- */
-const normalizeLinks = (text: string): string => {
-  if (!text) return text;
-  // Regex to match href="http://.../path" and replace with href="/path"
-  return text.replace(/href="https?:\/\/[^\/]+\//g, 'href="/');
-};
-
-/**
  * Parses a single Editor.js block into its corresponding semantic HTML.
  *
  * @param block - The Editor.js block object to parse.
@@ -76,18 +63,14 @@ const parseBlock = (block: EditorJsBlock): string => {
   switch (block.type) {
     case "header":
       const level = data.level || 2;
-      return `<h${level}>${normalizeLinks(data.text)}</h${level}>`;
+      return `<h${level}>${data.text}</h${level}>`;
 
     case "paragraph":
-      return `<p>${normalizeLinks(data.text)}</p>`;
+      return `<p>${data.text}</p>`;
 
     case "list":
       const tag = data.style === "ordered" ? "ol" : "ul";
-      const itemsHtml = renderListItems(data.items || [], tag).replace(
-        /<li>(.*?)<\/li>/g,
-        (_match, content) => `<li>${normalizeLinks(content)}</li>`,
-      );
-      return `<${tag}>${itemsHtml}</${tag}>`;
+      return `<${tag}>${renderListItems(data.items || [], tag)}</${tag}>`;
 
     case "image":
       // Supports both URL-based and file-object-based image payloads
@@ -111,12 +94,12 @@ const parseBlock = (block: EditorJsBlock): string => {
             class="content-img" 
             loading="lazy" 
           />
-          ${data.caption ? `<div style="text-align: center; color: var(--theme-text-dim); font-size: 0.8rem; margin-top: 0.5rem;">${normalizeLinks(data.caption)}</div>` : ""}
+          ${data.caption ? `<div style="text-align: center; color: var(--theme-text-dim); font-size: 0.8rem; margin-top: 0.5rem;">${data.caption}</div>` : ""}
         </div>
       `;
 
     case "quote":
-      return `<blockquote>${normalizeLinks(data.text)}${data.caption ? `<br/><small>— ${normalizeLinks(data.caption)}</small>` : ""}</blockquote>`;
+      return `<blockquote>${data.text}${data.caption ? `<br/><small>— ${data.caption}</small>` : ""}</blockquote>`;
 
     default:
       console.warn(`Unsupported block type: ${block.type}`);
