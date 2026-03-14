@@ -21,9 +21,9 @@ We maintain a high bar for engineering excellence. All contributions must adhere
 
 ## 🧪 Testing Policy
 
--   Every bug fix must include a reproduction test case.
--   Every new feature must have 100% unit test coverage.
--   We aim for 100% meaningful coverage (no "coverage hacks").
+- Every bug fix must include a reproduction test case.
+- Every new feature must have 100% unit test coverage.
+- We aim for 100% meaningful coverage (no "coverage hacks").
 
 ## 📦 Pull Request Process
 

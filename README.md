@@ -1,15 +1,5 @@
 # ⚡ EZ EDGE CMS
 
-<p align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/Evgenii-Zinner/ez-edge-cms/test.yml?branch=main&label=tests&style=flat-square" alt="GitHub Workflow Status" />
-  <img src="https://img.shields.io/npm/v/ez-edge-cms?style=flat-square&color=black" alt="npm version" />
-  <img src="https://img.shields.io/jsr/v/@ezinner/ez-edge-cms?style=flat-square&color=black" alt="JSR version" />
-  <img src="https://img.shields.io/bundlephobia/minzip/ez-edge-cms?label=bundle%20size&style=flat-square&color=black" alt="Bundle Size" />
-  <img src="https://img.shields.io/github/commit-activity/m/Evgenii-Zinner/ez-edge-cms?style=flat-square&color=black" alt="GitHub commit activity" />
-  <img src="https://img.shields.io/github/last-commit/Evgenii-Zinner/ez-edge-cms?style=flat-square&color=black" alt="GitHub last commit" />
-  <img src="https://img.shields.io/codecov/c/github/Evgenii-Zinner/ez-edge-cms?style=flat-square" alt="Codecov" />
-</p>
-
 **EZ EDGE CMS** is a high-performance, edge-native Content Management System and Design System built specifically for the Cloudflare global network. It leverages Cloudflare Workers and KV storage to deliver sub-50ms response times with zero cold starts and truly zero build steps.
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Evgenii-Zinner/ez-edge-cms)
@@ -53,6 +43,7 @@ EZ EDGE CMS is built using a curated stack of lightweight, platform-native tools
 ## 🚀 Quick Start
 
 ### 1. Clone & Install
+
 ```bash
 git clone https://github.com/Evgenii-Zinner/ez-edge-cms.git
 cd ez-edge-cms
@@ -60,13 +51,17 @@ bun install
 ```
 
 ### 2. Local Development
+
 Start the local development server (uses Wrangler to simulate the Cloudflare environment):
+
 ```bash
 bun run dev
 ```
 
 ### 3. Deploy
+
 Push your CMS to the Cloudflare global network:
+
 ```bash
 bun run deploy
 ```
@@ -76,6 +71,7 @@ bun run deploy
 ## 🔬 Testing
 
 The project maintains high reliability with a comprehensive test suite:
+
 - **Unit Tests**: 150+ tests covering core logic, KV access, and utility functions.
 - **E2E Tests**: Full journey verification using Playwright.
 

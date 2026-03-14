@@ -22,19 +22,14 @@ import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { injectUnoCSS } from "@core/unocss-middleware";
 
 const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
-
 // Global Middleware: Inject site-wide configurations and the UnoCSS engine into the context.
 app.use("*", injectGlobalConfig());
 app.use("*", injectUnoCSS());
 
 /**
- * Static Assets Route.
- * We use the Cloudflare Static Assets binding (ASSETS) to fetch and serve files.
- */
-app.get("/static/*", (c) => c.env.ASSETS.fetch(c.req.raw));
-
-/**
  * Binary Image Delivery Route.
+...
+
  * Fetches binary image data from KV based on the slug and filename.
  */
 app.get("/images/*", async (c) => {
