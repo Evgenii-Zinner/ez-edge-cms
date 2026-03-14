@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.venv/
+env/
+venv/
+
+# Build and Tooling
+dist/
+build/
+.wrangler/
+.tmp/
+.gemini/
+.agents/
+test-results/
+playwright-report/
+results/
+
+# OS and IDE Garbage
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+.vscode/
+.idea/
+
+# Environment and Secrets
+.dev.vars
+.env
+.env.*
+worker-configuration.d.ts
+
+# Runtime and Lockfiles
+package-lock.json
+
+# Temporary / Template files
+*.txt
+*.md
+!README.md
+!LICENSE.md
+!CODE_OF_CONDUCT.md
+!CONTRIBUTING.md
+CODE_GUIDE.md
+GEMINI.md
+.github/GEMINI.md
+*.diff
+
+# Docs and Large Assets
+docs/
+unocss-docs/
+editorjs-docs/
+temp-editorjs/
+results/
+typedoc.config.js
