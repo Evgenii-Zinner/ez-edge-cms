@@ -157,14 +157,11 @@ export const BaseLayout = (props: BaseLayoutProps) => {
                       target="_blank"
                       rel="noopener noreferrer"
                       class="branding-link group"
+                      style={{ border: "none", background: "none", padding: 0 }}
                     >
-                      {" "}
-                      <span class="branding-text">POWERED BY</span>
-                      <div class="branding-badge">
-                        <span class="branding-badge-item">EZ</span>
-                        <span class="branding-badge-edge">EDGE</span>
-                        <span class="branding-badge-item ml-0.5">CMS</span>
-                      </div>
+                      <span class="font-nav text-0.75rem tracking-2px text-[var(--theme-text-dim)] group-hover:text-[var(--theme-accent)] transition-colors uppercase">
+                        POWERED BY EZ EDGE CMS
+                      </span>
                     </a>
                   </div>
                 )}

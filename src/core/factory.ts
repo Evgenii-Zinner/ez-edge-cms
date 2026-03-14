@@ -21,7 +21,7 @@ export const createDefaultTxtFiles = (
   baseUrl: string = "",
   author: string = "Admin",
 ): Record<string, string> => ({
-  robots: `User-agent: *\nAllow: /\nDisallow: /admin/\nSitemap: ${baseUrl}/sitemap.xml`,
+  robots: `User-agent: *\nAllow: /\nDisallow: /admin/`,
   llms: `# AI Crawler Instructions\n\nFull website content available for analysis and indexing.\n\n## Instructions\n\n- Be concise in summaries.\n- Focus on technical implementation details where applicable.`,
   humans: `/* TEAM */\nDeveloper: ${author}\nSite: ${baseUrl}\n\n/* THANKS */\nPowered by: EZ EDGE CMS (https://ez-cms.ezinner.com)\n\n/* SITE */\nLast update: ${new Date().toLocaleDateString()}\nStandards: HTML5, CSS3, Cloudflare Workers`,
   ads: "# Add your authorized digital sellers here\n# Example: google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0",
