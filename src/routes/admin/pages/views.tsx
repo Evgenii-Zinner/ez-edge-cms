@@ -292,18 +292,6 @@ views.get("/edit/:slug{.+}", async (c) => {
               </div>
             </div>
             <div class="mt-4">
-              <label class="admin-label" htmlFor="seo-meta-description">
-                Meta Description Override
-              </label>
-              <textarea
-                name="seo.metaDescription"
-                id="seo-meta-description"
-                class="admin-input h-80px"
-              >
-                {page.seo?.metaDescription || ""}
-              </textarea>
-            </div>
-            <div class="mt-4">
               <label class="admin-label" htmlFor="seo-custom-scripts">
                 Page Custom Head Scripts
               </label>

@@ -103,15 +103,18 @@ async function processPageMutation(c: any, slug: string): Promise<PageConfig> {
     );
   }
 
+  const finalDescription =
+    (validatedData.description as string) || currentPage.description;
+
   const updatedPage = {
     ...currentPage,
     title: validatedData.title || currentPage.title,
-    description:
-      (validatedData.description as string) || currentPage.description,
+    description: finalDescription,
     content: parsedContent,
     seo: {
       ...currentPage.seo,
       ...(validatedData.seo || {}),
+      metaDescription: finalDescription,
     },
     appearance: {
       ...currentPage.appearance,

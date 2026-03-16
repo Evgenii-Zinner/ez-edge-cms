@@ -1,48 +1,84 @@
 # ⚡ EZ EDGE CMS
 
-**EZ EDGE CMS** is a high-performance, edge-native Content Management System and Design System built specifically for the Cloudflare global network. It leverages Cloudflare Workers and KV storage to deliver sub-50ms response times with zero cold starts and truly zero build steps.
+**EZ EDGE CMS** is a high-performance, edge-native Content Management System and Design System built for the Cloudflare global network. By leveraging Cloudflare Workers and KV storage, it provides sub-50ms response times with zero cold starts and eliminates the need for complex build pipelines or traditional server maintenance.
+
+**🚀 Go from zero to a live, working website in under 2 minutes.**
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Evgenii-Zinner/ez-edge-cms)
 
 ---
 
-## 🌟 Key Philosophy
+## 🌟 Core Architecture
 
-Most modern CMS platforms force a trade-off between the security risks of traditional servers or the slow build pipelines of static site generators. EZ EDGE CMS is built on a different philosophy: **The Edge is the Database.**
+EZ EDGE CMS operates on the principle that the network edge should handle both logic and data. This approach solves the trade-offs between static site generation speed and traditional dynamic CMS flexibility.
 
-- **Truly Zero Build**: Content updates are pushed to the global edge instantly. No 2-minute CI/CD pipelines for a typo fix.
-- **Isolate-Level Speed**: Optimized with in-memory caching and native Web APIs to ensure peak performance on every request.
-- **Zero-Config Branding**: A programmatic HSL-based design system that allows complete visual identity shifts by changing a single hue value.
+- **Zero Build Latency**: Content updates and configuration changes are reflected globally across the edge instantly, bypassing long CI/CD build queues.
+- **Isolate-Optimized**: Engineered with isolate-level in-memory caching and native Web APIs to maximize efficiency and minimize execution costs.
+- **Programmatic Design System**: A HSL-driven visual engine allows for full brand identity shifts through simple configuration overrides.
 
 ---
 
 ## 🛠️ Technology Stack
 
-EZ EDGE CMS is built using a curated stack of lightweight, platform-native tools:
+The project utilizes a focused stack of lightweight, modern web technologies:
 
-- **[Hono](https://hono.dev/)**: The ultra-fast web framework for the edge.
-- **[Cloudflare KV](https://www.cloudflare.com/products/workers-kv/)**: Global key-value storage for content and configuration.
-- **[UnoCSS](https://unocss.dev/)**: Reactive, on-demand atomic CSS engine with isolate-level caching.
-- **[HTMX](https://htmx.org/)**: Powering a snappy, SPA-like Administrative HUD without the JavaScript bloat.
-- **[Editor.js](https://editorjs.io/)**: A clean, block-based writing experience for semantic content.
-- **[Bun](https://bun.sh/)**: Modern tooling for development and orchestration.
+- **[Hono](https://hono.dev/)**: Ultra-fast web framework optimized for edge environments.
+- **[Cloudflare KV](https://www.cloudflare.com/products/workers-kv/)**: Low-latency global key-value storage for content persistence.
+- **[UnoCSS](https://unocss.dev/)**: On-demand atomic CSS engine featuring high-performance isolate caching.
+- **[HTMX](https://htmx.org/)**: Enables a responsive, SPA-like Administrative HUD with minimal client-side overhead.
+- **[Editor.js](https://editorjs.io/)**: A block-based semantic editor providing a modern content creation experience.
 
 ---
 
-## ✨ Features
+## ✨ System Features
 
-- **Blazing Performance**: SSR (Server-Side Rendering) at the edge.
-- **Secure by Design**: Native WebCrypto salt-based hashing and session management. No external auth providers required.
-- **Strict Validation**: Every data point is validated via **Zod** before reaching persistent storage.
-- **Global Data Portability**: Built-in JSON backup and restore system for entire site configurations and content.
-- **Bento-Grid Layouts**: Modern, responsive UI components designed for a futuristic aesthetic.
-- **Text File Manager**: Native support for managing root-level files like `robots.txt`, `ads.txt`, and `llms.txt`.
+- **High-Performance SSR**: Fast Server-Side Rendering delivered from the nearest global point of presence.
+- **Native Authentication**: Secure session management using WebCrypto API with salt-based hashing; no external providers required.
+- **Schema-First Data**: Strict runtime validation using **Zod** ensures data integrity across all KV operations.
+- **Data Portability**: Integrated backup and restore functionality for full site configurations and content snapshots.
+- **Compliance Management**: Native tools for managing root-level metadata files like `robots.txt`, `ads.txt`, and `llms.txt`.
+- **Ultra-Fast Deployment**: Designed for ease of use with zero-configuration setup for a complete website in minutes.
+
+## 🚀 Why EZ EDGE CMS?
+
+If you are looking for an **easy website install** that doesn't require a PhD in DevOps, this is for you. EZ EDGE CMS is designed to be the **fastest no-code CMS** for the modern web.
+
+- **Completely Free**: Run your entire website for free for up to **100,000 visitors per month** by leveraging the Cloudflare Workers free tier.
+- **Fastest Deployment**: Go from a blank screen to a professional website in under 2 minutes.
+- **No-Code Admin**: Manage your content, theme, and navigation through a sleek, intuitive dashboard—no coding required.
+- **Global Speed**: Your site is served from 300+ Cloudflare data centers, ensuring your visitors get sub-50ms response times everywhere.
+- **Edge-Native**: No databases to manage, no servers to patch. It just works.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone & Install
+### Method 1: Instant Deployment (Fastest)
+
+Deploy the CMS directly to your Cloudflare account using the automated setup button:
+
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Evgenii-Zinner/ez-edge-cms)
+
+---
+
+### Method 2: Fork & Sync (Recommended for Updates)
+
+**Forking** is the recommended way to maintain your CMS. It allows you to receive core updates from the upstream repository while keeping your unique configurations and content intact.
+
+1. Click the **Fork** button at the top right of this repository.
+2. Log into your [**Cloudflare Dashboard**](https://dash.cloudflare.com/?to=account.workers-and-pages).
+3. Select **Add** > **Workers** > **Continue with GitHub**.
+4. Choose your forked repository. Cloudflare will now deploy your site automatically on every push.
+
+---
+
+### Method 3: CLI Deployment (Advanced)
+
+For local development and manual deployment control:
+
+#### 1. Environment Setup
+
+Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/Evgenii-Zinner/ez-edge-cms.git
@@ -50,17 +86,25 @@ cd ez-edge-cms
 bun install
 ```
 
-### 2. Local Development
+#### 2. Local Development
 
-Start the local development server (uses Wrangler to simulate the Cloudflare environment):
+Run the development server to simulate the Cloudflare edge environment:
 
 ```bash
 bun run dev
 ```
 
-### 3. Deploy
+#### 3. Cloudflare Authentication
 
-Push your CMS to the Cloudflare global network:
+Before deploying for the first time, authenticate the CLI with your Cloudflare account:
+
+```bash
+bunx wrangler login
+```
+
+#### 4. Deploy to Production
+
+Deploy the application to the global network:
 
 ```bash
 bun run deploy
@@ -68,14 +112,14 @@ bun run deploy
 
 ---
 
-## 🤝 Community
+## 🤝 Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a pull request.
+Contributions are welcome. Please refer to the [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) for community standards and development workflows.
 
 ---
 
 ## ⚖️ License
 
-Licensed under the **MIT License**. Feel free to use it for personal or commercial projects.
+Distributed under the **MIT License**. See `LICENSE.md` for more information.
 
-_Created with 🔥 by [Evgenii Zinner](https://ezinner.com)._
+_Built with 🔥 by [Evgenii Zinner](https://ezinner.com)._
