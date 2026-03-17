@@ -153,7 +153,7 @@ export const BaseLayout = (props: BaseLayoutProps) => {
                 {site.showStatus && (
                   <div class="branding-wrapper">
                     <a
-                      href="https://ez-cms.ezinner.com"
+                      href="https://ez-edge-cms.ezinner.com"
                       target="_blank"
                       rel="noopener noreferrer"
                       class="branding-link group"
