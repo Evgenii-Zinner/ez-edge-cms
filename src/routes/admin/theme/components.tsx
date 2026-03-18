@@ -161,7 +161,7 @@ export const ThemePreviewScript = () => {
           const fontUrl =
             "https://fonts.googleapis.com/css2?" +
             uniqueFonts
-              .map((f) => "family=" + f.replace(/\s+/g, "+") + ":wght@400;700")
+              .map((f) => "family=" + f.replace(/s+/g, "+") + ":wght@400;700")
               .join("&") +
             "&display=swap";
 
