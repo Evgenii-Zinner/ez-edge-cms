@@ -19,6 +19,7 @@ import { CustomSelect } from "@components/CustomSelect";
 import {
   ThemePreview,
   ThemePreviewScript,
+  ThemeFontPreloader,
 } from "@routes/admin/theme/components";
 import { AdminRange } from "@components/AdminUI";
 
@@ -37,8 +38,17 @@ const views = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
 views.get("/", async (c) => {
   const { theme, site, seo } = c.var;
 
+  // Aggregate all fonts to preload them for zero-latency previews
+  const allFonts = [
+    ...FONT_OPTIONS_HEADER,
+    ...FONT_OPTIONS_NAV,
+    ...FONT_OPTIONS_BODY,
+    ...FONT_OPTIONS_MONO,
+  ];
+
   return c.html(
     <AdminLayout title="Theme Styler" theme={theme} site={site} seo={seo}>
+      <ThemeFontPreloader fonts={allFonts} />
       <div class="flex flex-col h-[calc(100vh-6rem)]">
         {/* TOP HEADER ZONE */}
         <div class="flex justify-between items-center mb-8 flex-shrink-0">

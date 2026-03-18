@@ -73,7 +73,7 @@ export const FONT_OPTIONS_NAV = [
   "Turret Road",
   "Quantico",
   "Coda",
-  "Smitrix",
+  "Silkscreen",
   "Tauri",
   "Varela Round",
   "Krona One",
@@ -136,7 +136,7 @@ export const FONT_OPTIONS_MONO = [
   "Nova Mono",
   "Spline Sans Mono",
   "Major Mono Display",
-  "Fantasque Sans Mono",
+  "IBM Plex Mono",
 ] as const;
 
 /**

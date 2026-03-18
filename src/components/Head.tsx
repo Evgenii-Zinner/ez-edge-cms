@@ -66,10 +66,11 @@ export const Head = (props: HeadProps) => {
   ]);
 
   const fontString = Array.from(fonts)
-    .map((f) => f.replace(/\s+/g, "+"))
-    .join(":wght@400;700&family=");
+    .filter(Boolean)
+    .map((f) => `family=${f.replace(/\s+/g, "+")}:wght@400;700`)
+    .join("&");
 
-  const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontString}:wght@400;700&display=swap`;
+  const googleFontsUrl = `https://fonts.googleapis.com/css2?${fontString}&display=swap`;
 
   return (
     <head>

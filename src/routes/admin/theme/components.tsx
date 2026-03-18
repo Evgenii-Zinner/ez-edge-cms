@@ -159,11 +159,11 @@ export const ThemePreviewScript = () => {
           const uniqueFonts = [...new Set(fontNames)];
 
           const fontUrl =
-            "https://fonts.googleapis.com/css2?family=" +
+            "https://fonts.googleapis.com/css2?" +
             uniqueFonts
-              .map((f) => f.replace(/s+/g, "+"))
-              .join(":wght@400;700&family=") +
-            ":wght@400;700&display=swap";
+              .map((f) => "family=" + f.replace(/\s+/g, "+") + ":wght@400;700")
+              .join("&") +
+            "&display=swap";
 
           let fontLink = document.getElementById("dynamic-fonts-preview");
           if (!fontLink) {
@@ -181,10 +181,30 @@ export const ThemePreviewScript = () => {
         updatePreviewCSS();
 
         // Listen for all input changes
-        form.addEventListener("input", () => {
-          updatePreviewCSS();
-        });
+        form.addEventListener("input", updatePreviewCSS);
+        form.addEventListener("change", updatePreviewCSS);
       })();
     </script>
   `;
+};
+
+/**
+ * Component: ThemeFontPreloader
+ * Loads all available font options in bulk when the Theme Styler is opened.
+ *
+ * @param props - Contains the array of font names.
+ * @returns A JSX element containing the link tag.
+ */
+export const ThemeFontPreloader = (props: { fonts: string[] }) => {
+  const { fonts } = props;
+  const uniqueFonts = [...new Set(fonts)];
+
+  const fontUrl =
+    "https://fonts.googleapis.com/css2?" +
+    uniqueFonts
+      .map((f) => "family=" + f.replace(/\s+/g, "+") + ":wght@400")
+      .join("&") +
+    "&display=swap";
+
+  return <link rel="stylesheet" href={fontUrl} />;
 };
