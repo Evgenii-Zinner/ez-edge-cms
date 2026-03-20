@@ -293,7 +293,7 @@ views.get("/edit/:slug{.+}", async (c) => {
             </div>
             <div class="mt-4">
               <label class="admin-label" htmlFor="seo-custom-scripts">
-                Page Custom Head Scripts
+                Page-Related Custom Scripts
               </label>
               <textarea
                 name="seo.customHeadScripts"
@@ -305,8 +305,8 @@ views.get("/edit/:slug{.+}", async (c) => {
                 {page.seo?.customHeadScripts || ""}
               </textarea>
               <p class="admin-helper-text">
-                Inject raw HTML tags into the <code>&lt;head&gt;</code> of just
-                this page.
+                Inject raw HTML tags at the end of the <code>&lt;body&gt;</code>
+                of just this page.
               </p>
               <div class="color-[#ff4444] text-0.7rem font-nav mt-2 border-l-2 border-l-solid border-[#ff4444] pl-2">
                 <strong>⚠️ SECURITY WARNING:</strong> Never paste scripts from

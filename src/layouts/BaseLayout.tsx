@@ -231,6 +231,9 @@ export const BaseLayout = (props: BaseLayoutProps) => {
               </filter>
             </defs>
           </svg>
+
+          {/* Page-Specific Custom Script Injections (Re-executed on HTMX navigation) */}
+          {page?.seo?.customHeadScripts && raw(page.seo.customHeadScripts)}
         </body>
       </html>
     </>

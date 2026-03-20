@@ -163,9 +163,8 @@ export const Head = (props: HeadProps) => {
         </>
       )}
 
-      {/* Global & Page-Specific Custom Script Injections */}
+      {/* Global Custom Head Scripts (Permanent, for Analytics) */}
       {site.customHeadScripts && raw(site.customHeadScripts)}
-      {page?.seo?.customHeadScripts && raw(page.seo.customHeadScripts)}
 
       {/* Dynamic CSS Theme Variables Injection */}
       <style id="dynamic-theme">{raw(cssVariables)}</style>
