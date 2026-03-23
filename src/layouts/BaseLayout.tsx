@@ -69,7 +69,7 @@ export const BaseLayout = (props: BaseLayoutProps) => {
           <div class="ui-overlay dots-interactive"></div>
 
           {/* Mobile Navigation Drawer (Moved outside header for reliable fixed positioning) */}
-          <nav class="main-nav" id="main-nav">
+          <nav class="main-nav lg:hidden" id="main-nav">
             {nav.items.map((item) => (
               <a href={item.path} class="nav-link">
                 {item.label}
