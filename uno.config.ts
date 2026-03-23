@@ -392,27 +392,28 @@ export default defineConfig({
 
     "ui-overlay": "fixed inset-0 pointer-events-none z-1",
     scanlines:
-      "bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.07)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[size:100%_4px,3px_100%] opacity-50 z-9999",
-    dots: "bg-[radial-gradient(circle,var(--theme-accent)_1px,transparent_1px)] bg-[size:32px_32px] opacity-5",
+      "bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.07)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[size:100%_4px,3px_100%] opacity-50 z-10",
+    dots: "bg-[radial-gradient(circle,var(--theme-accent)_1px,transparent_1px)] bg-[size:32px_32px] opacity-5 z-1",
     "dots-interactive":
-      "opacity-30 z-1 bg-[radial-gradient(circle,var(--theme-accent)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(250px_circle_at_var(--mouse-x,0)_var(--mouse-y,0),black_0%,transparent_100%)] [-webkit-mask-image:radial-gradient(250px_circle_at_var(--mouse-x,0)_var(--mouse-y,0),black_0%,transparent_100%)]",
+      "opacity-30 z-2 bg-[radial-gradient(circle,var(--theme-accent)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(250px_circle_at_var(--mouse-x,0)_var(--mouse-y,0),black_0%,transparent_100%)] [-webkit-mask-image:radial-gradient(250px_circle_at_var(--mouse-x,0)_var(--mouse-y,0),black_0%,transparent_100%)]",
 
     "main-header":
-      "sticky top-0 z-1000 border-b border-b-solid border-[var(--theme-accent-glow)] bg-[var(--theme-surface)] backdrop-blur-8px",
+      "sticky top-0 z-2000 border-b border-b-solid border-[var(--theme-accent-glow)] bg-[var(--theme-surface)] backdrop-blur-8px",
     "header-content":
       "max-w-1200px mx-auto flex justify-between items-center px-[clamp(1rem,5vw,2.5rem)] py-4",
-    logo: "font-header text-[var(--theme-text-main)] no-underline text-[clamp(1.1rem,3vw,1.5rem)] tracking-2px z-1001",
+    logo: "relative font-header text-[var(--theme-text-main)] no-underline text-[clamp(1.1rem,3vw,1.5rem)] tracking-2px z-2001",
 
     "main-nav":
-      "flex gap-6 items-center max-lg:fixed max-lg:top-0 max-lg:right-0 max-lg:bottom-0 max-lg:h-screen max-lg:w-300px max-lg:bg-[var(--theme-surface-solid)] max-lg:backdrop-blur-20px max-lg:flex-col max-lg:items-end max-lg:pt-80px max-lg:p-10 max-lg:gap-8 max-lg:border-l max-lg:border-l-solid max-lg:border-l-[var(--theme-accent-glow)] max-lg:translate-x-full max-lg:transition-transform max-lg:duration-400 max-lg:z-999 max-lg:overflow-y-auto",
-    open: "important-translate-x-0",
+      "flex gap-6 items-center max-lg:fixed max-lg:top-0 max-lg:right-0 max-lg:h-[100dvh] max-lg:w-280px max-lg:bg-[var(--theme-surface-solid)] max-lg:backdrop-blur-20px max-lg:flex-col max-lg:items-start max-lg:pt-100px max-lg:p-8 max-lg:gap-6 max-lg:border-l max-lg:border-l-solid max-lg:border-l-[var(--theme-accent-glow)] max-lg:translate-x-full max-lg:invisible max-lg:transition-all max-lg:duration-300 max-lg:ease-in-out max-lg:z-1000 max-lg:overflow-y-auto",
+    open: "important-translate-x-0 important-visible",
+
     "nav-link":
       "font-nav text-[var(--theme-text-dim)] no-underline tracking-1px uppercase transition-all duration-300 border-b border-b-solid border-transparent hover:text-[var(--theme-accent)] hover:drop-shadow-[0_0_8px_var(--theme-accent-glow)] hover:border-b-[var(--theme-accent)] text-0.85rem py-0.2 max-lg:text-1.2rem max-lg:tracking-2px max-lg:w-full max-lg:text-right",
     "menu-toggle":
-      "lg:hidden bg-transparent border border-solid border-[var(--theme-accent-glow)] text-[var(--theme-accent)] px-3 py-1.5 cursor-pointer z-1001 font-nav text-0.75rem tracking-1px hover:bg-[var(--theme-accent-glow)]",
+      "relative lg:hidden bg-transparent border border-solid border-[var(--theme-accent-glow)] text-[var(--theme-accent)] px-3 py-1.5 cursor-pointer z-2001 font-nav text-0.75rem tracking-1px hover:bg-[var(--theme-accent-glow)]",
 
     "main-footer":
-      "relative z-2 border-t border-t-solid border-[var(--theme-accent-glow)] px-[clamp(1rem,5vw,2.5rem)] py-[clamp(2rem,8vw,4rem)] mt-[clamp(4rem,10vw,8rem)] bg-[var(--theme-surface)] backdrop-blur-8px flex-shrink-0",
+      "relative z-100 border-t border-t-solid border-[var(--theme-accent-glow)] px-[clamp(1rem,5vw,2.5rem)] py-[clamp(2rem,8vw,4rem)] mt-[clamp(4rem,10vw,8rem)] bg-[var(--theme-surface)] backdrop-blur-8px flex-shrink-0",
     "footer-content":
       "max-w-1200px mx-auto flex flex-col gap-[clamp(2rem,5vw,3rem)] max-lg:items-center max-lg:text-center",
     "footer-links":
@@ -489,7 +490,7 @@ export default defineConfig({
     "admin-content": "p-12 overflow-y-auto h-full",
 
     "modal-overlay":
-      "fixed inset-0 bg-[rgba(0,0,0,0.85)] backdrop-blur-10px flex items-center justify-center z-10000 opacity-0 pointer-events-none transition-opacity duration-300",
+      "fixed inset-0 bg-[rgba(0,0,0,0.85)] backdrop-blur-10px flex items-center justify-center z-[4000] opacity-0 pointer-events-none transition-opacity duration-300",
     "modal-content":
       "bg-[var(--theme-surface)] border border-solid border-[var(--theme-accent)] shadow-[0_0_30px_var(--theme-accent-glow)] w-full max-w-500px p-8 relative -translate-y-5 transition-transform duration-300",
     "modal-close":

@@ -68,6 +68,15 @@ export const BaseLayout = (props: BaseLayoutProps) => {
           <div class="ui-overlay dots"></div>
           <div class="ui-overlay dots-interactive"></div>
 
+          {/* Mobile Navigation Drawer (Moved outside header for reliable fixed positioning) */}
+          <nav class="main-nav" id="main-nav">
+            {nav.items.map((item) => (
+              <a href={item.path} class="nav-link">
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
           {/* Site Header */}
           <header class="main-header">
             <div class="header-content">
@@ -91,13 +100,14 @@ export const BaseLayout = (props: BaseLayoutProps) => {
                 MENU
               </button>
 
-              <nav class="main-nav" id="main-nav">
+              {/* Desktop Navigation (Hidden on mobile) */}
+              <div class="max-lg:hidden flex gap-6 items-center">
                 {nav.items.map((item) => (
                   <a href={item.path} class="nav-link">
                     {item.label}
                   </a>
                 ))}
-              </nav>
+              </div>
             </div>
           </header>
 
@@ -174,36 +184,54 @@ export const BaseLayout = (props: BaseLayoutProps) => {
             dangerouslySetInnerHTML={{
               __html: `
           (function() {
-            const toggle = document.getElementById('mobile-menu-toggle');
-            const nav = document.getElementById('main-nav');
-            
-            if (toggle && nav) {
-              toggle.onclick = (e) => {
-                e.stopPropagation();
-                nav.classList.toggle('open');
-                toggle.innerText = nav.classList.contains('open') ? 'CLOSE' : 'MENU';
-              };
-
+            // Global click listener added only once
+            if (!window.navListenerAdded) {
               document.addEventListener('click', (e) => {
-                if (nav.classList.contains('open') && !nav.contains(e.target) && e.target !== toggle) {
+                const nav = document.getElementById('main-nav');
+                const toggle = document.getElementById('mobile-menu-toggle');
+                if (nav && nav.classList.contains('open') && !nav.contains(e.target) && e.target !== toggle) {
                   nav.classList.remove('open');
-                  toggle.innerText = 'MENU';
+                  if (toggle) toggle.innerText = 'MENU';
+                  document.body.style.overflow = '';
                 }
               });
-
-              nav.querySelectorAll('.nav-link').forEach(link => {
-                link.onclick = () => {
-                  nav.classList.remove('open');
-                  toggle.innerText = 'MENU';
-                };
-              });
+              window.navListenerAdded = true;
             }
 
+            const initNav = () => {
+              const toggle = document.getElementById('mobile-menu-toggle');
+              const nav = document.getElementById('main-nav');
+              
+              if (toggle && nav) {
+                toggle.onclick = (e) => {
+                  e.stopPropagation();
+                  const isOpen = nav.classList.toggle('open');
+                  toggle.innerText = isOpen ? 'CLOSE' : 'MENU';
+                  document.body.style.overflow = isOpen ? 'hidden' : '';
+                };
+
+                nav.querySelectorAll('.nav-link').forEach(link => {
+                  link.onclick = () => {
+                    nav.classList.remove('open');
+                    toggle.innerText = 'MENU';
+                    document.body.style.overflow = '';
+                  };
+                });
+              }
+            };
+
+            // Run on load and after HTMX swaps
+            initNav();
+            document.addEventListener('htmx:afterSwap', initNav);
+
             // Interactive mouse tracking for dot overlay
-            document.addEventListener('mousemove', (e) => {
-              document.body.style.setProperty('--mouse-x', e.clientX + 'px');
-              document.body.style.setProperty('--mouse-y', e.clientY + 'px');
-            });
+            if (!window.mouseListenerAdded) {
+              document.addEventListener('mousemove', (e) => {
+                document.body.style.setProperty('--mouse-x', e.clientX + 'px');
+                document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+              });
+              window.mouseListenerAdded = true;
+            }
           })();
         `,
             }}
