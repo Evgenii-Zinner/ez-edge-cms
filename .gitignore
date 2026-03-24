@@ -39,6 +39,7 @@ package-lock.json
 !LICENSE.md
 !CODE_OF_CONDUCT.md
 !CONTRIBUTING.md
+!UPDATE.md
 *.diff
 
 # Docs and Large Assets

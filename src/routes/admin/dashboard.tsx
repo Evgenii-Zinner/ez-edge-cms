@@ -38,6 +38,11 @@ admin.get("/", async (c) => {
           <h3>System Status</h3>
           <p>STATUS: ONLINE</p>
           <p>VERSION: {APP_VERSION}</p>
+          <div
+            hx-get="/admin/check-update"
+            hx-trigger="load"
+            hx-swap="outerHTML"
+          ></div>
         </div>
 
         <div class="admin-card m-0">
@@ -86,6 +91,57 @@ admin.get("/", async (c) => {
 admin.post("/clear-cache", async (c) => {
   clearCache();
   return c.html('<span style="color: #00ff00;">CACHE PURGED</span>');
+});
+
+/**
+ * GET /admin/check-update
+ * Fetches the latest version from GitHub tags and compares it with the local version.
+ * Returns an HTMX partial if an update is available.
+ *
+ * @param c - Hono context.
+ * @returns A promise resolving to an HTMX update notice or an empty string.
+ */
+admin.get("/check-update", async (c) => {
+  try {
+    const response = await fetch(
+      "https://api.github.com/repos/Evgenii-Zinner/ez-edge-cms/tags",
+      {
+        headers: {
+          "User-Agent": "EZ-EDGE-CMS",
+        },
+      },
+    );
+
+    if (!response.ok) return c.html("");
+
+    const tags = (await response.json()) as { name: string }[];
+    if (!tags || tags.length === 0) return c.html("");
+
+    // The first tag in the list is the most recent
+    const latestVersion = tags[0].name.replace(/^v/, "");
+
+    if (latestVersion !== APP_VERSION) {
+      return c.html(
+        <div style="margin-top: 1rem; padding: 0.5rem; border: 1px solid var(--color-warning); background: rgba(255, 204, 0, 0.1); border-radius: 4px;">
+          <p style="color: var(--color-warning); margin: 0; font-weight: bold;">
+            NEW VERSION AVAILABLE: {latestVersion}
+          </p>
+          <a
+            href="https://github.com/Evgenii-Zinner/ez-edge-cms/blob/main/UPDATE.md"
+            target="_blank"
+            class="btn-primary"
+            style="display: inline-block; margin-top: 0.5rem; font-size: 0.8rem; padding: 0.2rem 0.5rem;"
+          >
+            HOW TO UPDATE
+          </a>
+        </div>,
+      );
+    }
+  } catch (error) {
+    console.error("Failed to check for updates:", error);
+  }
+
+  return c.html("");
 });
 
 export default admin;

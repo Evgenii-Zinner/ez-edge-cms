@@ -70,6 +70,8 @@ Deploy the CMS directly to your Cloudflare account using the automated setup but
 3. Select **Add** > **Workers** > **Continue with GitHub**.
 4. Choose your forked repository. Cloudflare will now deploy your site automatically on every push.
 
+Check out the [**Update Guide**](UPDATE.md) for more details on keeping your CMS up to date.
+
 ---
 
 ### Method 3: CLI Deployment (Advanced)
