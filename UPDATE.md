@@ -11,15 +11,15 @@ Depending on how you deployed the CMS, follow the appropriate guide below.
 If you followed the recommended "Fork & Sync" deployment method, updating is easy and preserves your content.
 
 1.  **Sync your Fork:**
-    *   Navigate to your forked repository on GitHub.
-    *   Click **Sync fork** (usually near the "Code" button).
-    *   Click **Update branch**.
+    - Navigate to your forked repository on GitHub.
+    - Click **Sync fork** (usually near the "Code" button).
+    - Click **Update branch**.
 2.  **Automatic Deployment:**
-    *   If you connected your GitHub repository to Cloudflare Pages/Workers, the update will automatically trigger a new deployment.
-    *   Wait a few minutes for the build to complete.
+    - If you connected your GitHub repository to Cloudflare Pages/Workers, the update will automatically trigger a new deployment.
+    - Wait a few minutes for the build to complete.
 3.  **Verify:**
-    *   Log into your Admin Dashboard.
-    *   Check the **System Status** to confirm the version has updated.
+    - Log into your Admin Dashboard.
+    - Check the **System Status** to confirm the version has updated.
 
 ---
 
@@ -55,6 +55,6 @@ If you used the "Deploy to Cloudflare" button without forking:
 
 ## ⚠️ Important Considerations
 
-*   **Custom Code:** If you have made manual changes to the core `src/` directory (outside of configurations), a sync might cause merge conflicts. You will need to resolve these manually.
-*   **KV Data:** Updating the CMS logic **does not** delete your KV data (pages, themes, etc.). Your content remains safe during the update process.
-*   **Breaking Changes:** Always check the [Releases](https://github.com/Evgenii-Zinner/ez-edge-cms/releases) page for any noted breaking changes or manual migration steps.
+- **Custom Code:** If you have made manual changes to the core `src/` directory (outside of configurations), a sync might cause merge conflicts. You will need to resolve these manually.
+- **KV Data:** Updating the CMS logic **does not** delete your KV data (pages, themes, etc.). Your content remains safe during the update process.
+- **Breaking Changes:** Always check the [Releases](https://github.com/Evgenii-Zinner/ez-edge-cms/releases) page for any noted breaking changes or manual migration steps.
