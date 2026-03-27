@@ -29,6 +29,24 @@ const navAdmin = new Hono<{
 }>();
 
 /**
+ * Internal helper to ensure a path starts with / if it is an internal relative link.
+ */
+const normalizeSavePath = (path: string): string => {
+  if (!path) return "/";
+  const p = path.trim();
+  if (
+    p.startsWith("/") ||
+    p.startsWith("http") ||
+    p.startsWith("mailto:") ||
+    p.startsWith("tel:") ||
+    p.startsWith("#")
+  ) {
+    return p;
+  }
+  return `/${p}`;
+};
+
+/**
  * GET /admin/navigation
  * Renders the Navigation Manager interface.
  *
@@ -170,6 +188,17 @@ navAdmin.post("/save", async (c) => {
     const validatedFooter = await validateForm(c.req, FooterSchema, {
       zip: { links: { label: "footerLabel[]", path: "footerPath[]" } },
     });
+
+    // Normalize paths before saving to ensure consistency
+    validatedNav.items = (validatedNav.items || []).map((item) => ({
+      ...item,
+      path: normalizeSavePath(item.path),
+    }));
+
+    validatedFooter.links = (validatedFooter.links || []).map((link) => ({
+      ...link,
+      path: normalizeSavePath(link.path),
+    }));
 
     // Perform saves in parallel
     await Promise.all([

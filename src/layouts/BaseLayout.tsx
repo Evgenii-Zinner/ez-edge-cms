@@ -41,6 +41,24 @@ export interface BaseLayoutProps {
 }
 
 /**
+ * Helper to ensure a navigation path is absolute if it is an internal link.
+ * Prevents URL duplication (e.g. /articles/articles) when navigating from subpages.
+ */
+const normalizePath = (path: string): string => {
+  if (!path) return "/";
+  if (
+    path.startsWith("/") ||
+    path.startsWith("http") ||
+    path.startsWith("mailto:") ||
+    path.startsWith("tel:") ||
+    path.startsWith("#")
+  ) {
+    return path;
+  }
+  return `/${path}`;
+};
+
+/**
  * Component: BaseLayout
  * Provides the foundational HTML structure for the public site.
  * Includes interactive UI overlays (scanlines, dots) and handles
@@ -71,7 +89,7 @@ export const BaseLayout = (props: BaseLayoutProps) => {
           {/* Mobile Navigation Drawer (Moved outside header for reliable fixed positioning) */}
           <nav class="main-nav lg:hidden" id="main-nav">
             {nav.items.map((item) => (
-              <a href={item.path} class="nav-link">
+              <a href={normalizePath(item.path)} class="nav-link">
                 {item.label}
               </a>
             ))}
@@ -103,7 +121,7 @@ export const BaseLayout = (props: BaseLayoutProps) => {
               {/* Desktop Navigation (Hidden on mobile) */}
               <div class="max-lg:hidden flex gap-6 items-center">
                 {nav.items.map((item) => (
-                  <a href={item.path} class="nav-link">
+                  <a href={normalizePath(item.path)} class="nav-link">
                     {item.label}
                   </a>
                 ))}
@@ -137,7 +155,7 @@ export const BaseLayout = (props: BaseLayoutProps) => {
 
                 <div class="footer-links flex gap-6">
                   {footer.links.map((link) => (
-                    <a href={link.path} class="footer-link">
+                    <a href={normalizePath(link.path)} class="footer-link">
                       {link.label}
                     </a>
                   ))}
