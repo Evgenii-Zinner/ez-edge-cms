@@ -98,8 +98,77 @@ const parseBlock = (block: EditorJsBlock): string => {
         </div>
       `;
 
+    case "hero":
+      return `
+        <div class="relative min-h-[500px] flex items-center justify-center text-center overflow-hidden my-12 border border-solid border-[var(--theme-accent-glow)]">
+          <div 
+            class="absolute top-0 left-0 w-full h-full z-0 bg-cover bg-center opacity-40 transition-transform duration-10000 hover:scale-110"
+            style="background-image: url('${data.url}')"
+          ></div>
+          <div class="relative z-10 px-8 max-w-4xl">
+            <h1 class="text-3rem md:text-5rem font-header mb-4 text-white drop-shadow-[0_0_20px_rgba(0,0,0,0.8)] leading-tight">
+              ${data.title || ""}
+            </h1>
+            ${data.subtitle ? `<p class="text-1.2rem md:text-1.5rem font-nav text-[var(--theme-text-main)] opacity-90 tracking-widest uppercase drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]">${data.subtitle}</p>` : ""}
+          </div>
+          <div class="absolute inset-0 bg-gradient-to-t from-[var(--theme-bg)] to-transparent opacity-60 pointer-events-none"></div>
+        </div>
+      `;
+
     case "quote":
       return `<blockquote>${data.text}${data.caption ? `<br/><small>— ${data.caption}</small>` : ""}</blockquote>`;
+
+    case "delimiter":
+      return `<hr class="my-12 border-t border-solid border-[var(--theme-accent-glow)] opacity-30" />`;
+
+    case "table":
+      const rows = data.content || [];
+      const withHeadings = data.withHeadings || false;
+      let tableHtml = `<div class="overflow-x-auto my-8"><table class="w-full border-collapse">`;
+
+      if (withHeadings && rows.length > 0) {
+        tableHtml += `<thead><tr class="border-b border-b-solid border-[var(--theme-accent-glow)]">`;
+        rows[0].forEach((cell: string) => {
+          tableHtml += `<th class="p-4 text-left font-header color-[var(--theme-accent)]">${cell}</th>`;
+        });
+        tableHtml += `</tr></thead>`;
+      }
+
+      tableHtml += `<tbody>`;
+      const startRow = withHeadings ? 1 : 0;
+      for (let i = startRow; i < rows.length; i++) {
+        tableHtml += `<tr class="border-b border-b-solid border-[var(--theme-accent-glow)] last:border-0">`;
+        rows[i].forEach((cell: string) => {
+          tableHtml += `<td class="p-4 font-body color-[var(--theme-text-main)]">${cell}</td>`;
+        });
+        tableHtml += `</tr>`;
+      }
+      tableHtml += `</tbody></table></div>`;
+      return tableHtml;
+
+    case "code":
+      return `
+        <div class="admin-card font-mono text-0.9rem bg-[rgba(0,0,0,0.5)] border-solid my-8 p-6 overflow-x-auto">
+          <pre><code>${data.code || ""}</code></pre>
+        </div>
+      `;
+
+    case "embed":
+      return `
+        <div class="my-8">
+          <div class="aspect-video w-full border border-solid border-[var(--theme-accent-glow)] bg-[rgba(0,0,0,0.2)]">
+            <iframe 
+              src="${data.embed}" 
+              width="100%" 
+              height="100%" 
+              frameborder="0" 
+              allowfullscreen
+              loading="lazy"
+            ></iframe>
+          </div>
+          ${data.caption ? `<div class="text-center text-0.8rem color-[var(--theme-text-dim)] mt-2 italic">${data.caption}</div>` : ""}
+        </div>
+      `;
 
     default:
       console.warn(`Unsupported block type: ${block.type}`);
@@ -131,7 +200,9 @@ export const renderEditorJs = (data: EditorJsData): string => {
  */
 export const getFirstImage = (data: EditorJsData): string | null => {
   if (!data || !data.blocks) return null;
-  const firstImageBlock = data.blocks.find((b) => b.type === "image");
+  const firstImageBlock = data.blocks.find(
+    (b) => b.type === "image" || b.type === "hero",
+  );
   if (!firstImageBlock) return null;
   return firstImageBlock.data?.file?.url || firstImageBlock.data?.url || null;
 };

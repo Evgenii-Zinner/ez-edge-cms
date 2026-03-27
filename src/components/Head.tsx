@@ -157,6 +157,22 @@ export const Head = (props: HeadProps) => {
             defer
           />
           <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.4.3"
+            defer
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.6"
+            defer
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/code@2.9.3"
+            defer
+          />
+          <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2"
+            defer
+          />
+          <script
             src="https://cdn.jsdelivr.net/npm/editorjs-drag-drop@1.1.18"
             defer
           />

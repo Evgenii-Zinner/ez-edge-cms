@@ -54,6 +54,7 @@ export async function extractAndSaveImages(
   const currentImageKeys: string[] = [];
 
   for (const block of content.blocks) {
+    // 1. Process Standard Image Blocks
     if (block.type === "image" && block.data?.file) {
       const { url } = block.data.file;
       const imageId = block.id || Math.random().toString(36).substring(2, 12);
@@ -86,6 +87,35 @@ export async function extractAndSaveImages(
       // Cleanup: Remove any legacy urlMobile from the data
       if (block.data.file.urlMobile) {
         delete block.data.file.urlMobile;
+      }
+    }
+
+    // 2. Process Custom Hero Blocks
+    if (block.type === "hero" && block.data?.url) {
+      const { url } = block.data;
+      const imageId = block.id || Math.random().toString(36).substring(2, 12);
+
+      if (url && url.startsWith("data:image/")) {
+        const extension = url.split(";")[0].split("/")[1] || "webp";
+        const filename = `hero-${imageId}.${extension}`;
+        const imageKey = `img:${slug}:${filename}`;
+
+        await putBinaryImage(env, imageKey, url);
+        block.data.url = `/images/${slug}/${filename}`;
+        currentImageKeys.push(imageKey);
+      } else if (
+        url &&
+        (url.startsWith("/images/") || url.startsWith("images/"))
+      ) {
+        const relPath = url.startsWith("/")
+          ? url.substring(8)
+          : url.substring(7);
+        const lastSlash = relPath.lastIndexOf("/");
+        if (lastSlash !== -1) {
+          const existingSlug = relPath.substring(0, lastSlash);
+          const existingFilename = relPath.substring(lastSlash + 1);
+          currentImageKeys.push(`img:${existingSlug}:${existingFilename}`);
+        }
       }
     }
   }

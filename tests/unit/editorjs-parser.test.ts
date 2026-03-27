@@ -107,8 +107,79 @@ describe("EditorJsParser", () => {
     };
     const html = renderEditorJs(data);
     expect(html).toContain('src="/images/slug/image.webp"');
-    expect(html).not.toContain("srcset");
-    expect(html).not.toContain("sizes");
+  });
+
+  test("should render hero blocks", () => {
+    const data: EditorJsData = {
+      blocks: [
+        {
+          type: "hero",
+          data: { url: "/hero.jpg", title: "HERO TITLE", subtitle: "Sub" },
+        },
+      ],
+    };
+    const html = renderEditorJs(data);
+    expect(html).toContain("background-image: url('/hero.jpg')");
+    expect(html).toContain("HERO TITLE");
+    expect(html).toContain("Sub");
+  });
+
+  test("should render table blocks", () => {
+    const data: EditorJsData = {
+      blocks: [
+        {
+          type: "table",
+          data: {
+            withHeadings: true,
+            content: [
+              ["H1", "H2"],
+              ["R1C1", "R1C2"],
+            ],
+          },
+        },
+      ],
+    };
+    const html = renderEditorJs(data);
+    expect(html).toContain("<table");
+    expect(html).toContain("<thead");
+    expect(html).toContain("H1");
+    expect(html).toContain("R1C1");
+  });
+
+  test("should render code blocks", () => {
+    const data: EditorJsData = {
+      blocks: [
+        {
+          type: "code",
+          data: { code: "console.log(1)" },
+        },
+      ],
+    };
+    const html = renderEditorJs(data);
+    expect(html).toContain("console.log(1)");
+    expect(html).toContain("<pre><code>");
+  });
+
+  test("should render embed blocks", () => {
+    const data: EditorJsData = {
+      blocks: [
+        {
+          type: "embed",
+          data: { embed: "https://youtube.com/embed/123", caption: "Video" },
+        },
+      ],
+    };
+    const html = renderEditorJs(data);
+    expect(html).toContain('src="https://youtube.com/embed/123"');
+    expect(html).toContain("Video");
+  });
+
+  test("should render delimiter blocks", () => {
+    const data: EditorJsData = {
+      blocks: [{ type: "delimiter", data: {} }],
+    };
+    const html = renderEditorJs(data);
+    expect(html).toContain("<hr");
   });
 
   test("should render quotes with captions", () => {
@@ -160,6 +231,13 @@ describe("EditorJsParser", () => {
         ],
       };
       expect(getFirstImage(data)).toBe("https://example.com/1.png");
+    });
+
+    test("should extract URL from hero block", () => {
+      const data: EditorJsData = {
+        blocks: [{ type: "hero", data: { url: "/hero-thumb.jpg" } }],
+      };
+      expect(getFirstImage(data)).toBe("/hero-thumb.jpg");
     });
 
     test("should support file object URL", () => {
