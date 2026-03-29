@@ -176,6 +176,7 @@ export const Head = (props: HeadProps) => {
             src="https://cdn.jsdelivr.net/npm/editorjs-drag-drop@1.1.18"
             defer
           />
+          <script src="https://cdn.jsdelivr.net/npm/editorjs-undo" defer />
         </>
       )}
 

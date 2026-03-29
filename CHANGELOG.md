@@ -83,3 +83,7 @@
 ## [0.1.20] - 2026-03-27
 
 - fix(nav): ensure absolute paths for navigation links
+
+## [0.1.21] - 2026-03-29
+
+- feat(editor): implement undo/redo plugin for Editor.js

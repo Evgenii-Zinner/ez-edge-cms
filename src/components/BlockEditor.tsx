@@ -322,12 +322,20 @@ export const BlockEditor = ({ content }: BlockEditorProps) => {
                       "Editor.js DragDrop plugin not found in global scope.",
                     );
                   }
-                },
-                /**
+
+                  // Initialize Undo/Redo plugin
+                  if (window.Undo) {
+                    new window.Undo({ editor });
+                  } else {
+                    console.warn(
+                      "Editor.js Undo plugin not found in global scope.",
+                    );
+                  }
+                } /**
                  * Synchronization Hook:
                  * Whenever content changes, serialize the editor state back to
                  * the hidden input and mark the admin HUD as having unsaved changes.
-                 */
+                 */,
                 onChange: async (api) => {
                   const outputData = await api.saver.save();
                   input.value = JSON.stringify(outputData);
@@ -338,8 +346,8 @@ export const BlockEditor = ({ content }: BlockEditorProps) => {
               window.currentEditor = editor;
             };
 
-            // Wait for deferred EditorJS scripts to load
-            if (window.EditorJS) {
+            // Wait for deferred EditorJS and plugin scripts to load
+            if (window.EditorJS && window.Undo) {
               initEditor();
             } else {
               document.addEventListener("DOMContentLoaded", initEditor);
