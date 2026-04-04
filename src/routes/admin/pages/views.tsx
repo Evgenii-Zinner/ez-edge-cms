@@ -129,6 +129,9 @@ views.get("/edit/:slug{.+}", async (c) => {
     const isProtected = (PROTECTED_SLUGS as readonly string[]).includes(slug);
     const { theme, site, seo } = c.var;
 
+    // Signal to the UnoCSS middleware to use the heavy editor generator
+    c.set("isEditor" as any, true);
+
     const page =
       (await getPage(c.env, slug, "draft")) ||
       (await getPage(c.env, slug, "live"));

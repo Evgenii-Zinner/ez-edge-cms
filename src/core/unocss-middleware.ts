@@ -23,7 +23,10 @@ export const injectUnoCSS = (): MiddlewareHandler => {
       const html = await responseClone.text();
 
       const isHtmx = c.req.header("HX-Request") === "true";
-      const finalHtml = await renderWithUno(html, isHtmx);
+      // Check if the route has explicitly marked this as an editor payload
+      const isEditor = c.get("isEditor" as any) === true;
+
+      const finalHtml = await renderWithUno(html, isHtmx, isEditor);
 
       // Re-construct the response with the styled HTML
       c.res = new Response(finalHtml, c.res);

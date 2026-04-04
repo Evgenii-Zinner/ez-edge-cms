@@ -3,80 +3,55 @@ import presetWind4 from "@unocss/preset-wind4";
 import presetAttributify from "@unocss/preset-attributify";
 import presetIcons from "@unocss/preset-icons";
 
+/**
+ * Base Safelist: Minimal set of classes that might be used dynamically in content
+ * but are not easily detectable by the static analyzer.
+ */
+export const BASE_SAFELIST = [
+  "text-left",
+  "text-center",
+  "text-right",
+  "italic",
+  "font-bold",
+  "underline",
+  "open", // Used for mobile menu toggle
+];
+
+/**
+ * Editor Safelist: Heavy UI classes for Editor.js and Admin-specific components
+ * that are injected via client-side JavaScript.
+ */
+export const EDITOR_SAFELIST = [
+  // Editor.js Core & Structure
+  "ce-block",
+  "ce-block__content",
+  "ce-toolbar__content",
+  "ce-block--selected",
+  "ce-header",
+  "ce-paragraph",
+  "cdx-list",
+  "cdx-list__item",
+  "cdx-quote",
+  "cdx-quote__text",
+  "cdx-quote__caption",
+  "cdx-simple-image",
+
+  // Editor.js UI Action classes
+  "ce-toolbar__plus",
+  "ce-toolbar__settings-btn",
+  "ce-toolbar__actions",
+
+  // Admin UI specific dynamic elements
+  "toast-notification",
+  "nav-item-active",
+  "nav-item-error",
+  "nav-item-warning",
+  "nav-item-success",
+  "nav-item-info",
+];
+
 export default defineConfig({
-  safelist: [
-    // Editor.js Core & Structure
-    "ce-block",
-    "ce-block__content",
-    "ce-toolbar__content",
-    "ce-block--selected",
-    "ce-header",
-    "ce-paragraph",
-    "cdx-list",
-    "cdx-list__item",
-    "cdx-quote",
-    "cdx-quote__text",
-    "cdx-quote__caption",
-    "cdx-simple-image",
-
-    // Editor.js UI Action classes
-    "ce-toolbar__plus",
-    "ce-toolbar__settings-btn",
-    "ce-toolbar__actions",
-
-    // Design System content elements (from shortcuts)
-    "content-frame",
-    "content-img",
-    "image-stretched",
-    "image-with-border",
-    "image-with-background",
-    "standard-heading",
-
-    // Layout & Nav
-    "main-header",
-    "header-content",
-    "logo",
-    "main-nav",
-    "nav-link",
-    "menu-toggle",
-    "main-footer",
-    "footer-content",
-    "footer-links",
-    "footer-link",
-    "footer-copyright",
-    "footer-bottom",
-    "branding-wrapper",
-    "branding-link",
-    "branding-text",
-    "branding-badge",
-    "branding-badge-item",
-    "branding-badge-edge",
-    "bento-grid",
-    "bento-item",
-
-    // Admin UI specific
-    "admin-action-btn",
-    "btn-primary",
-    "nav-item",
-    "nav-item-active",
-    "nav-item-error",
-    "nav-item-warning",
-    "nav-item-success",
-    "nav-item-info",
-    "admin-card",
-    "admin-input",
-    "toast-notification",
-    "btn-mini",
-    "open",
-
-    // Common dynamic utilities that might be used in content
-    "text-left",
-    "text-center",
-    "text-right",
-    "italic",
-    "font-bold",
-    "underline",
-  ],
+  safelist: [...BASE_SAFELIST],
   presets: [
     presetWind4(),
     presetAttributify(),

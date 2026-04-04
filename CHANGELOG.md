@@ -87,3 +87,7 @@
 ## [0.1.21] - 2026-03-29
 
 - feat(editor): implement undo/redo plugin for Editor.js
+
+## [0.1.22] - 2026-04-04
+
+- Optimize UnoCSS: split editor-specific styles to reduce public CSS weight
