@@ -15,7 +15,7 @@ export const VERSIONS = {
   /** Theme configuration schema version. */
   THEME: "1.0.0",
   /** Page configuration schema version. */
-  PAGE: "1.0.0",
+  PAGE: "2.0.0",
   /** Navigation menu schema version. */
   NAV: "1.0.0",
   /** Site identity schema version. */
@@ -101,6 +101,66 @@ export const EditorJsDataSchema = z.object({
 });
 
 /**
+ * Shard: The functional UI component.
+ */
+export const ShardSchema = z.object({
+  /** The TSX component name (e.g., 'Hero', 'PricingTable'). */
+  model: z.string(),
+  /** Strictly typed properties for the component. */
+  props: z.record(z.any()).default({}),
+  /** UnoCSS/Tailwind class overrides. */
+  styles: z.string().optional(),
+});
+
+/**
+ * Type definitions for recursive ELS structure.
+ */
+export type Shard = z.infer<typeof ShardSchema>;
+export type Sector = {
+  id: string;
+  items: (Shard | Grid)[];
+  styles?: string;
+};
+export type Grid = {
+  layout: string;
+  sectors: Sector[];
+  styles?: string;
+};
+
+/**
+ * Sector: A Flexbox container slot within a Grid.
+ * Can contain Shards or nested Grids for complex layouts.
+ */
+export const SectorSchema: z.ZodType<Sector> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    items: z.array(z.union([ShardSchema, GridSchema])).default([]),
+    styles: z.string().optional(),
+  }),
+);
+
+/**
+ * Grid: The CSS Grid structural blueprint.
+ */
+export const GridSchema: z.ZodType<Grid> = z.lazy(() =>
+  z.object({
+    layout: z.string(),
+    sectors: z.array(SectorSchema),
+    styles: z.string().optional(),
+  }),
+);
+
+/**
+ * ELS Data: The full page blueprint using Edge Layout System.
+ */
+export const ELSDataSchema = z.object({
+  /** Optional slug of a base page to inherit sectors from. */
+  extends: z.string().optional(),
+  /** The structural grid. */
+  grid: GridSchema,
+});
+
+/**
  * Zod schema for page-level content, metadata, SEO overrides, and layout settings.
  */
 export const PageSchema = z.object({
@@ -114,8 +174,8 @@ export const PageSchema = z.object({
   title: z.string().min(1),
   /** Brief description for previews and lists. */
   description: z.string().optional(),
-  /** Structured content in Editor.js format. */
-  content: EditorJsDataSchema.default({ blocks: [] }),
+  /** Structured content supporting both legacy Editor.js and new ELS structure. */
+  content: z.union([EditorJsDataSchema, ELSDataSchema]).default({ blocks: [] }),
   /** Primary hero image URL for the page. */
   featuredImage: z.string().url().or(z.literal("")).optional(),
   /** Primary content category for listing logic. */
@@ -303,6 +363,8 @@ export const AdminUserSchema = z.object({
 export type ThemeConfig = z.infer<typeof ThemeSchema>;
 /** Inferred type for an individual page configuration. */
 export type PageConfig = z.infer<typeof PageSchema>;
+/** Inferred type for ELS data structure. */
+export type ELSData = z.infer<typeof ELSDataSchema>;
 /** Inferred type for the primary navigation configuration. */
 export type NavConfig = z.infer<typeof NavSchema>;
 /** Inferred type for a single navigation menu item. */
