@@ -256,7 +256,31 @@ views.get("/edit/:slug{.+}", async (c) => {
           </div>
 
           <div class="mt-8">
+          {"blocks" in page.content ? (
             <BlockEditor content={page.content} />
+          ) : (
+            <div class="admin-card">
+              <h3 class="mt-0 border-b border-b-solid border-[var(--theme-accent-glow)] pb-2 mb-4">
+                ELS Sparse Overrides (Pro Mode)
+              </h3>
+              <p class="admin-helper-text mb-4">
+                Edit the raw JSON structural overrides for this ELS page. Set the <code>extends</code> property to a Layout Blueprint ID, and inject overrides in the <code>grid</code> sectors.
+              </p>
+              <textarea
+                name="content"
+                class="admin-input font-mono"
+                rows={15}
+                style={{
+                  fontFamily: "Fira Code, monospace",
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                  color: "#00ffcc",
+                  lineHeight: "1.6"
+                }}
+              >
+                {JSON.stringify(page.content, null, 2)}
+              </textarea>
+            </div>
+          )}
           </div>
 
           <div class="admin-card mt-8">

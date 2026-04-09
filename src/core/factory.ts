@@ -4,10 +4,75 @@ import {
   SiteConfig,
   NavConfig,
   FooterConfig,
+  ELSBlueprint,
+  GlobalShard,
   VERSIONS,
 } from "@core/schema";
 import { DEFAULT_AUTHOR } from "@core/constants";
 import { getTermsTemplate, getPrivacyTemplate } from "@core/templates";
+
+/**
+ * Factory for creating the global 'base' layout blueprint.
+ * Sets up the standard CSS Grid for Header, Main Content, and Footer.
+ *
+ * @returns A validated ELSBlueprint object for the base layout.
+ */
+export const createBaseLayout = (): ELSBlueprint => ({
+  grid: {
+    layout: "standard",
+    sectors: [
+      { id: "header", items: [] },
+      { id: "main", items: [] },
+      { id: "footer", items: [] },
+    ],
+  },
+});
+
+/**
+ * Factory for creating the 'home' layout blueprint.
+ * Inherits from 'base' and adds a Hero shard and a Featured content sector.
+ *
+ * @returns A validated ELSBlueprint object for the home layout.
+ */
+export const createHomeLayout = (): ELSBlueprint => ({
+  grid: {
+    layout: "standard",
+    sectors: [
+      { id: "header", items: [] },
+      {
+        id: "main",
+        items: [
+          {
+            id: "hero-1",
+            model: "Hero",
+          },
+        ],
+      },
+      { id: "featured", items: [] },
+      { id: "footer", items: [] },
+    ],
+  },
+});
+
+/**
+ * Factory for creating the 'article' layout blueprint.
+ * Inherits from 'base' and optimizes for long-form content reading.
+ *
+ * @returns A validated ELSBlueprint object for the article layout.
+ */
+export const createArticleLayout = (): ELSBlueprint => ({
+  grid: {
+    layout: "standard",
+    sectors: [
+      { id: "header", items: [] },
+      {
+        id: "main",
+        items: [{ id: "article-header-1", model: "ArticleHeader" }],
+      },
+      { id: "footer", items: [] },
+    ],
+  },
+});
 
 /**
  * Factory for creating default content for root-level text files.
@@ -138,22 +203,10 @@ export const createDefaultPage = (title: string, slug: string): PageConfig => {
     title: title,
     description: "",
     content: {
-      time: new Date().getTime(),
-      blocks: [
-        {
-          id: Math.random().toString(36).substring(2, 12),
-          type: "header",
-          data: { text: title, level: 1 },
-        },
-        {
-          id: Math.random().toString(36).substring(2, 12),
-          type: "paragraph",
-          data: {
-            text: 'Welcome to your new page. This is a minimal, block-based Editor where you can add text, images, and rich layouts. Start customizing this page by visiting the <a href="/admin">admin panel</a>.',
-          },
-        },
-      ],
-      version: "2.31.3",
+      extends: "post",
+      grid: {
+        sectors: []
+      }
     },
     category: "General",
     tags: ["signal", "future"],
@@ -167,7 +220,7 @@ export const createDefaultPage = (title: string, slug: string): PageConfig => {
       author: DEFAULT_AUTHOR,
       createdAt: now,
       updatedAt: now,
-      usedBlocks: ["header", "paragraph"],
+      usedBlocks: [],
     },
   };
 };
@@ -206,4 +259,28 @@ export const createPrivacyPage = (
   page.content = getPrivacyTemplate(siteName, authorName, now);
   page.metadata.usedBlocks = ["header", "paragraph"];
   return page;
+};
+
+/**
+ * Creates the standard default shards to pre-populate a fresh workspace.
+ *
+ * @returns An array of validated GlobalShard objects.
+ */
+export const createDefaultShards = (): GlobalShard[] => {
+  return [
+    { id: "logo", model: "Logo", props: { text: "EZ-EDGE" } },
+    { id: "nav", model: "Nav", props: {} },
+    { 
+      id: "hero", 
+      model: "Hero", 
+      props: { 
+        title: "Welcome to EZ EDGE", 
+        subtitle: "Edge-native performance CMS." 
+      } 
+    },
+    { id: "text", model: "Text", props: { content: "Sample text content goes here." } },
+    { id: "image", model: "Image", props: { src: "", alt: "Image Description" } },
+    { id: "footer", model: "Footer", props: { text: "© {year} EZ EDGE CMS" } },
+    { id: "footer-nav", model: "FooterNav", props: {} },
+  ];
 };

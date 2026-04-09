@@ -96,11 +96,19 @@ async function processPageMutation(c: any, slug: string): Promise<PageConfig> {
   }
 
   // Extract block types for analytics
-  let usedBlocks: string[] = [];
-  if (parsedContent.blocks && Array.isArray(parsedContent.blocks)) {
-    usedBlocks = Array.from(
+  const metadata = {
+    ...currentPage.metadata,
+    updatedAt: new Date().toISOString(),
+    usedBlocks: [] as string[],
+  };
+
+  if ("blocks" in parsedContent && Array.isArray(parsedContent.blocks)) {
+    metadata.usedBlocks = Array.from(
       new Set(parsedContent.blocks.map((b: any) => b.type)),
     );
+  } else {
+    // ELSContent case: you might scan layout components if needed
+    metadata.usedBlocks = [];
   }
 
   const finalDescription =
@@ -123,7 +131,7 @@ async function processPageMutation(c: any, slug: string): Promise<PageConfig> {
     metadata: {
       ...currentPage.metadata,
       updatedAt: new Date().toISOString(),
-      usedBlocks,
+      usedBlocks: metadata.usedBlocks,
     },
   };
 

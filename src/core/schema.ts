@@ -101,64 +101,117 @@ export const EditorJsDataSchema = z.object({
 });
 
 /**
- * Shard: The functional UI component.
+ * Global Shard: Reusable content configuration saved independently.
  */
-export const ShardSchema = z.object({
-  /** The TSX component name (e.g., 'Hero', 'PricingTable'). */
-  model: z.string(),
+export const GlobalShardSchema = z.object({
+  /** Identifier of the shard. */
+  id: z.string(),
+  /** The model component this shard renders as. */
+  model: z.string().default("Unknown"),
   /** Strictly typed properties for the component. */
   props: z.record(z.any()).default({}),
-  /** UnoCSS/Tailwind class overrides. */
-  styles: z.string().optional(),
 });
 
 /**
- * Type definitions for recursive ELS structure.
+ * BLUEPRINT SCHEMAS (Strict Layout Structure, No Content, No Styles)
  */
-export type Shard = z.infer<typeof ShardSchema>;
-export type Sector = {
+export const ShardBlueprintSchema = z.object({
+  id: z.string(),
+  model: z.string(),
+});
+
+export type ShardBlueprint = z.infer<typeof ShardBlueprintSchema>;
+
+export type SectorBlueprint = {
   id: string;
-  items: (Shard | Grid)[];
-  styles?: string;
-};
-export type Grid = {
-  layout: string;
-  sectors: Sector[];
-  styles?: string;
+  items: (ShardBlueprint | GridBlueprint)[];
 };
 
-/**
- * Sector: A Flexbox container slot within a Grid.
- * Can contain Shards or nested Grids for complex layouts.
- */
-export const SectorSchema: z.ZodType<Sector> = z.lazy(() =>
+export type GridBlueprint = {
+  layout: string;
+  sectors: SectorBlueprint[];
+};
+
+export const SectorBlueprintSchema: z.ZodType<SectorBlueprint, z.ZodTypeDef, any> = z.lazy(() =>
   z.object({
     id: z.string(),
-    items: z.array(z.union([ShardSchema, GridSchema])).default([]),
-    styles: z.string().optional(),
+    items: z.array(z.union([ShardBlueprintSchema, GridBlueprintSchema])).default([]),
   }),
 );
 
-/**
- * Grid: The CSS Grid structural blueprint.
- */
-export const GridSchema: z.ZodType<Grid> = z.lazy(() =>
+export const GridBlueprintSchema: z.ZodType<GridBlueprint, z.ZodTypeDef, any> = z.lazy(() =>
   z.object({
     layout: z.string(),
-    sectors: z.array(SectorSchema),
-    styles: z.string().optional(),
+    sectors: z.array(SectorBlueprintSchema),
   }),
 );
 
-/**
- * ELS Data: The full page blueprint using Edge Layout System.
- */
-export const ELSDataSchema = z.object({
-  /** Optional slug of a base page to inherit sectors from. */
-  extends: z.string().optional(),
-  /** The structural grid. */
-  grid: GridSchema,
+export const ELSBlueprintSchema = z.object({
+  grid: GridBlueprintSchema,
 });
+
+/**
+ * OVERRIDE SCHEMAS (Sparse Page Content, No Models, No Styles)
+ */
+export const ShardOverrideSchema = z.object({
+  id: z.string(),
+  model: z.string().optional(),
+  props: z.record(z.any()).optional(),
+});
+
+export type ShardOverride = z.infer<typeof ShardOverrideSchema>;
+
+export type SectorOverride = {
+  id: string;
+  items?: (ShardOverride | GridOverride)[];
+};
+
+export type GridOverride = {
+  layout?: string;
+  sectors?: SectorOverride[];
+};
+
+export const SectorOverrideSchema: z.ZodType<SectorOverride, z.ZodTypeDef, any> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    items: z.array(z.union([ShardOverrideSchema, GridOverrideSchema])).optional(),
+  }),
+);
+
+export const GridOverrideSchema: z.ZodType<GridOverride, z.ZodTypeDef, any> = z.lazy(() =>
+  z.object({
+    layout: z.string().optional(),
+    sectors: z.array(SectorOverrideSchema).optional(),
+  }),
+);
+
+export const ELSContentSchema = z.object({
+  extends: z.string().optional(),
+  grid: GridOverrideSchema,
+});
+
+/**
+ * ASSEMBLED SCHEMAS (Final Renderable Tree)
+ */
+export type AssembledShard = {
+  id: string;
+  model: string;
+  props: Record<string, any>;
+};
+
+export type AssembledSector = {
+  id: string;
+  items: (AssembledShard | AssembledGrid)[];
+};
+
+export type AssembledGrid = {
+  layout: string;
+  sectors: AssembledSector[];
+};
+
+export type AssembledELS = {
+  grid: AssembledGrid;
+};
 
 /**
  * Zod schema for page-level content, metadata, SEO overrides, and layout settings.
@@ -175,7 +228,7 @@ export const PageSchema = z.object({
   /** Brief description for previews and lists. */
   description: z.string().optional(),
   /** Structured content supporting both legacy Editor.js and new ELS structure. */
-  content: z.union([EditorJsDataSchema, ELSDataSchema]).default({ blocks: [] }),
+  content: z.union([ELSContentSchema, EditorJsDataSchema]).default({ blocks: [] }),
   /** Primary hero image URL for the page. */
   featuredImage: z.string().url().or(z.literal("")).optional(),
   /** Primary content category for listing logic. */
@@ -364,7 +417,9 @@ export type ThemeConfig = z.infer<typeof ThemeSchema>;
 /** Inferred type for an individual page configuration. */
 export type PageConfig = z.infer<typeof PageSchema>;
 /** Inferred type for ELS data structure. */
-export type ELSData = z.infer<typeof ELSDataSchema>;
+export type ELSBlueprint = z.infer<typeof ELSBlueprintSchema>;
+export type ELSContent = z.infer<typeof ELSContentSchema>;
+export type GlobalShard = z.infer<typeof GlobalShardSchema>;
 /** Inferred type for the primary navigation configuration. */
 export type NavConfig = z.infer<typeof NavSchema>;
 /** Inferred type for a single navigation menu item. */

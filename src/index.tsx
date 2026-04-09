@@ -20,6 +20,9 @@ import { renderEditorJs, getFirstImage } from "@utils/editorjs-parser";
 import admin from "@routes/admin/index";
 import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { injectUnoCSS } from "@core/unocss-middleware";
+import { ELSEngine } from "@core/els/engine";
+import { renderELS } from "@utils/els-renderer";
+import { type ELSContent } from "@core/schema";
 
 const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
 // Global Middleware: Inject site-wide configurations and the UnoCSS engine into the context.
@@ -143,7 +146,17 @@ app.get("/*", async (c) => {
 
   const page = await getPage(c.env, slug, "live");
   if (page) {
-    const contentHtml = renderEditorJs(page.content);
+    let contentHtml = "";
+    let elsContentFragment = null;
+
+    if ("blocks" in page.content) {
+      contentHtml = renderEditorJs(page.content);
+    } else {
+      const engine = new ELSEngine(c.env);
+      const assembledTree = await engine.build(page.content as ELSContent);
+      elsContentFragment = renderELS(assembledTree);
+    }
+
     return c.html(
       <BaseLayout
         title={page.title}
@@ -155,7 +168,11 @@ app.get("/*", async (c) => {
         description={page.description}
         detectedUrl={detectedUrl}
       >
-        <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+        {elsContentFragment ? (
+          elsContentFragment
+        ) : (
+          <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+        )}
       </BaseLayout>,
     );
   }
@@ -191,7 +208,7 @@ app.get("/*", async (c) => {
         {subPages.length > 0 ? (
           <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8 my-12">
             {subPages.map((p) => {
-              const thumbnail = p!.featuredImage || getFirstImage(p!.content);
+              const thumbnail = p!.featuredImage || ("blocks" in p!.content ? getFirstImage(p!.content as any) : "");
               return (
                 <a
                   href={`/${p!.slug}`}

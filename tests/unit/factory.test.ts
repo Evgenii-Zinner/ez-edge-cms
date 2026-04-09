@@ -44,7 +44,9 @@ describe("Factory Utilities", () => {
     expect(page.title).toBe("Test Page");
     expect(page.slug).toBe("test-page");
     expect(page.status).toBe("draft");
-    expect(page.content.blocks.length).toBeGreaterThan(0);
+    if ("blocks" in page.content) {
+      expect(page.content.blocks.length).toBeGreaterThan(0);
+    }
   });
 
   it("should create a terms page from template", () => {

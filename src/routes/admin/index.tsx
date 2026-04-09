@@ -14,6 +14,8 @@ import { getAdminUser, getSession, getOnboardingStatus } from "@core/kv";
 import dashboard from "@routes/admin/dashboard";
 import theme from "@routes/admin/theme/index";
 import pages from "@routes/admin/pages/index";
+import layouts from "@routes/admin/layouts/index";
+import shards from "@routes/admin/shards/index";
 import site from "@routes/admin/site/index";
 import files from "@routes/admin/files/index";
 import navigation from "@routes/admin/navigation";
@@ -132,6 +134,8 @@ admin.use("*", async (c, next) => {
 admin.route("/", dashboard);
 admin.route("/theme", theme);
 admin.route("/pages", pages);
+admin.route("/layouts", layouts);
+admin.route("/shards", shards);
 admin.route("/site", site);
 admin.route("/files", files);
 admin.route("/navigation", navigation);

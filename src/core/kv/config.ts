@@ -199,52 +199,6 @@ export const setOnboardingStatus = async (
 };
 
 /**
- * Checks for and populates any missing core configurations and the index page.
- *
- * @param env - Cloudflare Worker environment bindings.
- * @returns A promise resolving when defaults are ensured.
- */
-export const ensureSystemDefaults = async (env: Env): Promise<void> => {
-  const isInitialized = await getInitializedStatus(env);
-  if (isInitialized) return;
-
-  const {
-    createDefaultTheme,
-    createDefaultSite,
-    createDefaultNav,
-    createDefaultFooter,
-    createDefaultPage,
-  } = await import("@core/factory");
-
-  const [theme, site, nav, footer, indexPage] = await Promise.all([
-    env.EZ_CONTENT.get(KEYS.THEME),
-    env.EZ_CONTENT.get(KEYS.SITE),
-    env.EZ_CONTENT.get(KEYS.NAV),
-    env.EZ_CONTENT.get(KEYS.FOOTER),
-    env.EZ_CONTENT.get(KEYS.PAGE("live", "index")),
-  ]);
-
-  const tasks: Promise<any>[] = [];
-
-  const { savePage } = await import("@core/kv/content");
-
-  if (!theme) tasks.push(saveTheme(env, createDefaultTheme()));
-  if (!site) tasks.push(saveSite(env, createDefaultSite()));
-  if (!nav) tasks.push(saveNav(env, createDefaultNav()));
-  if (!footer) tasks.push(saveFooter(env, createDefaultFooter()));
-  if (!indexPage)
-    tasks.push(
-      savePage(env, createDefaultPage("HOME SECTOR", "index"), "live"),
-    );
-
-  if (tasks.length > 0) {
-    await Promise.all(tasks);
-  }
-
-  await setInitializedStatus(env, true);
-};
-
-/**
  * Resets all isolate-level in-memory configuration caches.
  */
 export const clearCache = (): void => {

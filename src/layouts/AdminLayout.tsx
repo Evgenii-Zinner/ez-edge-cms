@@ -77,6 +77,12 @@ export const AdminLayout = (props: AdminLayoutProps) => {
                 <a href="/admin/pages" class="nav-item">
                   PAGES
                 </a>
+                <a href="/admin/layouts" class="nav-item">
+                  LAYOUTS
+                </a>
+                <a href="/admin/shards" class="nav-item">
+                  GLOBAL SHARDS
+                </a>
                 <a href="/admin/navigation" class="nav-item">
                   NAVIGATION
                 </a>
@@ -179,13 +185,13 @@ export const AdminLayout = (props: AdminLayoutProps) => {
             const yesBtn = document.getElementById('confirm-yes');
             const noBtn = document.getElementById('confirm-no');
 
-            function showConfirm(title, message, yesText, action) {
+            window.adminShowConfirm = function(title, message, yesText, action) {
               confirmTitle.innerText = title;
               confirmMessage.innerText = message;
               yesBtn.innerText = yesText;
               pendingAction = action;
               modal.classList.add('open');
-            }
+            };
 
             yesBtn.onclick = () => {
               modal.classList.remove('open');
@@ -214,7 +220,7 @@ export const AdminLayout = (props: AdminLayoutProps) => {
               // Case 1: data-confirm or hx-confirm is present
               if (question) {
                 e.preventDefault();
-                showConfirm('Confirm Action', question, 'PROCEED', () => {
+                window.adminShowConfirm('Confirm Action', question, 'PROCEED', () => {
                   elt.setAttribute('data-confirmed', 'true');
                   e.detail.issueRequest();
                   // Clean up after the request starts
@@ -226,7 +232,7 @@ export const AdminLayout = (props: AdminLayoutProps) => {
               // Case 2: Unsaved changes
               if (window.adminHasChanges && !isSaveOp) {
                 e.preventDefault();
-                showConfirm('Unsaved Changes', 'You have unsaved changes on this page. Proceeding will discard them.', 'DISCARD & LEAVE', () => {
+                window.adminShowConfirm('Unsaved Changes', 'You have unsaved changes on this page. Proceeding will discard them.', 'DISCARD & LEAVE', () => {
                   window.adminHasChanges = false;
                   elt.setAttribute('data-confirmed', 'true');
                   e.detail.issueRequest();
@@ -243,7 +249,7 @@ export const AdminLayout = (props: AdminLayoutProps) => {
                 const url = link.href;
                 if (url && !url.includes(window.location.pathname) && !url.startsWith('javascript:')) {
                   e.preventDefault();
-                  showConfirm('Unsaved Changes', 'You have unsaved changes on this page. Proceeding will discard them.', 'DISCARD & LEAVE', () => {
+                  window.adminShowConfirm('Unsaved Changes', 'You have unsaved changes on this page. Proceeding will discard them.', 'DISCARD & LEAVE', () => {
                     window.adminHasChanges = false;
                     window.location.href = url;
                   });

@@ -146,6 +146,8 @@ export const FONT_OPTIONS_MONO = [
 export const KV_PREFIX = {
   SESSION: "auth:session:",
   RATE_LIMIT: "limit:",
+  LAYOUT: "layout:",
+  SHARD: "shard:",
 } as const;
 
 export const KV_KEYS = {
@@ -172,4 +174,8 @@ export const KV_KEYS = {
   /** Dynamic key generator for rate limiting based on IP and action. */
   RATE_LIMIT: (ip: string, action: string): string =>
     `${KV_PREFIX.RATE_LIMIT}${action}:${ip}`,
+  /** Dynamic key generator for ELS layout blueprints. */
+  LAYOUT: (slug: string): string => `${KV_PREFIX.LAYOUT}${slug}`,
+  /** Dynamic key generator for reusable Global Shards. */
+  SHARD: (id: string): string => `${KV_PREFIX.SHARD}${id}`,
 } as const;

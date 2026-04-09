@@ -8,4 +8,5 @@ export * from "@core/kv/base";
 export * from "@core/kv/config";
 export * from "@core/kv/auth";
 export * from "@core/kv/content";
+export * from "@core/kv/layouts";
 export * from "@core/kv/maintenance";

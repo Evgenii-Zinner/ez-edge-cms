@@ -5,6 +5,59 @@
 
 import { isInternalKey, isProtectedKey } from "@core/kv/base";
 import { clearCache } from "@core/kv/config";
+import { KV_KEYS } from "@core/constants";
+import {
+  createDefaultSite,
+  createDefaultNav,
+  createDefaultFooter,
+  createDefaultTheme,
+  createDefaultPage,
+  createBaseLayout,
+  createHomeLayout,
+  createArticleLayout,
+} from "@core/factory";
+import { saveLayout, getLayout } from "@core/kv/layouts";
+import { savePage } from "@core/kv/content";
+
+/**
+ * Ensures the system has a baseline configuration.
+ * Typically called during the first boot or after a manual reset.
+ * Populates Theme, Site, Nav, Footer, and default ELS Layouts if they are missing.
+ *
+ * @param env - Cloudflare Worker environment bindings.
+ */
+export const ensureSystemDefaults = async (env: Env): Promise<void> => {
+  const isInitialized = await env.EZ_CONTENT.get(KV_KEYS.INITIALIZED);
+  if (isInitialized) return;
+
+  // Initialize Core Configs
+  await env.EZ_CONTENT.put(KV_KEYS.SITE, JSON.stringify(createDefaultSite()));
+  await env.EZ_CONTENT.put(KV_KEYS.NAV, JSON.stringify(createDefaultNav()));
+  await env.EZ_CONTENT.put(KV_KEYS.FOOTER, JSON.stringify(createDefaultFooter()));
+  await env.EZ_CONTENT.put(
+    KV_KEYS.THEME,
+    JSON.stringify(createDefaultTheme()),
+  );
+
+  // Initialize Default ELS Layouts
+  if (!(await getLayout(env, "base"))) {
+    await saveLayout(env, "base", createBaseLayout());
+  }
+  if (!(await getLayout(env, "home"))) {
+    await saveLayout(env, "home", createHomeLayout());
+  }
+  if (!(await getLayout(env, "article"))) {
+    await saveLayout(env, "article", createArticleLayout());
+  }
+
+  // Initialize Index Page
+  const indexPage = await env.EZ_CONTENT.get(KV_KEYS.PAGE("live", "index"));
+  if (!indexPage) {
+    await savePage(env, createDefaultPage("HOME SECTOR", "index"), "live");
+  }
+
+  await env.EZ_CONTENT.put(KV_KEYS.INITIALIZED, "true");
+};
 
 /**
  * Retrieves a list of all project-related keys in the KV namespace, excluding internal system keys.

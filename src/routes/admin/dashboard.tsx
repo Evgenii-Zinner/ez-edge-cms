@@ -68,6 +68,9 @@ admin.get("/", async (c) => {
           <a href="/admin/site" class="btn-primary">
             SITE SETTINGS
           </a>
+          <a href="/admin/shards" class="btn-primary">
+            GLOBAL SHARDS
+          </a>
           <a href="/admin/navigation" class="btn-primary">
             EDIT NAVIGATION
           </a>
