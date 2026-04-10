@@ -24,10 +24,13 @@ export async function listLayouts(env: Env): Promise<string[]> {
  * @param slug - The layout slug to fetch.
  * @returns A promise resolving to the parsed ELSBlueprint or null if not found.
  */
-export async function getLayout(env: Env, slug: string): Promise<ELSBlueprint | null> {
+export async function getLayout(
+  env: Env,
+  slug: string,
+): Promise<ELSBlueprint | null> {
   const raw = await env.EZ_CONTENT.get(KV_KEYS.LAYOUT(slug), { type: "json" });
   if (!raw) return null;
-  
+
   try {
     return ELSBlueprintSchema.parse(raw);
   } catch (e: any) {
@@ -45,7 +48,10 @@ export async function getLayout(env: Env, slug: string): Promise<ELSBlueprint | 
  * @param slug - The layout slug to fetch.
  * @returns A promise resolving to the raw object or null if not found.
  */
-export async function getRawLayout(env: Env, slug: string): Promise<any | null> {
+export async function getRawLayout(
+  env: Env,
+  slug: string,
+): Promise<any | null> {
   return await env.EZ_CONTENT.get(KV_KEYS.LAYOUT(slug), { type: "json" });
 }
 
@@ -57,7 +63,11 @@ export async function getRawLayout(env: Env, slug: string): Promise<any | null> 
  * @param data - The raw ELSBlueprint object to save.
  * @returns A promise resolving when the layout is saved.
  */
-export async function saveLayout(env: Env, slug: string, data: any): Promise<void> {
+export async function saveLayout(
+  env: Env,
+  slug: string,
+  data: any,
+): Promise<void> {
   const validated = ELSBlueprintSchema.parse(data);
   await env.EZ_CONTENT.put(KV_KEYS.LAYOUT(slug), JSON.stringify(validated));
 }

@@ -152,9 +152,14 @@ app.get("/*", async (c) => {
     if ("blocks" in page.content) {
       contentHtml = renderEditorJs(page.content);
     } else {
-      const engine = new ELSEngine(c.env);
-      const assembledTree = await engine.build(page.content as ELSContent);
-      elsContentFragment = renderELS(assembledTree);
+      // Pages are pre-assembled into flat structures at save-time.
+      // No runtime merging (engine.build) is required.
+      const elsContent = page.content as ELSContent;
+      elsContentFragment = await renderELS(
+        elsContent,
+        { theme, site, nav, footer, slug },
+        c.env,
+      );
     }
 
     return c.html(
@@ -208,7 +213,11 @@ app.get("/*", async (c) => {
         {subPages.length > 0 ? (
           <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8 my-12">
             {subPages.map((p) => {
-              const thumbnail = p!.featuredImage || ("blocks" in p!.content ? getFirstImage(p!.content as any) : "");
+              const thumbnail =
+                p!.featuredImage ||
+                ("blocks" in p!.content
+                  ? getFirstImage(p!.content as any)
+                  : "");
               return (
                 <a
                   href={`/${p!.slug}`}

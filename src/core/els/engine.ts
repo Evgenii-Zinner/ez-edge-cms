@@ -60,7 +60,7 @@ export class ELSEngine {
             id: i.id,
             model: i.model ?? "Unknown",
             props: i.props ?? {},
-          } as AssembledShard;
+          } as any;
         }
         return {
           layout: i.layout,
@@ -72,7 +72,7 @@ export class ELSEngine {
 
   private async deepMerge(
     blueprint: ELSBlueprint,
-    pageContent: ELSContent
+    pageContent: ELSContent,
   ): Promise<AssembledELS> {
     const pageGrid = pageContent.grid;
 
@@ -91,7 +91,9 @@ export class ELSEngine {
         // Is it a Shard or Grid?
         if ("model" in bItem) {
           // Shard
-          const pItem = (pSector?.items || []).find((i) => "id" in i && i.id === bItem.id) as ShardOverride | undefined;
+          const pItem = (pSector?.items || []).find(
+            (i) => "id" in i && i.id === bItem.id,
+          ) as ShardOverride | undefined;
 
           // Fetch global shard if it exists
           const globalShard = await getShard(this.env, bItem.id);
@@ -101,7 +103,8 @@ export class ELSEngine {
           if (globalShard && globalShard.props) {
             resolvedProps = { ...resolvedProps, ...globalShard.props };
           }
-          if (pItem && "props" in pItem && pItem.props) {
+
+          if (pItem && pItem.props) {
             resolvedProps = { ...resolvedProps, ...pItem.props };
           }
 
@@ -109,13 +112,9 @@ export class ELSEngine {
             id: bItem.id,
             model: bItem.model,
             props: resolvedProps,
-          } as AssembledShard);
+          } as any);
         } else {
           // Nested Grid
-          // For nested grids, we'll keep the implementation pure but slightly simplified
-          // assuming nested overrides are rare or identical in structure.
-          // const pGridItem = (pSector?.items || []).find((i) => "layout" in i && i.layout === bItem.layout); // If grid has ID, use it. But right now grids don't have ID!
-
           assembledItems.push({
             layout: bItem.layout,
             sectors: this.assembleSparseSectors(bItem.sectors),
@@ -142,5 +141,27 @@ export class ELSEngine {
         sectors: assembledSectors,
       },
     };
+  }
+
+  /**
+   * Static utility to extract unique shard models from an assembled grid.
+   */
+  public static extractUsedShards(grid: AssembledGrid): string[] {
+    const models = new Set<string>();
+
+    const traverse = (sectors: AssembledSector[]) => {
+      sectors.forEach((sector) => {
+        sector.items.forEach((item) => {
+          if ("model" in item) {
+            models.add(item.model);
+          } else if ("sectors" in item) {
+            traverse(item.sectors);
+          }
+        });
+      });
+    };
+
+    traverse(grid.sectors);
+    return Array.from(models);
   }
 }

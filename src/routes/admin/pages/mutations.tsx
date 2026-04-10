@@ -19,7 +19,7 @@ import { GlobalConfigVariables } from "@core/middleware";
 import { PageSchema, PageConfig } from "@core/schema";
 import { extractAndSaveImages } from "@utils/image-storage";
 import { PageRow } from "@routes/admin/pages/components";
-import { validateForm } from "@utils/validation";
+import { validateForm, encodeSlug } from "@utils/validation";
 import { toastResponse } from "@utils/admin-responses";
 
 /**
@@ -58,7 +58,7 @@ mutations.post("/create", async (c) => {
   if (existingRaw) return c.text(`Page "/${slug}" already exists.`, 400);
 
   await savePage(c.env, createDefaultPage(title, slug), "draft");
-  c.header("HX-Redirect", `/admin/pages/edit/${encodeURIComponent(slug)}`);
+  c.header("HX-Redirect", `/admin/pages/edit/${encodeSlug(slug)}`);
   return c.text("Redirecting...");
 });
 
@@ -90,8 +90,9 @@ async function processPageMutation(c: any, slug: string): Promise<PageConfig> {
     try {
       const newContent = JSON.parse(body.content as string);
       parsedContent = await extractAndSaveImages(c.env, slug, newContent);
-    } catch (e) {
-      console.error("Failed to parse Editor.js JSON representation", e);
+    } catch (e: any) {
+      console.error(`JSON Parse Error for /${slug}:`, e.message);
+      throw new Error(`Invalid JSON structure: ${e.message}`);
     }
   }
 
@@ -141,6 +142,43 @@ async function processPageMutation(c: any, slug: string): Promise<PageConfig> {
   await savePage(c.env, validatedPage, "draft");
   return validatedPage;
 }
+
+/**
+ * POST /admin/pages/upload-image/:slug
+ * Receives a base64 image, persists it to KV, and returns the relative URL.
+ */
+mutations.post("/upload-image/:slug{.+}", async (c) => {
+  const slug = c.req.param("slug");
+  const body = await c.req.parseBody();
+  const image = body.image as string;
+
+  if (!image || !image.startsWith("data:image/")) {
+    return c.json({ error: "Invalid image data" }, 400);
+  }
+
+  try {
+    const imageId = Math.random().toString(36).substring(2, 12);
+    const meta = image.split(",")[0];
+    const extension = meta.split(":")[1].split(";")[0].split("/")[1] || "webp";
+    const filename = `upload-${imageId}.${extension}`;
+    const imageKey = `img:${slug}:${filename}`;
+
+    // Re-use internal binary helper logic (extracted for this purpose)
+    const binaryString = atob(image.split(",")[1]);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    await c.env.EZ_CONTENT.put(imageKey, bytes as any, {
+      metadata: { contentType: meta.split(":")[1].split(";")[0] },
+    });
+
+    return c.json({ url: `/images/${slug}/${filename}` });
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500);
+  }
+});
 
 /**
  * POST /admin/pages/save/:slug

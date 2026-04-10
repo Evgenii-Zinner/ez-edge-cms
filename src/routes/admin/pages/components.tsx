@@ -5,6 +5,7 @@
  */
 
 import { PROTECTED_SLUGS } from "@core/constants";
+import { encodeSlug } from "@utils/validation";
 
 /**
  * Props for the PageRow component.
@@ -58,7 +59,7 @@ export const PageRow = (props: PageRowProps) => {
       </td>
       <td class="p-4 flex gap-2">
         <a
-          href={`/admin/pages/edit/${encodeURIComponent(slug)}`}
+          href={`/admin/pages/edit/${encodeSlug(slug)}`}
           class="btn-mini nav-item-info no-underline"
         >
           EDIT
@@ -66,7 +67,7 @@ export const PageRow = (props: PageRowProps) => {
 
         {isDraft && !isLive && (
           <button
-            hx-post={`/admin/pages/publish/${encodeURIComponent(slug)}`}
+            hx-post={`/admin/pages/publish/${encodeSlug(slug)}`}
             hx-target={`#row-${safeId}`}
             hx-swap="outerHTML"
             class="btn-mini nav-item-success"
@@ -77,7 +78,7 @@ export const PageRow = (props: PageRowProps) => {
 
         {isLive && !isProtected && (
           <button
-            hx-post={`/admin/pages/unpublish/${encodeURIComponent(slug)}`}
+            hx-post={`/admin/pages/unpublish/${encodeSlug(slug)}`}
             hx-target={`#row-${safeId}`}
             hx-swap="outerHTML"
             class="btn-mini nav-item-warning"
@@ -88,7 +89,7 @@ export const PageRow = (props: PageRowProps) => {
 
         {!isProtected && (
           <button
-            hx-post={`/admin/pages/delete/${encodeURIComponent(slug)}`}
+            hx-post={`/admin/pages/delete/${encodeSlug(slug)}`}
             data-confirm={`Permanently delete /${slug}?`}
             hx-target={`#row-${safeId}`}
             hx-swap="delete"

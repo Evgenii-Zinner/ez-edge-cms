@@ -4,6 +4,8 @@
  * @description Shared UI components for the ELS Layout Manager.
  */
 
+import { encodeSlug } from "@utils/validation";
+
 /**
  * Props for the LayoutRow component.
  */
@@ -33,7 +35,7 @@ export const LayoutRow = (props: LayoutRowProps) => {
       <td class="p-4 font-mono uppercase tracking-widest">{slug}</td>
       <td class="p-4 flex gap-2">
         <a
-          href={`/admin/layouts/${encodeURIComponent(slug)}`}
+          href={`/admin/layouts/${encodeSlug(slug)}`}
           class="btn-mini nav-item-info no-underline"
         >
           EDIT
@@ -41,7 +43,7 @@ export const LayoutRow = (props: LayoutRowProps) => {
 
         {!isProtected && (
           <button
-            hx-delete={`/admin/layouts/${encodeURIComponent(slug)}`}
+            hx-delete={`/admin/layouts/${encodeSlug(slug)}`}
             data-confirm={`Permanently delete the '${slug}' layout blueprint?`}
             hx-target={`#row-${safeId}`}
             hx-swap="delete"
@@ -50,7 +52,7 @@ export const LayoutRow = (props: LayoutRowProps) => {
             DELETE
           </button>
         )}
-        
+
         {isProtected && (
           <span class="text-0.7rem color-[var(--theme-text-dim)] flex items-center px-2 opacity-50 italic">
             [PROTECTED]

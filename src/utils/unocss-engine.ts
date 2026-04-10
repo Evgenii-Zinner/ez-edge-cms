@@ -83,25 +83,52 @@ export const renderWithUno = async (
 
   const styleTag = `<style id="ez-unocss">${generatedCss}</style>`;
 
+  let processedHtml = html;
+
+  /**
+   * Hoist ELS Shard-Scoped Styles:
+   * If the HTML contains a registry-based style tag (injected during ELS rendering),
+   * we extract it and move it to the head alongside the UnoCSS styles.
+   */
+  let hoistedElsCss = "";
+  if (html.includes('id="els-registry-css"')) {
+    const elsMatch = html.match(/<style id="els-registry-css">(.*?)<\/style>/s);
+    if (elsMatch) {
+      hoistedElsCss = elsMatch[0];
+      processedHtml = html.replace(
+        /<style id="els-registry-css">.*?<\/style>/s,
+        "",
+      );
+    }
+  }
+
   /**
    * Determines the optimal injection point for the generated styles.
    * Prioritizes existing UnoCSS blocks, then the head tag, then fallbacks.
    */
-  if (html.includes('id="ez-unocss"')) {
-    return html.replace(/<style id="ez-unocss">.*?<\/style>/s, () => styleTag);
+  const injectionStyles = `${hoistedElsCss}\n${styleTag}`;
+
+  if (processedHtml.includes('id="ez-unocss"')) {
+    return processedHtml.replace(
+      /<style id="ez-unocss">.*?<\/style>/s,
+      () => styleTag,
+    );
   }
 
   if (isHtmx) {
-    return `${html}\n${styleTag}`;
+    return `${processedHtml}\n${injectionStyles}`;
   }
 
-  if (html.includes("<!-- CSS_INJECTION_POINT -->")) {
-    return html.replace("<!-- CSS_INJECTION_POINT -->", styleTag);
+  if (processedHtml.includes("<!-- CSS_INJECTION_POINT -->")) {
+    return processedHtml.replace(
+      "<!-- CSS_INJECTION_POINT -->",
+      injectionStyles,
+    );
   }
 
-  if (html.includes("</head>")) {
-    return html.replace("</head>", `${styleTag}\n</head>`);
+  if (processedHtml.includes("</head>")) {
+    return processedHtml.replace("</head>", `${injectionStyles}\n</head>`);
   }
 
-  return `${html}\n${styleTag}`;
+  return `${processedHtml}\n${injectionStyles}`;
 };

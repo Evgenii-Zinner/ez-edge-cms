@@ -10,6 +10,7 @@ import { AdminLayout } from "@layouts/AdminLayout";
 import { listLayouts, getLayout } from "@core/kv";
 import { GlobalConfigVariables } from "@core/middleware";
 import { LayoutRow } from "@routes/admin/layouts/components";
+import { encodeSlug } from "@utils/validation";
 
 /**
  * Hono sub-app for layout views.
@@ -23,12 +24,12 @@ const views = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
 views.get("/", async (c) => {
   const { theme, site, seo } = c.var;
   const allLayouts = await listLayouts(c.env);
-  
+
   return c.html(
     <AdminLayout title="Layout Manager" theme={theme} site={site} seo={seo}>
       <div class="flex justify-between items-center mb-8">
         <h1>Layout Manager</h1>
-        <button 
+        <button
           class="btn-primary"
           hx-post="/admin/layouts/repair-defaults"
           hx-swap="none"
@@ -47,7 +48,7 @@ views.get("/", async (c) => {
             </tr>
           </thead>
           <tbody id="layouts-table-body">
-            <tr class="border-b border-b-solid border-[var(--theme-accent-glow)] bg-[rgba(0,255,255,0.03)]">
+            <tr class="border-b border-b-solid border-[var(--theme-accent-glow)] bg-[rgba(0,255,204,0.03)]">
               <td colSpan={2} class="p-0">
                 <button
                   class="admin-action-btn"
@@ -86,14 +87,16 @@ views.get("/", async (c) => {
               class="admin-input"
               required
             />
-            <p class="admin-helper-text">This unique name will identify the layout blueprint in the system.</p>
+            <p class="admin-helper-text">
+              This unique name will identify the layout blueprint in the system.
+            </p>
             <button class="btn-primary w-full mt-4 font-nav" type="submit">
               INITIALIZE BLUEPRINT
             </button>
           </form>
         </div>
       </div>
-    </AdminLayout>
+    </AdminLayout>,
   );
 });
 
@@ -109,15 +112,18 @@ views.get("/:slug", async (c) => {
   if (!layout) return c.redirect("/admin/layouts");
 
   return c.html(
-    <AdminLayout 
-      title={`Pro Mode: ${slug}`} 
-      theme={theme} 
-      site={site} 
+    <AdminLayout
+      title={`Pro Mode: ${slug}`}
+      theme={theme}
+      site={site}
       seo={seo}
     >
       <div class="flex justify-between items-center mb-8 border-b border-b-solid border-[var(--theme-accent-glow)] pb-4">
         <div>
-          <h1 class="m-0">Pro Mode Editor: <span class="color-[var(--theme-primary)]">{slug}</span></h1>
+          <h1 class="m-0">
+            Pro Mode Editor:{" "}
+            <span class="color-[var(--theme-primary)]">{slug}</span>
+          </h1>
           <div class="flex gap-8 mt-2 font-nav text-0.75rem color-[var(--theme-text-dim)]">
             <div id="save-status-container">
               SAVED:{" "}
@@ -128,9 +134,9 @@ views.get("/:slug", async (c) => {
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <button 
+          <button
             class="btn-primary"
-            hx-post={`/admin/layouts/save/${encodeURIComponent(slug)}`}
+            hx-post={`/admin/layouts/save/${encodeSlug(slug)}`}
             hx-include="#editor-form"
             hx-target="#save-time"
           >
@@ -145,7 +151,8 @@ views.get("/:slug", async (c) => {
             Raw JSON Definition
           </h3>
           <p class="admin-helper-text mb-4">
-            Directly modify the layout structure. Ensure valid JSON and adherence to the layout schema.
+            Directly modify the layout structure. Ensure valid JSON and
+            adherence to the layout schema.
           </p>
           <textarea
             name="json"
@@ -155,14 +162,14 @@ views.get("/:slug", async (c) => {
               fontFamily: "Fira Code, monospace",
               backgroundColor: "rgba(0,0,0,0.3)",
               color: "#00ffcc",
-              lineHeight: "1.6"
+              lineHeight: "1.6",
             }}
           >
             {JSON.stringify(layout, null, 2)}
           </textarea>
         </div>
       </form>
-    </AdminLayout>
+    </AdminLayout>,
   );
 });
 

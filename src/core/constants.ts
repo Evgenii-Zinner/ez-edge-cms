@@ -148,6 +148,7 @@ export const KV_PREFIX = {
   RATE_LIMIT: "limit:",
   LAYOUT: "layout:",
   SHARD: "shard:",
+  STYLE: "style:",
 } as const;
 
 export const KV_KEYS = {
@@ -178,4 +179,6 @@ export const KV_KEYS = {
   LAYOUT: (slug: string): string => `${KV_PREFIX.LAYOUT}${slug}`,
   /** Dynamic key generator for reusable Global Shards. */
   SHARD: (id: string): string => `${KV_PREFIX.SHARD}${id}`,
+  /** Dynamic key generator for Shard Styles. */
+  STYLE: (id: string): string => `${KV_PREFIX.STYLE}${id}`,
 } as const;

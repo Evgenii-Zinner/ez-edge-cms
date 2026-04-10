@@ -163,3 +163,19 @@ export async function validateForm<T extends z.ZodTypeAny>(
 
   return finalSchema.parse(processedBody);
 }
+
+/**
+ * Encodes a slug for use in a URL, preserving slashes.
+ * This ensures that hierarchical slugs (e.g. 'about/team') look clean in the address bar
+ * and server logs (no %2F), while still protecting other special characters.
+ *
+ * @param slug - The raw slug string.
+ * @returns The URL-encoded slug with slashes intact.
+ */
+export function encodeSlug(slug: string): string {
+  if (!slug) return "";
+  return slug
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}

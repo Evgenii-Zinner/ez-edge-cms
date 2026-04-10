@@ -110,6 +110,8 @@ export const GlobalShardSchema = z.object({
   model: z.string().default("Unknown"),
   /** Strictly typed properties for the component. */
   props: z.record(z.any()).default({}),
+  /** Raw CSS or UnoCSS classes applied to the shard block. */
+  css: z.string().default(""),
 });
 
 /**
@@ -132,19 +134,26 @@ export type GridBlueprint = {
   sectors: SectorBlueprint[];
 };
 
-export const SectorBlueprintSchema: z.ZodType<SectorBlueprint, z.ZodTypeDef, any> = z.lazy(() =>
+export const SectorBlueprintSchema: z.ZodType<
+  SectorBlueprint,
+  z.ZodTypeDef,
+  any
+> = z.lazy(() =>
   z.object({
     id: z.string(),
-    items: z.array(z.union([ShardBlueprintSchema, GridBlueprintSchema])).default([]),
+    items: z
+      .array(z.union([ShardBlueprintSchema, GridBlueprintSchema]))
+      .default([]),
   }),
 );
 
-export const GridBlueprintSchema: z.ZodType<GridBlueprint, z.ZodTypeDef, any> = z.lazy(() =>
-  z.object({
-    layout: z.string(),
-    sectors: z.array(SectorBlueprintSchema),
-  }),
-);
+export const GridBlueprintSchema: z.ZodType<GridBlueprint, z.ZodTypeDef, any> =
+  z.lazy(() =>
+    z.object({
+      layout: z.string(),
+      sectors: z.array(SectorBlueprintSchema),
+    }),
+  );
 
 export const ELSBlueprintSchema = z.object({
   grid: GridBlueprintSchema,
@@ -171,23 +180,31 @@ export type GridOverride = {
   sectors?: SectorOverride[];
 };
 
-export const SectorOverrideSchema: z.ZodType<SectorOverride, z.ZodTypeDef, any> = z.lazy(() =>
+export const SectorOverrideSchema: z.ZodType<
+  SectorOverride,
+  z.ZodTypeDef,
+  any
+> = z.lazy(() =>
   z.object({
     id: z.string(),
-    items: z.array(z.union([ShardOverrideSchema, GridOverrideSchema])).optional(),
+    items: z
+      .array(z.union([ShardOverrideSchema, GridOverrideSchema]))
+      .optional(),
   }),
 );
 
-export const GridOverrideSchema: z.ZodType<GridOverride, z.ZodTypeDef, any> = z.lazy(() =>
-  z.object({
-    layout: z.string().optional(),
-    sectors: z.array(SectorOverrideSchema).optional(),
-  }),
-);
+export const GridOverrideSchema: z.ZodType<GridOverride, z.ZodTypeDef, any> =
+  z.lazy(() =>
+    z.object({
+      layout: z.string().optional(),
+      sectors: z.array(SectorOverrideSchema).optional(),
+    }),
+  );
 
 export const ELSContentSchema = z.object({
   extends: z.string().optional(),
   grid: GridOverrideSchema,
+  usedShards: z.array(z.string()).default([]),
 });
 
 /**
@@ -197,6 +214,7 @@ export type AssembledShard = {
   id: string;
   model: string;
   props: Record<string, any>;
+  css: string;
 };
 
 export type AssembledSector = {
@@ -228,7 +246,9 @@ export const PageSchema = z.object({
   /** Brief description for previews and lists. */
   description: z.string().optional(),
   /** Structured content supporting both legacy Editor.js and new ELS structure. */
-  content: z.union([ELSContentSchema, EditorJsDataSchema]).default({ blocks: [] }),
+  content: z
+    .union([ELSContentSchema, EditorJsDataSchema])
+    .default({ blocks: [] }),
   /** Primary hero image URL for the page. */
   featuredImage: z.string().url().or(z.literal("")).optional(),
   /** Primary content category for listing logic. */

@@ -33,11 +33,11 @@ export const ensureSystemDefaults = async (env: Env): Promise<void> => {
   // Initialize Core Configs
   await env.EZ_CONTENT.put(KV_KEYS.SITE, JSON.stringify(createDefaultSite()));
   await env.EZ_CONTENT.put(KV_KEYS.NAV, JSON.stringify(createDefaultNav()));
-  await env.EZ_CONTENT.put(KV_KEYS.FOOTER, JSON.stringify(createDefaultFooter()));
   await env.EZ_CONTENT.put(
-    KV_KEYS.THEME,
-    JSON.stringify(createDefaultTheme()),
+    KV_KEYS.FOOTER,
+    JSON.stringify(createDefaultFooter()),
   );
+  await env.EZ_CONTENT.put(KV_KEYS.THEME, JSON.stringify(createDefaultTheme()));
 
   // Initialize Default ELS Layouts
   if (!(await getLayout(env, "base"))) {

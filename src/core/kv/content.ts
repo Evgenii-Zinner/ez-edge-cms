@@ -3,9 +3,10 @@
  * @description Logical domain for page content management, indexing, and publication.
  */
 
-import { PageConfig } from "@core/schema";
+import { PageConfig, ELSContent } from "@core/schema";
 import { parsePage } from "@core/parser";
 import { KEYS, updateQueue, setUpdateQueue } from "@core/kv/base";
+import { ELSEngine } from "@core/els/engine";
 
 /**
  * Fetches a single page configuration by its slug and environment mode.
@@ -56,6 +57,7 @@ const updatePageList = async (
 
 /**
  * Persists a page configuration to KV storage and updates the corresponding slug index.
+ * Automatically "assembles" ELS content into a flat structure if a layout template is specified.
  *
  * @param env - Cloudflare Worker environment bindings.
  * @param page - The page configuration object to save.
@@ -67,6 +69,22 @@ export const savePage = async (
   page: PageConfig,
   mode: "draft" | "live" = "draft",
 ): Promise<void> => {
+  // If the page uses ELS, we perform an "assemble" step to flatten the structure
+  // and identify used shards for optimized CSS delivery.
+  if (page.content && !("blocks" in page.content)) {
+    const elsContent = page.content as ELSContent;
+    const engine = new ELSEngine(env);
+    const assembled = await engine.build(elsContent);
+
+    // Update the content to be the flat, fully resolved grid
+    // and record the unique models used.
+    page.content = {
+      ...elsContent,
+      grid: assembled.grid,
+      usedShards: ELSEngine.extractUsedShards(assembled.grid),
+    };
+  }
+
   const key = KEYS.PAGE(mode, page.slug);
   await env.EZ_CONTENT.put(key, JSON.stringify(page));
   await updatePageList(env, page.slug, mode);

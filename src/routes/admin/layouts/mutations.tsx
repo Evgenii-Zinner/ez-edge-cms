@@ -1,19 +1,18 @@
 /** @jsxImportSource hono/jsx */
 import { Hono } from "hono";
-import { 
-  saveLayout, 
-  deleteLayout, 
-  getLayout 
-} from "@core/kv";
-import { 
-  createBaseLayout, 
-  createHomeLayout, 
-  createArticleLayout 
+import { saveLayout, deleteLayout, getLayout } from "@core/kv";
+import {
+  createBaseLayout,
+  createHomeLayout,
+  createArticleLayout,
 } from "@core/factory";
 import { toastResponse } from "@utils/admin-responses";
 import { GlobalConfigVariables } from "@core/middleware";
 
-const mutations = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
+const mutations = new Hono<{
+  Bindings: Env;
+  Variables: GlobalConfigVariables;
+}>();
 
 /**
  * POST /admin/layouts/repair-defaults
@@ -21,7 +20,7 @@ const mutations = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>(
  */
 mutations.post("/repair-defaults", async (c) => {
   const tasks = [];
-  
+
   if (!(await getLayout(c.env, "base"))) {
     tasks.push(saveLayout(c.env, "base", createBaseLayout()));
   }
@@ -52,7 +51,7 @@ mutations.post("/init", async (c) => {
 
   const normalizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, "-");
   await saveLayout(c.env, normalizedSlug, createBaseLayout());
-  
+
   return c.redirect(`/admin/layouts/${normalizedSlug}`);
 });
 
@@ -76,7 +75,7 @@ mutations.post("/save/:slug", async (c) => {
     return toastResponse(c, `Layout '${slug}' updated`, "success", extra);
   } catch (e: any) {
     console.error("Layout Save Error:", e);
-    const message = e.issues 
+    const message = e.issues
       ? `Validation Error: ${e.issues[0].path.join(".")} - ${e.issues[0].message}`
       : `JSON Error: ${e.message}`;
     return toastResponse(c, message, "error");
@@ -90,7 +89,7 @@ mutations.post("/save/:slug", async (c) => {
 mutations.delete("/:slug", async (c) => {
   const slug = c.req.param("slug");
   await deleteLayout(c.env, slug);
-  
+
   c.header("HX-Redirect", "/admin/layouts");
   return c.text("");
 });

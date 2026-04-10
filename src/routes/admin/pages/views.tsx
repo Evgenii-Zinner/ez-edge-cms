@@ -13,6 +13,7 @@ import { BlockEditor } from "@components/BlockEditor";
 import { GlobalConfigVariables } from "@core/middleware";
 import { CustomSelect } from "@components/CustomSelect";
 import { PageRow } from "@routes/admin/pages/components";
+import { encodeSlug } from "@utils/validation";
 
 /**
  * Hono sub-app for page views.
@@ -183,13 +184,13 @@ views.get("/edit/:slug{.+}", async (c) => {
               form="editor-form"
               type={isProtected ? "button" : "submit"}
               disabled={isProtected}
-              class={`btn-primary ${isProtected ? "opacity-50 cursor-not-allowed border-[var(--theme-text-dim)] color-[var(--theme-text-dim)]" : ""}`}
+              class={`btn-primary ${isProtected ? "opacity-50 cursor-not-allowed border-[var(--theme-accent-glow)] color-[var(--theme-text-dim)]" : ""}`}
             >
               SAVE DRAFT
             </button>
             <button
               class="btn-primary border-[#00ff00] color-[#00ff00]"
-              hx-post={`/admin/pages/publish/${encodeURIComponent(slug)}`}
+              hx-post={`/admin/pages/publish/${encodeSlug(slug)}`}
               hx-include="#editor-form"
               hx-target="#save-time"
             >
@@ -202,7 +203,7 @@ views.get("/edit/:slug{.+}", async (c) => {
 
         <form
           id="editor-form"
-          hx-post={`/admin/pages/save/${encodeURIComponent(slug)}`}
+          hx-post={`/admin/pages/save/${encodeSlug(slug)}`}
           hx-target="#save-time"
         >
           <div class="admin-card">
@@ -256,31 +257,214 @@ views.get("/edit/:slug{.+}", async (c) => {
           </div>
 
           <div class="mt-8">
-          {"blocks" in page.content ? (
-            <BlockEditor content={page.content} />
-          ) : (
-            <div class="admin-card">
-              <h3 class="mt-0 border-b border-b-solid border-[var(--theme-accent-glow)] pb-2 mb-4">
-                ELS Sparse Overrides (Pro Mode)
-              </h3>
-              <p class="admin-helper-text mb-4">
-                Edit the raw JSON structural overrides for this ELS page. Set the <code>extends</code> property to a Layout Blueprint ID, and inject overrides in the <code>grid</code> sectors.
-              </p>
-              <textarea
-                name="content"
-                class="admin-input font-mono"
-                rows={15}
-                style={{
-                  fontFamily: "Fira Code, monospace",
-                  backgroundColor: "rgba(0,0,0,0.3)",
-                  color: "#00ffcc",
-                  lineHeight: "1.6"
-                }}
-              >
-                {JSON.stringify(page.content, null, 2)}
-              </textarea>
-            </div>
-          )}
+            {"blocks" in page.content ? (
+              <BlockEditor content={page.content} />
+            ) : (
+              <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
+                <div class="admin-card h-fit">
+                  <h3 class="mt-0 border-b border-b-solid border-[var(--theme-accent-glow)] pb-2 mb-4">
+                    ELS STRUCTURE
+                  </h3>
+                  <p class="admin-helper-text mb-4">
+                    Edit the raw JSON structure of this ELS page. Update properties within the <code>grid.sectors</code>.
+                  </p>
+                  <textarea
+                    id="els-json-editor"
+                    name="content"
+                    class="admin-input font-mono"
+                    rows={25}
+                    style={{
+                      fontFamily: "Fira Code, monospace",
+                      backgroundColor: "rgba(0,0,0,0.3)",
+                      color: "#00ffcc",
+                      lineHeight: "1.6",
+                      fontSize: "0.85rem",
+                    }}
+                    oninput={`
+                      try {
+                        JSON.parse(this.value);
+                        this.style.borderColor = 'var(--theme-accent-glow)';
+                        this.style.boxShadow = 'none';
+                      } catch (e) {
+                        this.style.borderColor = '#ff4444';
+                        this.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.2)';
+                      }
+                    `}
+                  >
+                    {JSON.stringify(page.content, null, 2)}
+                  </textarea>
+                </div>
+
+                <div class="flex flex-col gap-8">
+                  <div class="admin-card h-fit border-l-4 border-l-solid border-[var(--theme-accent)]">
+                    <h4 class="mt-0 mb-4 text-0.85rem tracking-2px uppercase color-[var(--theme-accent)]">
+                      ASSET UPLOADER
+                    </h4>
+                    <div class="relative group cursor-pointer border-2 border-dashed border-[var(--theme-accent-glow)] p-6 text-center hover:bg-[rgba(0,255,204,0.05)] transition-all">
+                      <input
+                        type="file"
+                        id="els-image-upload"
+                        accept="image/*"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        onchange={`
+                          const file = this.files[0];
+                          if (!file) return;
+                          
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const img = new Image();
+                            img.onload = async () => {
+                              const canvas = document.createElement('canvas');
+                              const MAX_WIDTH = 1200;
+                              const MAX_HEIGHT = 1200;
+                              let width = img.width;
+                              let height = img.height;
+
+                              if (width > height) {
+                                if (width > MAX_WIDTH) {
+                                  height *= MAX_WIDTH / width;
+                                  width = MAX_WIDTH;
+                                }
+                              } else {
+                                if (height > MAX_HEIGHT) {
+                                  width *= MAX_HEIGHT / height;
+                                  height = MAX_HEIGHT;
+                                }
+                              }
+                              canvas.width = width;
+                              canvas.height = height;
+                              const ctx = canvas.getContext('2d');
+                              ctx.drawImage(img, 0, 0, width, height);
+                              
+                              const resizedBase64 = canvas.toDataURL('image/webp', 0.85);
+                              
+                              const formData = new FormData();
+                              formData.append('image', resizedBase64);
+                              
+                              const uploadBtn = document.getElementById('els-upload-status');
+                              if (uploadBtn) {
+                                uploadBtn.innerText = 'UPLOADING...';
+                                uploadBtn.classList.remove('hidden');
+                              }
+
+                              try {
+                                const res = await fetch('/admin/pages/upload-image/${encodeSlug(slug)}', {
+                                  method: 'POST',
+                                  body: formData,
+                                  headers: { 'HX-Request': 'true' }
+                                });
+                                const data = await res.json();
+                                if (data.url) {
+                                  const preview = document.getElementById('els-upload-preview');
+                                  if (preview) {
+                                    preview.src = data.url;
+                                    preview.classList.remove('hidden');
+                                  }
+                                  
+                                  const copyBtn = document.getElementById('els-copy-url');
+                                  if (copyBtn) {
+                                    copyBtn.onclick = () => {
+                                      navigator.clipboard.writeText(data.url);
+                                      copyBtn.innerText = 'COPIED!';
+                                      setTimeout(() => copyBtn.innerText = 'COPY LINK', 2000);
+                                    };
+                                    copyBtn.classList.remove('hidden');
+                                  }
+                                  if (uploadBtn) {
+                                    uploadBtn.innerText = 'UPLOAD COMPLETE';
+                                    setTimeout(() => uploadBtn.classList.add('hidden'), 3000);
+                                  }
+                                }
+                              } catch (err) {
+                                console.error('Upload failed', err);
+                                if (uploadBtn) uploadBtn.innerText = 'UPLOAD FAILED';
+                              }
+                            };
+                            img.src = e.target.result;
+                          };
+                          reader.readAsDataURL(file);
+                        `}
+                      />
+                      <div class="text-[var(--theme-accent)] mb-2">
+                        <span class="text-2rem">+</span>
+                      </div>
+                      <div class="text-0.75rem font-nav tracking-1px opacity-60">
+                        DROP IMAGE OR CLICK TO LOAD
+                      </div>
+                    </div>
+
+                    <div class="mt-4 flex flex-col gap-4">
+                      <div id="els-upload-status" class="hidden text-0.7rem font-mono text-[var(--theme-accent)] animate-pulse">
+                        UPLOADING...
+                      </div>
+                      <img
+                        id="els-upload-preview"
+                        class="hidden w-full h-150px object-cover border border-solid border-[var(--theme-accent-glow)]"
+                      />
+                      <button
+                        type="button"
+                        id="els-copy-url"
+                        class="hidden admin-action-btn text-0.7rem py-2"
+                      >
+                        COPY LINK
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="admin-card h-fit">
+                    <h4 class="mt-0 mb-4 text-0.85rem tracking-2px uppercase opacity-60">
+                      ACTIVE ASSETS
+                    </h4>
+                    <div
+                      class="grid grid-cols-2 gap-2 max-h-400px overflow-y-auto pr-2"
+                      id="els-asset-gallery"
+                    >
+                      {/* Extract images from flat JSON grid */}
+                      {(() => {
+                        const images: { src: string; id: string }[] = [];
+                        const content = page.content as any;
+                        if (content?.grid?.sectors) {
+                          const traverse = (sectors: any[]) => {
+                            sectors.forEach((s: any) => {
+                              s.items.forEach((item: any) => {
+                                if (item.props?.src)
+                                  images.push({ src: item.props.src, id: item.id });
+                                if (item.props?.url)
+                                  images.push({ src: item.props.url, id: item.id });
+                                if (item.sectors) traverse(item.sectors);
+                              });
+                            });
+                          };
+                          traverse(content.grid.sectors);
+                        }
+                        
+                        return images.length > 0 ? (
+                          images.map((img) => (
+                            <div class="relative group aspect-square border border-solid border-[var(--theme-accent-glow)] overflow-hidden">
+                              <img
+                                src={img.src}
+                                class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all"
+                                loading="lazy"
+                              />
+                              <div 
+                                class="absolute inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.8)] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-0.6rem text-center p-1"
+                                onclick={`navigator.clipboard.writeText('${img.src}'); this.innerText = 'COPIED!'; setTimeout(() => this.innerText = 'COPY PATH', 1500);`}
+                              >
+                                COPY PATH
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div class="col-span-2 py-8 text-center border border-dashed border-[var(--theme-accent-glow)] opacity-30 text-0.7rem uppercase tracking-1px">
+                            No active assets
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div class="admin-card mt-8">

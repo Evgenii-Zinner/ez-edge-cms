@@ -35,89 +35,99 @@ async function putBinaryImage(
 }
 
 /**
- * Scans Editor.js JSON content, extracts Base64 images, saves them to KV,
- * and replaces the Base64 strings with permanent relative URLs.
+ * Scans content (Editor.js or ELS flat JSON), extracts Base64 images,
+ * saves them to KV, and replaces them with permanent relative URLs.
  * Also performs garbage collection of orphaned images for the given slug.
  *
  * @param env - The Cloudflare Worker environment bindings.
  * @param slug - The unique path identifier for the content.
- * @param content - The Editor.js data object.
- * @returns The updated Editor.js data object with KV URLs.
+ * @param content - The content data object (Editor.js or ELS).
+ * @returns The updated content data object with KV URLs.
  */
 export async function extractAndSaveImages(
   env: Env,
   slug: string,
   content: any,
 ): Promise<any> {
-  if (!content || !content.blocks) return content;
+  if (!content) return content;
 
   const currentImageKeys: string[] = [];
 
-  for (const block of content.blocks) {
-    // 1. Process Standard Image Blocks
-    if (block.type === "image" && block.data?.file) {
-      const { url } = block.data.file;
-      const imageId = block.id || Math.random().toString(36).substring(2, 12);
+  // 1. Process Editor.js Content
+  if (content.blocks && Array.isArray(content.blocks)) {
+    for (const block of content.blocks) {
+      // Process Standard Image Blocks
+      if (block.type === "image" && block.data?.file) {
+        const { url } = block.data.file;
+        const imageId = block.id || Math.random().toString(36).substring(2, 12);
 
-      // Process Image
-      if (url && url.startsWith("data:image/")) {
-        const extension = url.split(";")[0].split("/")[1] || "webp";
-        const filename = `${imageId}.${extension}`;
-        const imageKey = `img:${slug}:${filename}`;
+        if (url && url.startsWith("data:image/")) {
+          const extension = url.split(";")[0].split("/")[1] || "webp";
+          const filename = `${imageId}.${extension}`;
+          const imageKey = `img:${slug}:${filename}`;
 
-        await putBinaryImage(env, imageKey, url);
-        block.data.file.url = `/images/${slug}/${filename}`;
-        currentImageKeys.push(imageKey);
-      } else if (
-        url &&
-        (url.startsWith("/images/") || url.startsWith("images/"))
-      ) {
-        // Correctly extract slug and filename from existing URLs
-        const relPath = url.startsWith("/")
-          ? url.substring(8)
-          : url.substring(7);
-        const lastSlash = relPath.lastIndexOf("/");
-        if (lastSlash !== -1) {
-          const existingSlug = relPath.substring(0, lastSlash);
-          const existingFilename = relPath.substring(lastSlash + 1);
-          currentImageKeys.push(`img:${existingSlug}:${existingFilename}`);
+          await putBinaryImage(env, imageKey, url);
+          block.data.file.url = `/images/${slug}/${filename}`;
+          currentImageKeys.push(imageKey);
+        } else if (url && url.startsWith("/images/")) {
+          currentImageKeys.push(`img:${slug}:${url.split("/").pop()}`);
         }
+
+        if (block.data.file.urlMobile) delete block.data.file.urlMobile;
       }
 
-      // Cleanup: Remove any legacy urlMobile from the data
-      if (block.data.file.urlMobile) {
-        delete block.data.file.urlMobile;
-      }
-    }
+      // Process Custom Hero Blocks
+      if (block.type === "hero" && block.data?.url) {
+        const { url } = block.data;
+        const imageId = block.id || Math.random().toString(36).substring(2, 12);
 
-    // 2. Process Custom Hero Blocks
-    if (block.type === "hero" && block.data?.url) {
-      const { url } = block.data;
-      const imageId = block.id || Math.random().toString(36).substring(2, 12);
+        if (url && url.startsWith("data:image/")) {
+          const extension = url.split(";")[0].split("/")[1] || "webp";
+          const filename = `hero-${imageId}.${extension}`;
+          const imageKey = `img:${slug}:${filename}`;
 
-      if (url && url.startsWith("data:image/")) {
-        const extension = url.split(";")[0].split("/")[1] || "webp";
-        const filename = `hero-${imageId}.${extension}`;
-        const imageKey = `img:${slug}:${filename}`;
-
-        await putBinaryImage(env, imageKey, url);
-        block.data.url = `/images/${slug}/${filename}`;
-        currentImageKeys.push(imageKey);
-      } else if (
-        url &&
-        (url.startsWith("/images/") || url.startsWith("images/"))
-      ) {
-        const relPath = url.startsWith("/")
-          ? url.substring(8)
-          : url.substring(7);
-        const lastSlash = relPath.lastIndexOf("/");
-        if (lastSlash !== -1) {
-          const existingSlug = relPath.substring(0, lastSlash);
-          const existingFilename = relPath.substring(lastSlash + 1);
-          currentImageKeys.push(`img:${existingSlug}:${existingFilename}`);
+          await putBinaryImage(env, imageKey, url);
+          block.data.url = `/images/${slug}/${filename}`;
+          currentImageKeys.push(imageKey);
+        } else if (url && url.startsWith("/images/")) {
+          currentImageKeys.push(`img:${slug}:${url.split("/").pop()}`);
         }
       }
     }
+  }
+
+  // 2. Process ELS (Flat JSON) Content
+  if (content.grid && content.grid.sectors) {
+    const traverse = async (sectors: any[]) => {
+      for (const sector of sectors) {
+        for (const item of sector.items) {
+          if ("model" in item) {
+            // Shard handling
+            const props = item.props || {};
+            const keysToProcess = ["src", "url"];
+
+            for (const key of keysToProcess) {
+              const url = props[key];
+              if (url && url.startsWith("data:image/")) {
+                const extension = url.split(";")[0].split("/")[1] || "webp";
+                const filename = `${item.id}-${key}.${extension}`;
+                const imageKey = `img:${slug}:${filename}`;
+
+                await putBinaryImage(env, imageKey, url);
+                item.props[key] = `/images/${slug}/${filename}`;
+                currentImageKeys.push(imageKey);
+              } else if (url && url.startsWith("/images/")) {
+                currentImageKeys.push(`img:${slug}:${url.split("/").pop()}`);
+              }
+            }
+          } else if (item.sectors) {
+            // Nested grid handling
+            await traverse(item.sectors);
+          }
+        }
+      }
+    };
+    await traverse(content.grid.sectors);
   }
 
   // Garbage Collection: Delete images in KV that are no longer in the content
