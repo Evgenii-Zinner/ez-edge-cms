@@ -91,3 +91,7 @@
 ## [0.1.22] - 2026-04-04
 
 - Optimize UnoCSS: split editor-specific styles to reduce public CSS weight
+
+## [0.1.23] - 2026-04-13
+
+- refactor(kv): introduce ConfigManager factory and unify atomic index management
