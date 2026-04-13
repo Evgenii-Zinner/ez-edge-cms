@@ -30,24 +30,34 @@ export const getPage = async (
  * Utilizes a sequential update queue to prevent race conditions during indexing.
  *
  * @param env - Cloudflare Worker environment bindings.
- * @param slug - The slug to ensure is present in the index.
+ * @param slug - The slug to ensure is present/absent in the index.
  * @param mode - The environment mode index to update.
+ * @param action - Whether to 'add' or 'remove' the slug from the index.
  * @returns A promise resolving when the index has been updated.
  */
-const updatePageList = async (
+const modifyPageList = async (
   env: Env,
   slug: string,
   mode: "draft" | "live",
+  action: "add" | "remove",
 ): Promise<void> => {
   const newQueue = updateQueue.then(async () => {
     const key = KEYS.PAGE_LIST(mode);
     const currentList: string[] =
       (await env.EZ_CONTENT.get(key, { type: "json" })) || [];
 
-    if (!currentList.includes(slug)) {
-      currentList.push(slug);
-      await env.EZ_CONTENT.put(key, JSON.stringify(currentList));
+    let newList = [...currentList];
+    const index = newList.indexOf(slug);
+
+    if (action === "add" && index === -1) {
+      newList.push(slug);
+    } else if (action === "remove" && index !== -1) {
+      newList.splice(index, 1);
+    } else {
+      return; // No change needed
     }
+
+    await env.EZ_CONTENT.put(key, JSON.stringify(newList));
   });
 
   setUpdateQueue(newQueue);
@@ -69,7 +79,7 @@ export const savePage = async (
 ): Promise<void> => {
   const key = KEYS.PAGE(mode, page.slug);
   await env.EZ_CONTENT.put(key, JSON.stringify(page));
-  await updatePageList(env, page.slug, mode);
+  await modifyPageList(env, page.slug, mode, "add");
 };
 
 /**
@@ -93,13 +103,8 @@ export const publishPage = async (env: Env, slug: string): Promise<boolean> => {
   await Promise.all([
     savePage(env, livePage, "live"),
     env.EZ_CONTENT.delete(KEYS.PAGE("draft", slug)),
+    modifyPageList(env, slug, "draft", "remove"),
   ]);
-
-  const draftKey = KEYS.PAGE_LIST("draft");
-  const draftList: string[] =
-    (await env.EZ_CONTENT.get(draftKey, { type: "json" })) || [];
-  const newDraftList = draftList.filter((s) => s !== slug);
-  await env.EZ_CONTENT.put(draftKey, JSON.stringify(newDraftList));
 
   return true;
 };
@@ -127,13 +132,8 @@ export const unpublishPage = async (
   await Promise.all([
     savePage(env, draftPage, "draft"),
     env.EZ_CONTENT.delete(KEYS.PAGE("live", slug)),
+    modifyPageList(env, slug, "live", "remove"),
   ]);
-
-  const liveKey = KEYS.PAGE_LIST("live");
-  const liveList: string[] =
-    (await env.EZ_CONTENT.get(liveKey, { type: "json" })) || [];
-  const newLiveList = liveList.filter((s) => s !== slug);
-  await env.EZ_CONTENT.put(liveKey, JSON.stringify(newLiveList));
 
   return true;
 };
@@ -149,20 +149,12 @@ export const deletePage = async (env: Env, slug: string): Promise<void> => {
   await Promise.all([
     env.EZ_CONTENT.delete(KEYS.PAGE("draft", slug)),
     env.EZ_CONTENT.delete(KEYS.PAGE("live", slug)),
+    modifyPageList(env, slug, "draft", "remove"),
+    modifyPageList(env, slug, "live", "remove"),
   ]);
 
   const imageList = await env.EZ_CONTENT.list({ prefix: `img:${slug}:` });
   await Promise.all(imageList.keys.map((k) => env.EZ_CONTENT.delete(k.name)));
-
-  await Promise.all(
-    (["draft", "live"] as const).map(async (mode) => {
-      const key = KEYS.PAGE_LIST(mode);
-      const list: string[] =
-        (await env.EZ_CONTENT.get(key, { type: "json" })) || [];
-      const newList = list.filter((s) => s !== slug);
-      await env.EZ_CONTENT.put(key, JSON.stringify(newList));
-    }),
-  );
 };
 
 /**

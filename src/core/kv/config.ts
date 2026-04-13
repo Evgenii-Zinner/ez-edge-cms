@@ -8,24 +8,47 @@ import { parseTheme, parseSite, parseNav, parseFooter } from "@core/parser";
 import { KEYS, getCached, saveCached, cache } from "@core/kv/base";
 
 /**
+ * Internal helper to create a configuration manager for a specific domain.
+ * Centralizes the getter/setter logic to ensure DRY adherence.
+ *
+ * @param key - The KV key for the configuration.
+ * @param parser - The parser function for the configuration type.
+ * @param cacheKey - The key in the global isolate cache.
+ * @returns An object with get and save methods.
+ */
+function createConfigManager<T>(
+  key: string,
+  parser: (raw: any) => T,
+  cacheKey: keyof typeof cache,
+) {
+  return {
+    get: (env: Env, force: boolean = false): Promise<T> =>
+      getCached(
+        env,
+        key,
+        parser,
+        force,
+        () => cache[cacheKey] as T | null,
+        (v) => (cache[cacheKey] = v as any),
+      ),
+    save: (env: Env, config: T): Promise<void> =>
+      saveCached(env, key, config, (v) => (cache[cacheKey] = v as any)),
+  };
+}
+
+const themeManager = createConfigManager(KEYS.THEME, parseTheme, "theme");
+const siteManager = createConfigManager(KEYS.SITE, parseSite, "site");
+const navManager = createConfigManager(KEYS.NAV, parseNav, "nav");
+const footerManager = createConfigManager(KEYS.FOOTER, parseFooter, "footer");
+
+/**
  * Fetches the global theme configuration.
  *
  * @param env - Cloudflare Worker environment bindings.
  * @param force - If true, bypasses the in-memory cache.
  * @returns A promise resolving to the theme configuration.
  */
-export const getTheme = (
-  env: Env,
-  force: boolean = false,
-): Promise<ThemeConfig> =>
-  getCached(
-    env,
-    KEYS.THEME,
-    parseTheme,
-    force,
-    () => cache.theme,
-    (v) => (cache.theme = v),
-  );
+export const getTheme = themeManager.get;
 
 /**
  * Persists the theme configuration.
@@ -34,8 +57,7 @@ export const getTheme = (
  * @param config - The theme configuration to save.
  * @returns A promise resolving when the save is complete.
  */
-export const saveTheme = (env: Env, config: ThemeConfig): Promise<void> =>
-  saveCached(env, KEYS.THEME, config, (v) => (cache.theme = v));
+export const saveTheme = themeManager.save;
 
 /**
  * Fetches site-wide identity and branding configuration.
@@ -44,18 +66,7 @@ export const saveTheme = (env: Env, config: ThemeConfig): Promise<void> =>
  * @param force - If true, bypasses the in-memory cache.
  * @returns A promise resolving to the site configuration.
  */
-export const getSite = (
-  env: Env,
-  force: boolean = false,
-): Promise<SiteConfig> =>
-  getCached(
-    env,
-    KEYS.SITE,
-    parseSite,
-    force,
-    () => cache.site,
-    (v) => (cache.site = v),
-  );
+export const getSite = siteManager.get;
 
 /**
  * Persists site identity configuration.
@@ -64,8 +75,7 @@ export const getSite = (
  * @param config - The site configuration to save.
  * @returns A promise resolving when the save is complete.
  */
-export const saveSite = (env: Env, config: SiteConfig): Promise<void> =>
-  saveCached(env, KEYS.SITE, config, (v) => (cache.site = v));
+export const saveSite = siteManager.save;
 
 /**
  * Fetches the primary navigation menu configuration.
@@ -74,15 +84,7 @@ export const saveSite = (env: Env, config: SiteConfig): Promise<void> =>
  * @param force - If true, bypasses the in-memory cache.
  * @returns A promise resolving to the navigation configuration.
  */
-export const getNav = (env: Env, force: boolean = false): Promise<NavConfig> =>
-  getCached(
-    env,
-    KEYS.NAV,
-    parseNav,
-    force,
-    () => cache.nav,
-    (v) => (cache.nav = v),
-  );
+export const getNav = navManager.get;
 
 /**
  * Persists navigation configuration.
@@ -91,8 +93,7 @@ export const getNav = (env: Env, force: boolean = false): Promise<NavConfig> =>
  * @param config - The navigation configuration to save.
  * @returns A promise resolving when the save is complete.
  */
-export const saveNav = (env: Env, config: NavConfig): Promise<void> =>
-  saveCached(env, KEYS.NAV, config, (v) => (cache.nav = v));
+export const saveNav = navManager.save;
 
 /**
  * Fetches the global footer configuration.
@@ -101,18 +102,7 @@ export const saveNav = (env: Env, config: NavConfig): Promise<void> =>
  * @param force - If true, bypasses the in-memory cache.
  * @returns A promise resolving to the footer configuration.
  */
-export const getFooter = (
-  env: Env,
-  force: boolean = false,
-): Promise<FooterConfig> =>
-  getCached(
-    env,
-    KEYS.FOOTER,
-    parseFooter,
-    force,
-    () => cache.footer,
-    (v) => (cache.footer = v),
-  );
+export const getFooter = footerManager.get;
 
 /**
  * Persists footer configuration.
@@ -121,8 +111,7 @@ export const getFooter = (
  * @param config - The footer configuration to save.
  * @returns A promise resolving when the save is complete.
  */
-export const saveFooter = (env: Env, config: FooterConfig): Promise<void> =>
-  saveCached(env, KEYS.FOOTER, config, (v) => (cache.footer = v));
+export const saveFooter = footerManager.save;
 
 /**
  * Fetches all core site-wide configurations in parallel.
