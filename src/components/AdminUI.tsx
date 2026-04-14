@@ -28,10 +28,43 @@ export interface AdminCardProps {
  * @returns A JSX element representing the admin card.
  */
 export const AdminCard = (props: PropsWithChildren<AdminCardProps>) => (
-  <div class="admin-card" style={{ marginTop: props.marginTop || "0" }}>
-    <h3 style={{ marginTop: 0 }}>{props.title}</h3>
+  <div class={`admin-card ${props.marginTop ? props.marginTop : "m-0"}`}>
+    <h3 class="mt-0">{props.title}</h3>
     {props.description && <p class="admin-helper-text">{props.description}</p>}
     {props.children}
+  </div>
+);
+
+/**
+ * Props for the AdminHeader component.
+ */
+export interface AdminHeaderProps {
+  /** The primary title of the page section. */
+  title: string;
+  /** Optional descriptive text or element displayed below the title. */
+  description?: string | Child;
+  /** Optional action buttons or elements displayed on the right. */
+  children?: Child;
+}
+
+/**
+ * Component: AdminHeader
+ * A reusable page header with a title and an optional action slot.
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the admin header.
+ */
+export const AdminHeader = (props: AdminHeaderProps) => (
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="m-0">{props.title}</h1>
+      {props.description && (
+        <div class="mt-2 font-nav text-0.75rem color-[var(--theme-text-dim)]">
+          {props.description}
+        </div>
+      )}
+    </div>
+    <div class="flex gap-4 items-center">{props.children}</div>
   </div>
 );
 
@@ -43,14 +76,7 @@ export const AdminCard = (props: PropsWithChildren<AdminCardProps>) => (
  * @returns A JSX element representing the form grid.
  */
 export const FormGrid = (props: PropsWithChildren<{ style?: any }>) => (
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "2rem",
-      ...(props.style || {}),
-    }}
-  >
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8" style={props.style}>
     {props.children}
   </div>
 );
@@ -63,9 +89,7 @@ export const FormGrid = (props: PropsWithChildren<{ style?: any }>) => (
  * @returns A JSX element representing the form column.
  */
 export const FormColumn = (props: PropsWithChildren) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-    {props.children}
-  </div>
+  <div class="flex flex-col gap-6">{props.children}</div>
 );
 
 /**
@@ -199,33 +223,24 @@ export const DynamicTable = (props: DynamicTableProps) => {
 
   return (
     <>
-      <table style={{ width: "100%", borderCollapse: "collapse" }} id={id}>
+      <table class="w-full border-collapse" id={id}>
         <thead>
-          <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-            <th
-              style={{ textAlign: "center", padding: "0.5rem", width: "80px" }}
-            >
-              Sort
-            </th>
+          <tr class="border-b border-b-solid border-[rgba(255,255,255,0.1)]">
+            <th class="text-center p-2 w-80px">Sort</th>
             {headers.map((h) => (
-              <th style={{ textAlign: "left", padding: "0.5rem" }}>{h}</th>
+              <th class="text-left p-2">{h}</th>
             ))}
-            <th
-              style={{ textAlign: "center", padding: "0.5rem", width: "100px" }}
-            >
-              Action
-            </th>
+            <th class="text-center p-2 w-100px">Action</th>
           </tr>
         </thead>
 
         <tbody id={containerId}>
           {items.map((item, i) => renderRow(item, i))}
           <tr>
-            <td colSpan={headers.length + 2} style={{ padding: "0.5rem" }}>
+            <td colSpan={headers.length + 2} class="p-2">
               <button
                 type="button"
-                class="btn-primary"
-                style={{ width: "100%", padding: "0.5rem" }}
+                class="btn-primary w-full p-2"
                 onclick={`addDynamicRow('${containerId}', \`${template}\`)`}
               >
                 {addButtonLabel}
@@ -242,7 +257,7 @@ export const DynamicTable = (props: DynamicTableProps) => {
           window.addDynamicRow = function(containerId, template) {
             const tbody = document.getElementById(containerId);
             const tr = document.createElement("tr");
-            tr.style.borderBottom = "1px dotted rgba(255,255,255,0.05)";
+            tr.className = "border-b border-b-dotted border-[rgba(255,255,255,0.05)]";
             tr.innerHTML = template;
             tbody.insertBefore(tr, tbody.lastElementChild);
           }
@@ -275,19 +290,11 @@ export const DynamicTable = (props: DynamicTableProps) => {
  * @returns A JSX element containing sorting controls.
  */
 export const SortButtons = () => (
-  <td
-    style={{
-      padding: "0.5rem",
-      width: "80px",
-      verticalAlign: "middle",
-      textAlign: "center",
-    }}
-  >
-    <div style={{ display: "flex", gap: "0.2rem", justifyContent: "center" }}>
+  <td class="p-2 w-80px align-middle text-center">
+    <div class="flex gap-1 justify-center">
       <button
         type="button"
-        class="nav-item"
-        style={{ padding: "0.2rem 0.4rem", fontSize: "0.7rem" }}
+        class="nav-item p-1 text-0.7rem"
         onclick="moveDynamicRow(this, 'up')"
         title="Move Up"
       >
@@ -295,8 +302,7 @@ export const SortButtons = () => (
       </button>
       <button
         type="button"
-        class="nav-item"
-        style={{ padding: "0.2rem 0.4rem", fontSize: "0.7rem" }}
+        class="nav-item p-1 text-0.7rem"
         onclick="moveDynamicRow(this, 'down')"
         title="Move Down"
       >
@@ -313,24 +319,11 @@ export const SortButtons = () => (
  * @returns A JSX element containing a removal button.
  */
 export const AdminDeleteButton = () => (
-  <td
-    style={{
-      padding: "0.5rem",
-      width: "100px",
-      verticalAlign: "middle",
-      textAlign: "center",
-    }}
-  >
-    <div style={{ display: "flex", justifyContent: "center" }}>
+  <td class="p-2 w-100px align-middle text-center">
+    <div class="flex justify-center">
       <button
         type="button"
-        class="nav-item-error"
-        style={{
-          padding: "0.2rem 0.5rem",
-          background: "transparent",
-          cursor: "pointer",
-          fontSize: "0.7rem",
-        }}
+        class="nav-item-error p-1 px-2 bg-transparent cursor-pointer text-0.7rem"
         onclick="this.closest('tr').remove()"
       >
         DELETE

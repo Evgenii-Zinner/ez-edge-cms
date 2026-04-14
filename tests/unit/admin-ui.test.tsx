@@ -1,6 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import {
   AdminCard,
+  AdminHeader,
   FormGrid,
   FormColumn,
   AdminRange,
@@ -24,12 +25,25 @@ describe("AdminUI Components", () => {
     expect(html).toContain("Content");
   });
 
+  it("AdminHeader should render correctly", () => {
+    const header = AdminHeader({
+      title: "Test Header",
+      description: "Header Description",
+      children: <button>ACTION</button>,
+    });
+    const html = header.toString();
+    expect(html).toContain("Test Header");
+    expect(html).toContain("Header Description");
+    expect(html).toContain("ACTION");
+  });
+
   it("FormGrid and FormColumn should render correctly", () => {
     const grid = FormGrid({
       children: FormColumn({ children: "Column Content" }),
     });
     const html = grid.toString();
-    expect(html).toContain("display:grid");
+    expect(html).toContain("grid grid-cols-1 md:grid-cols-2 gap-8");
+    expect(html).toContain("flex flex-col gap-6");
     expect(html).toContain("Column Content");
   });
 

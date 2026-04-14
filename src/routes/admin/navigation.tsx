@@ -13,6 +13,7 @@ import { GlobalConfigVariables } from "@core/middleware";
 import {
   AdminCard,
   AdminField,
+  AdminHeader,
   DynamicTable,
   SortButtons,
   AdminDeleteButton,
@@ -64,10 +65,10 @@ navAdmin.get("/", async (c) => {
    * @returns A string containing the HTML <td> markup.
    */
   const linkTemplate = (labelName: string, pathName: string): string => `
-    <td style="padding: 0.5rem">
-      <div style="display: flex; gap: 0.2rem; justifyContent: center;">
-        <button type="button" class="nav-item" style="padding: 0.2rem 0.4rem; fontSize: 0.7rem;" onclick="moveDynamicRow(this, 'up')" title="Move Up">▲</button>
-        <button type="button" class="nav-item" style="padding: 0.2rem 0.4rem; fontSize: 0.7rem;" onclick="moveDynamicRow(this, 'down')" title="Move Down">▼</button>
+    <td class="p-2 w-80px align-middle text-center">
+      <div class="flex gap-1 justify-center">
+        <button type="button" class="nav-item p-1 text-0.7rem" onclick="moveDynamicRow(this, 'up')" title="Move Up">▲</button>
+        <button type="button" class="nav-item p-1 text-0.7rem" onclick="moveDynamicRow(this, 'down')" title="Move Down">▼</button>
       </div>
     </td>
     <td class="p-2">
@@ -76,9 +77,9 @@ navAdmin.get("/", async (c) => {
     <td class="p-2">
       <input type="text" name="${pathName}" class="admin-input" placeholder="/path" required />
     </td>
-    <td style="padding: 0.5rem; width: 100px;">
-      <div style="display: flex; justify-content: center;">
-        <button type="button" class="nav-item" style="border: 1px solid var(--color-error); color: var(--color-error); padding: 0.2rem 0.5rem; background: transparent; cursor: pointer; font-size: 0.7rem;" onclick="this.closest('tr').remove()">DELETE</button>
+    <td class="p-2 w-100px align-middle text-center">
+      <div class="flex justify-center">
+        <button type="button" class="nav-item-error p-1 px-2 bg-transparent cursor-pointer text-0.7rem" onclick="this.closest('tr').remove()">DELETE</button>
       </div>
     </td>
   `;
@@ -86,14 +87,11 @@ navAdmin.get("/", async (c) => {
   return c.html(
     <AdminLayout title="Navigation Manager" theme={theme} site={site} seo={seo}>
       <div class="flex flex-col">
-        <div class="flex justify-between items-center mb-8">
-          <h1>Navigation Manager</h1>
-          <div>
-            <button class="btn-primary" type="submit" form="navigation-form">
-              SAVE NAVIGATION
-            </button>
-          </div>
-        </div>
+        <AdminHeader title="Navigation Manager">
+          <button class="btn-primary" type="submit" form="navigation-form">
+            SAVE NAVIGATION
+          </button>
+        </AdminHeader>
 
         <form
           id="navigation-form"

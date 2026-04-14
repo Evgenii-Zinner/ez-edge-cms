@@ -36,6 +36,14 @@ export interface CoercionConfig {
 }
 
 /**
+ * Configuration for field-level value mapping/transformation.
+ */
+export interface MappingConfig {
+  /** Path to the field and its transformation function. */
+  [path: string]: (value: any) => any;
+}
+
+/**
  * Parses and validates raw form data against a Zod schema.
  * Automatically handles HTMX-style array notation (e.g., 'label[]' -> 'label')
  * and expands dot-notation keys (e.g., 'seo.title' -> { seo: { title: ... } }).
@@ -51,6 +59,7 @@ export async function validateForm<T extends z.ZodTypeAny>(
   options?: {
     zip?: ZipMapping;
     coerce?: CoercionConfig;
+    map?: MappingConfig;
     /** If true, makes all fields in the schema optional recursively for partial form submissions. */
     partial?: boolean;
   },
@@ -76,7 +85,7 @@ export async function validateForm<T extends z.ZodTypeAny>(
   };
 
   /**
-   * Performs basic normalization of form keys and applies type coercion.
+   * Performs basic normalization of form keys and applies type coercion and mapping.
    * Handles HTMX-style array notation and converts string representations to primitives.
    */
   const normalizedBody: any = {};
@@ -97,6 +106,11 @@ export async function validateForm<T extends z.ZodTypeAny>(
         finalValue = Number(finalValue);
       }
     }
+
+    if (options?.map && options.map[cleanKey]) {
+      finalValue = options.map[cleanKey](finalValue);
+    }
+
     normalizedBody[cleanKey] = finalValue;
   }
 

@@ -13,6 +13,7 @@ import { BlockEditor } from "@components/BlockEditor";
 import { GlobalConfigVariables } from "@core/middleware";
 import { CustomSelect } from "@components/CustomSelect";
 import { PageRow } from "@routes/admin/pages/components";
+import { AdminHeader } from "@components/AdminUI";
 
 /**
  * Hono sub-app for page views.
@@ -36,16 +37,14 @@ views.get("/", async (c) => {
 
   return c.html(
     <AdminLayout title="Pages" theme={theme} site={site} seo={seo}>
-      <div class="flex justify-between items-center mb-8">
-        <h1>Page Manager</h1>
-      </div>
+      <AdminHeader title="Page Manager" />
 
-      <div class="admin-card important-p-0">
+      <div class="admin-card p-0">
         <table class="w-full border-collapse font-nav">
           <thead>
             <tr class="border-b border-b-solid border-[var(--theme-accent-glow)] text-left color-[var(--theme-accent)]">
               <th class="p-4">PAGE PATH</th>
-              <th class="p-4">STATUS</th>
+              <th class="p-4 text-center">STATUS</th>
               <th class="p-4">ACTIONS</th>
             </tr>
           </thead>
@@ -152,6 +151,23 @@ views.get("/edit/:slug{.+}", async (c) => {
       console.error("Failed to parse page metadata dates", e);
     }
 
+    const headerDescription = (
+      <div class="flex gap-8">
+        <div id="save-status-container">
+          SAVED:{" "}
+          <span id="save-time" class="color-[var(--theme-text-main)]">
+            {lastSaved}
+          </span>
+        </div>
+        <div id="publish-status-container">
+          PUBLISHED:{" "}
+          <span id="publish-time" class="color-[var(--theme-text-main)]">
+            {lastPublished}
+          </span>
+        </div>
+      </div>
+    );
+
     return c.html(
       <AdminLayout
         title={`Edit: ${page.title}`}
@@ -160,43 +176,27 @@ views.get("/edit/:slug{.+}", async (c) => {
         seo={seo}
         isEditor={true}
       >
-        <div class="flex justify-between items-center mb-8 border-b border-b-solid border-[var(--theme-accent-glow)] pb-4">
-          <div>
-            <h1 class="m-0">Edit Page: {page.title}</h1>
-            <div class="flex gap-8 mt-2 font-nav text-0.75rem color-[var(--theme-text-dim)]">
-              <div id="save-status-container">
-                SAVED:{" "}
-                <span id="save-time" class="color-[var(--theme-text-main)]">
-                  {lastSaved}
-                </span>
-              </div>
-              <div id="publish-status-container">
-                PUBLISHED:{" "}
-                <span id="publish-time" class="color-[var(--theme-text-main)]">
-                  {lastPublished}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center gap-4">
-            <button
-              form="editor-form"
-              type={isProtected ? "button" : "submit"}
-              disabled={isProtected}
-              class={`btn-primary ${isProtected ? "opacity-50 cursor-not-allowed border-[var(--theme-text-dim)] color-[var(--theme-text-dim)]" : ""}`}
-            >
-              SAVE DRAFT
-            </button>
-            <button
-              class="btn-primary border-[#00ff00] color-[#00ff00]"
-              hx-post={`/admin/pages/publish/${encodeURIComponent(slug)}`}
-              hx-include="#editor-form"
-              hx-target="#save-time"
-            >
-              PUBLISH LIVE
-            </button>
-          </div>
-        </div>
+        <AdminHeader
+          title={`Edit Page: ${page.title}`}
+          description={headerDescription}
+        >
+          <button
+            form="editor-form"
+            type={isProtected ? "button" : "submit"}
+            disabled={isProtected}
+            class={`btn-primary ${isProtected ? "opacity-50 cursor-not-allowed border-[var(--theme-text-dim)] color-[var(--theme-text-dim)]" : ""}`}
+          >
+            SAVE DRAFT
+          </button>
+          <button
+            class="btn-primary border-[#00ff00] color-[#00ff00]"
+            hx-post={`/admin/pages/publish/${encodeURIComponent(slug)}`}
+            hx-include="#editor-form"
+            hx-target="#save-time"
+          >
+            PUBLISH LIVE
+          </button>
+        </AdminHeader>
 
         <div id="publish-status-oob" class="hidden"></div>
 
@@ -206,7 +206,7 @@ views.get("/edit/:slug{.+}", async (c) => {
           hx-target="#save-time"
         >
           <div class="admin-card">
-            <div class="grid grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div class="flex flex-col gap-6">
                 <div>
                   <label class="admin-label" htmlFor="inp-page-title">
@@ -263,7 +263,7 @@ views.get("/edit/:slug{.+}", async (c) => {
             <h3 class="mt-0 border-b border-b-solid border-[var(--theme-accent-glow)] pb-2">
               SEO & Metadata Overrides
             </h3>
-            <div class="grid grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <label class="admin-label" htmlFor="seo-page-type">
                   Page Type (Schema.org)

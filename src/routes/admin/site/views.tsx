@@ -19,6 +19,7 @@ import {
   BackupRestoreCard,
 } from "@routes/admin/site/components";
 import { SiteScripts } from "@routes/admin/site/scripts";
+import { AdminHeader } from "@components/AdminUI";
 
 /**
  * Hono sub-app for site configuration views.
@@ -66,21 +67,11 @@ views.get("/", async (c) => {
   return c.html(
     <AdminLayout title="Site Settings" theme={theme} site={site} seo={seo}>
       <>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "2rem",
-          }}
-        >
-          <h1>Site Settings</h1>
-          <div>
-            <button class="btn-primary" form="site-form" type="submit">
-              SAVE SETTINGS
-            </button>
-          </div>
-        </div>
+        <AdminHeader title="Site Settings">
+          <button class="btn-primary" form="site-form" type="submit">
+            SAVE SETTINGS
+          </button>
+        </AdminHeader>
 
         <form
           id="site-form"
@@ -94,25 +85,15 @@ views.get("/", async (c) => {
           <BrandingCard site={site} />
 
           {/* =========== SEO - IDENTITY =========== */}
-          <div class="admin-card" style={{ marginTop: "2rem" }}>
-            <h3 style={{ marginTop: 0 }}>SEO - Site Identity</h3>
+          <div class="admin-card mt-8">
+            <h3 class="mt-0">SEO - Site Identity</h3>
             <p class="admin-label">
               Select the primary entity for this website to improve search
               engine understanding.
             </p>
-            <div style={{ display: "flex", gap: "2rem" }}>
+            <div class="flex gap-8">
               {["Organization", "Person", "LocalBusiness"].map((type) => (
-                <label
-                  class="admin-label"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    cursor: "pointer",
-                    color: "white",
-                    textTransform: "none",
-                  }}
-                >
+                <label class="admin-label flex items-center gap-2 cursor-pointer color-white lowercase-none">
                   <input
                     type="radio"
                     name="seo.identity.type"

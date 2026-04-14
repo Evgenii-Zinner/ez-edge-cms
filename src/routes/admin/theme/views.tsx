@@ -21,7 +21,7 @@ import {
   ThemePreviewScript,
   ThemeFontPreloader,
 } from "@routes/admin/theme/components";
-import { AdminRange } from "@components/AdminUI";
+import { AdminRange, AdminHeader } from "@components/AdminUI";
 
 /**
  * Hono sub-app for theme views.
@@ -51,21 +51,18 @@ views.get("/", async (c) => {
       <ThemeFontPreloader fonts={allFonts} />
       <div class="flex flex-col h-[calc(100vh-6rem)]">
         {/* TOP HEADER ZONE */}
-        <div class="flex justify-between items-center mb-8 flex-shrink-0">
-          <h1>Theme Styler</h1>
-          <div class="flex gap-4 items-center">
-            <button
-              hx-post="/admin/theme/reset"
-              data-confirm="Restore all visual settings to factory defaults? This cannot be undone."
-              class="btn-primary border-[#ff4444] color-[#ff4444]"
-            >
-              RESET DEFAULTS
-            </button>
-            <button class="btn-primary" form="theme-form" type="submit">
-              SAVE SETTINGS
-            </button>
-          </div>
-        </div>
+        <AdminHeader title="Theme Styler">
+          <button
+            hx-post="/admin/theme/reset"
+            data-confirm="Restore all visual settings to factory defaults? This cannot be undone."
+            class="btn-primary border-[#ff4444] color-[#ff4444]"
+          >
+            RESET DEFAULTS
+          </button>
+          <button class="btn-primary" form="theme-form" type="submit">
+            SAVE SETTINGS
+          </button>
+        </AdminHeader>
 
         {/* SPLIT PANE BODY */}
         <div class="grid grid-cols-[400px_1fr] gap-8 flex-1 min-h-0">

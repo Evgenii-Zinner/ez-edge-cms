@@ -10,6 +10,7 @@ import { saveTheme } from "@core/kv";
 import { ThemeSchema } from "@core/schema";
 import { createDefaultTheme } from "@core/factory";
 import { GlobalConfigVariables } from "@core/middleware";
+import { validateForm } from "@utils/validation";
 import { toastResponse } from "@utils/admin-responses";
 
 /**
@@ -23,35 +24,42 @@ const mutations = new Hono<{
 /**
  * POST /admin/theme/save
  * Processes and persists theme configuration changes.
- * Converts raw form numbers into valid CSS unit strings (%, px, s) before validation.
+ * Utilizes validateForm with mapping to handle CSS unit suffixes.
  *
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX success or error toast notification.
  */
 mutations.post("/save", async (c) => {
   try {
-    const body = await c.req.parseBody();
+    const p = (u: string) => (v: any) => `${v}${u}`;
+
+    const validatedValues = await validateForm(
+      c.req,
+      ThemeSchema.shape.values,
+      {
+        coerce: {
+          primary_hue: "number",
+          surface_opacity: "number",
+        },
+        map: {
+          primary_sat: p("%"),
+          primary_light: p("%"),
+          bg_sat: p("%"),
+          bg_light: p("%"),
+          surface_sat: p("%"),
+          surface_light: p("%"),
+          text_main_sat: p("%"),
+          text_main_light: p("%"),
+          text_dim_sat: p("%"),
+          text_dim_light: p("%"),
+          glow_spread: p("px"),
+          boot_speed: p("s"),
+          elevation: p("px"),
+        },
+      },
+    );
+
     const currentTheme = c.var.theme;
-
-    const processedBody = {
-      ...body,
-      primary_sat: body.primary_sat + "%",
-      primary_light: body.primary_light + "%",
-      bg_sat: body.bg_sat + "%",
-      bg_light: body.bg_light + "%",
-      surface_sat: body.surface_sat + "%",
-      surface_light: body.surface_light + "%",
-      text_main_sat: body.text_main_sat + "%",
-      text_main_light: body.text_main_light + "%",
-      text_dim_sat: body.text_dim_sat + "%",
-      text_dim_light: body.text_dim_light + "%",
-      glow_spread: body.glow_spread + "px",
-      boot_speed: body.boot_speed + "s",
-      elevation: body.elevation + "px",
-    };
-
-    const validatedValues = ThemeSchema.shape.values.parse(processedBody);
-
     const updatedTheme = {
       ...currentTheme,
       updatedAt: new Date().toISOString(),

@@ -45,7 +45,7 @@ export const PageRow = (props: PageRowProps) => {
       class="border-b border-b-solid border-[rgba(0,255,255,0.1)]"
     >
       <td class="p-4">/{displaySlug}</td>
-      <td class="p-4">
+      <td class="p-4 text-center">
         {isLive ? (
           <span style={{ color: "var(--color-success)" }} class="text-0.8rem">
             [LIVE]

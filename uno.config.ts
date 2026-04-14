@@ -432,13 +432,13 @@ export default defineConfig({
     "nav-item":
       "text-[var(--theme-text-dim)] no-underline font-nav text-sm p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-accent)] hover:border-[var(--theme-accent-glow)] hover:bg-[rgba(0,255,255,0.05)]",
     "nav-item-error":
-      "text-[var(--color-error)] no-underline font-nav text-sm p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-text-main)] hover:border-[var(--color-error)] hover:bg-[rgba(255,68,68,0.1)]",
+      "text-[var(--color-error)] no-underline font-nav p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-text-main)] hover:border-[var(--color-error)] hover:bg-[rgba(255,68,68,0.1)]",
     "nav-item-success":
-      "text-[var(--color-success)] no-underline font-nav text-sm p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-text-main)] hover:border-[var(--color-success)] hover:bg-[rgba(0,255,0,0.1)]",
+      "text-[var(--color-success)] no-underline font-nav p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-text-main)] hover:border-[var(--color-success)] hover:bg-[rgba(0,255,0,0.1)]",
     "nav-item-warning":
-      "text-[var(--color-warning)] no-underline font-nav text-sm p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-text-main)] hover:border-[var(--color-warning)] hover:bg-[rgba(255,204,0,0.1)]",
+      "text-[var(--color-warning)] no-underline font-nav p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-text-main)] hover:border-[var(--color-warning)] hover:bg-[rgba(255,204,0,0.1)]",
     "nav-item-info":
-      "text-[var(--color-info)] no-underline font-nav text-sm p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-text-main)] hover:border-[var(--color-info)] hover:bg-[rgba(0,204,255,0.1)]",
+      "text-[var(--color-info)] no-underline font-nav p-2 border border-solid border-transparent transition-all duration-300 hover:text-[var(--theme-text-main)] hover:border-[var(--color-info)] hover:bg-[rgba(0,204,255,0.1)]",
     "nav-item-active":
       "text-[var(--theme-accent)] border border-solid border-[var(--theme-accent-glow)] bg-[rgba(0,255,255,0.05)]",
     "btn-mini":
