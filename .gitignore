@@ -14,6 +14,7 @@ build/
 test-results/
 playwright-report/
 results/
+coverage/
 
 # OS and IDE Garbage
 .DS_Store

@@ -1,5 +1,7 @@
 # ⚡ EZ EDGE CMS
 
+[![codecov](https://codecov.io/github/Evgenii-Zinner/ez-edge-cms/graph/badge.svg?token=UHCN0CJZ1W)](https://codecov.io/github/Evgenii-Zinner/ez-edge-cms)
+
 **EZ EDGE CMS** is a high-performance, edge-native Content Management System and Design System built for the Cloudflare global network. By leveraging Cloudflare Workers and KV storage, it provides sub-50ms response times with zero cold starts and eliminates the need for complex build pipelines or traditional server maintenance.
 
 **🚀 Go from zero to a live, working website in under 2 minutes.**
