@@ -73,6 +73,35 @@ describe("ImageStorage Utilities", () => {
     );
   });
 
+  it("should extract base64 images from hero blocks and save to KV", async () => {
+    const base64Hero =
+      "data:image/webp;base64,UklGRhoAAABXRUJQVlA4TAYAAAAvAAAAAAfQAA==";
+    const content = {
+      blocks: [
+        {
+          id: "hero-id",
+          type: "hero",
+          data: {
+            url: base64Hero,
+          },
+        },
+      ],
+    };
+
+    const env = {
+      EZ_CONTENT: {
+        put: async () => {},
+        list: async () => ({ keys: [] }),
+        delete: async () => {},
+      },
+    };
+
+    const result = await extractAndSaveImages(env as any, "test-slug", content);
+    expect(result.blocks[0].data.url).toBe(
+      "/images/test-slug/hero-hero-id.webp",
+    );
+  });
+
   it("should perform garbage collection on orphaned images", async () => {
     const slug = "gc-test";
 

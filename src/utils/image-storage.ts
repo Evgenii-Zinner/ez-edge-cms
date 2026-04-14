@@ -53,36 +53,52 @@ export async function extractAndSaveImages(
 
   const currentImageKeys: string[] = [];
 
-  for (const block of content.blocks) {
-    // 1. Process Standard Image Blocks
-    if (block.type === "image" && block.data?.file) {
-      const { url } = block.data.file;
-      const imageId = block.id || Math.random().toString(36).substring(2, 12);
+  /**
+   * Internal helper to process a single URL field and extract Base64 images to KV.
+   *
+   * @param url - The current URL string (either Base64 or existing relative path).
+   * @param id - A unique ID for the block/image.
+   * @param prefix - An optional prefix for the filename (e.g., 'hero').
+   * @returns The updated URL string.
+   */
+  const processUrl = async (
+    url: string | undefined,
+    id: string,
+    prefix: string = "",
+  ): Promise<string | undefined> => {
+    if (!url) return url;
 
-      // Process Image
-      if (url && url.startsWith("data:image/")) {
-        const extension = url.split(";")[0].split("/")[1] || "webp";
-        const filename = `${imageId}.${extension}`;
-        const imageKey = `img:${slug}:${filename}`;
+    // A. Handle Base64 Extraction
+    if (url.startsWith("data:image/")) {
+      const extension = url.split(";")[0].split("/")[1] || "webp";
+      const filename = `${prefix ? `${prefix}-` : ""}${id}.${extension}`;
+      const imageKey = `img:${slug}:${filename}`;
 
-        await putBinaryImage(env, imageKey, url);
-        block.data.file.url = `/images/${slug}/${filename}`;
-        currentImageKeys.push(imageKey);
-      } else if (
-        url &&
-        (url.startsWith("/images/") || url.startsWith("images/"))
-      ) {
-        // Correctly extract slug and filename from existing URLs
-        const relPath = url.startsWith("/")
-          ? url.substring(8)
-          : url.substring(7);
-        const lastSlash = relPath.lastIndexOf("/");
-        if (lastSlash !== -1) {
-          const existingSlug = relPath.substring(0, lastSlash);
-          const existingFilename = relPath.substring(lastSlash + 1);
-          currentImageKeys.push(`img:${existingSlug}:${existingFilename}`);
-        }
+      await putBinaryImage(env, imageKey, url);
+      currentImageKeys.push(imageKey);
+      return `/images/${slug}/${filename}`;
+    }
+
+    // B. Track Existing Images for GC
+    if (url.startsWith("/images/") || url.startsWith("images/")) {
+      const relPath = url.startsWith("/") ? url.substring(8) : url.substring(7);
+      const lastSlash = relPath.lastIndexOf("/");
+      if (lastSlash !== -1) {
+        const existingSlug = relPath.substring(0, lastSlash);
+        const existingFilename = relPath.substring(lastSlash + 1);
+        currentImageKeys.push(`img:${existingSlug}:${existingFilename}`);
       }
+    }
+
+    return url;
+  };
+
+  for (const block of content.blocks) {
+    const blockId = block.id || Math.random().toString(36).substring(2, 12);
+
+    // 1. Standard Image Blocks
+    if (block.type === "image" && block.data?.file) {
+      block.data.file.url = await processUrl(block.data.file.url, blockId);
 
       // Cleanup: Remove any legacy urlMobile from the data
       if (block.data.file.urlMobile) {
@@ -90,33 +106,9 @@ export async function extractAndSaveImages(
       }
     }
 
-    // 2. Process Custom Hero Blocks
+    // 2. Custom Hero Blocks
     if (block.type === "hero" && block.data?.url) {
-      const { url } = block.data;
-      const imageId = block.id || Math.random().toString(36).substring(2, 12);
-
-      if (url && url.startsWith("data:image/")) {
-        const extension = url.split(";")[0].split("/")[1] || "webp";
-        const filename = `hero-${imageId}.${extension}`;
-        const imageKey = `img:${slug}:${filename}`;
-
-        await putBinaryImage(env, imageKey, url);
-        block.data.url = `/images/${slug}/${filename}`;
-        currentImageKeys.push(imageKey);
-      } else if (
-        url &&
-        (url.startsWith("/images/") || url.startsWith("images/"))
-      ) {
-        const relPath = url.startsWith("/")
-          ? url.substring(8)
-          : url.substring(7);
-        const lastSlash = relPath.lastIndexOf("/");
-        if (lastSlash !== -1) {
-          const existingSlug = relPath.substring(0, lastSlash);
-          const existingFilename = relPath.substring(lastSlash + 1);
-          currentImageKeys.push(`img:${existingSlug}:${existingFilename}`);
-        }
-      }
+      block.data.url = await processUrl(block.data.url, blockId, "hero");
     }
   }
 

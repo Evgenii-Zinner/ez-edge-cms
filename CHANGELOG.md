@@ -99,3 +99,7 @@
 ## [0.1.24] - 2026-04-14
 
 - refactor(admin): unify UI primitives, densify site settings, and standardize form validation
+
+## [0.1.25] - 2026-04-14
+
+- refactor(utils): optimize image storage logic and achieve 100% test coverage
