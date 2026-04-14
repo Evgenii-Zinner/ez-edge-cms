@@ -95,3 +95,7 @@
 ## [0.1.23] - 2026-04-13
 
 - refactor(kv): introduce ConfigManager factory and unify atomic index management
+
+## [0.1.24] - 2026-04-14
+
+- refactor(admin): unify UI primitives, densify site settings, and standardize form validation
