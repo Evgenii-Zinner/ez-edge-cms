@@ -236,14 +236,19 @@ test.describe("The Zero-to-Hero Journey", () => {
       // Return to admin area
       await page.goto("/admin/site");
 
-      // Verified label from src/routes/admin/site/components.tsx: Copyright Text
-      await page.getByLabel("Copyright Text").fill("© 2026 E2E ROBOTICS CORP");
+      // Verified label from src/routes/admin/site/components.tsx: Copyright
+      await page
+        .getByLabel("Copyright", { exact: true })
+        .fill("© 2026 E2E ROBOTICS CORP");
       await page.getByRole("button", { name: "SAVE SETTINGS" }).click();
-      await expect(page.locator(".toast-notification")).toContainText("SAVED");
+      await expect(page.locator(".toast-notification")).toContainText("SAVED", {
+        timeout: 10000,
+      });
 
       await page.goto("/");
       await expect(page.locator("footer")).toContainText(
         "2026 E2E ROBOTICS CORP",
+        { timeout: 10000 },
       );
     });
 

@@ -1,3 +1,10 @@
+/**
+ * @module UnoCSS-Engine
+ * @description High-performance utility style injection engine with isolate-level caching.
+ * Leverages UnoCSS to transform raw HTML into styled fragments, using a heuristic cache
+ * to minimize processing overhead in high-traffic edge environments.
+ */
+
 import { createGenerator } from "unocss";
 import config, { EDITOR_SAFELIST } from "../../uno.config";
 

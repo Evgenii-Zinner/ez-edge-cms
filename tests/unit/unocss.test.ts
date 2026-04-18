@@ -3,8 +3,6 @@ import {
   renderWithUno,
   getUnocssCacheSize,
 } from "../../src/utils/unocss-engine";
-import { createGenerator } from "unocss";
-
 describe("UnoCSS Engine Utility", () => {
   it("should inject style tags into a full HTML page", async () => {
     const html = `<html><head><!-- CSS_INJECTION_POINT --></head><body><div class="p-4"></div></body></html>`;

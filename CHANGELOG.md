@@ -103,3 +103,7 @@
 ## [0.1.25] - 2026-04-14
 
 - refactor(utils): optimize image storage logic and achieve 100% test coverage
+
+## [0.1.26] - 2026-04-18
+
+- fix(e2e): footer verify labels and refactor(utils): documentation and DRY

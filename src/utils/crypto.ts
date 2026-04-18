@@ -6,6 +6,18 @@
  */
 
 /**
+ * Internal helper to convert a Uint8Array to a hexadecimal string.
+ *
+ * @param array - The binary array to convert.
+ * @returns A hexadecimal string representation of the array.
+ */
+function toHex(array: Uint8Array): string {
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+    "",
+  );
+}
+
+/**
  * Creates a cryptographically secure random salt (128-bit).
  *
  * @returns A 32-character hexadecimal string.
@@ -13,9 +25,7 @@
 export function generateSalt(): string {
   const array = new Uint8Array(16);
   crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-    "",
-  );
+  return toHex(array);
 }
 
 /**
@@ -35,11 +45,8 @@ export async function hashPassword(
   const encoder = new TextEncoder();
   const data = encoder.encode(password + salt);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return hashHex;
+  const hashArray = new Uint8Array(hashBuffer);
+  return toHex(hashArray);
 }
 
 /**
@@ -50,7 +57,5 @@ export async function hashPassword(
 export function generateSessionToken(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-    "",
-  );
+  return toHex(array);
 }

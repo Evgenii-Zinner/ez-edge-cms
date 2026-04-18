@@ -1,4 +1,21 @@
+/**
+ * @module Styles
+ * @description Utilities for generating dynamic CSS variables and theming.
+ * Provides functions to translate ThemeConfig objects into minified CSS variable blocks
+ * for both public and administrative interfaces.
+ */
+
 import { ThemeConfig } from "@core/schema";
+
+/**
+ * Internal helper to minify a CSS string by collapsing whitespace.
+ *
+ * @param css - The raw CSS string.
+ * @returns A minified CSS string.
+ */
+function minifyCss(css: string): string {
+  return css.replace(/\s+/g, " ").trim();
+}
 
 /**
  * Generates a string of CSS variable definitions based on the provided theme configuration.
@@ -10,7 +27,7 @@ import { ThemeConfig } from "@core/schema";
 export const generateCssVariables = (theme: ThemeConfig): string => {
   const { values } = theme;
 
-  return `
+  return minifyCss(`
     :root {
       --theme-primary-hue: ${values.primary_hue};
       --theme-primary-sat: ${values.primary_sat};
@@ -35,9 +52,7 @@ export const generateCssVariables = (theme: ThemeConfig): string => {
       --ui-boot-speed: ${values.boot_speed};
       --ui-elevation: ${values.elevation};
     }
-  `
-    .replace(/\s+/g, " ")
-    .trim();
+  `);
 };
 
 /**
@@ -48,7 +63,7 @@ export const generateCssVariables = (theme: ThemeConfig): string => {
  * @returns A minified string of administrative CSS variables.
  */
 export const generateAdminCssVariables = (): string => {
-  return `
+  return minifyCss(`
     :root {
       --theme-primary-hue: 180;
       --theme-primary-sat: 70%;
@@ -79,7 +94,5 @@ export const generateAdminCssVariables = (): string => {
       --color-warning: #ffcc00;
       --color-info: #00ccff;
     }
-  `
-    .replace(/\s+/g, " ")
-    .trim();
+  `);
 };
