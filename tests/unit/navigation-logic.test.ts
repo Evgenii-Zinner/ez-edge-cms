@@ -1,39 +1,5 @@
 import { describe, it, expect } from "bun:test";
-
-/**
- * Logic from BaseLayout.tsx
- */
-const normalizePath = (path: string): string => {
-  if (!path) return "/";
-  if (
-    path.startsWith("/") ||
-    path.startsWith("http") ||
-    path.startsWith("mailto:") ||
-    path.startsWith("tel:") ||
-    path.startsWith("#")
-  ) {
-    return path;
-  }
-  return `/${path}`;
-};
-
-/**
- * Logic from navigation.tsx
- */
-const normalizeSavePath = (path: string): string => {
-  if (!path) return "/";
-  const p = path.trim();
-  if (
-    p.startsWith("/") ||
-    p.startsWith("http") ||
-    p.startsWith("mailto:") ||
-    p.startsWith("tel:") ||
-    p.startsWith("#")
-  ) {
-    return p;
-  }
-  return `/${p}`;
-};
+import { normalizePath } from "@utils/seo";
 
 describe("Navigation Logic Normalization", () => {
   describe("normalizePath (Display Fix)", () => {
@@ -64,13 +30,13 @@ describe("Navigation Logic Normalization", () => {
     });
   });
 
-  describe("normalizeSavePath (Data Fix)", () => {
+  describe("normalizePath (Data Fix)", () => {
     it("should prepend / and trim", () => {
-      expect(normalizeSavePath("  articles  ")).toBe("/articles");
+      expect(normalizePath("  articles  ")).toBe("/articles");
     });
 
     it("should handle already absolute paths correctly", () => {
-      expect(normalizeSavePath(" /articles ")).toBe("/articles");
+      expect(normalizePath(" /articles ")).toBe("/articles");
     });
   });
 });

@@ -34,7 +34,7 @@ const onboarding = new Hono<{
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML onboarding interface.
  */
-onboarding.get("/", async (c) => {
+onboarding.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
 
   return c.html(
@@ -155,7 +155,7 @@ onboarding.get("/", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to a redirect to the dashboard or an error message.
  */
-onboarding.post("/complete", async (c) => {
+onboarding.post("/complete", async (c): Promise<Response> => {
   try {
     const body = await c.req.parseBody();
     const site = c.var.site;

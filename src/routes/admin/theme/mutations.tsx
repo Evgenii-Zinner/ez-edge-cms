@@ -29,7 +29,7 @@ const mutations = new Hono<{
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX success or error toast notification.
  */
-mutations.post("/save", async (c) => {
+mutations.post("/save", async (c): Promise<Response> => {
   try {
     const p = (u: string) => (v: any) => `${v}${u}`;
 
@@ -80,7 +80,7 @@ mutations.post("/save", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX refresh header.
  */
-mutations.post("/reset", async (c) => {
+mutations.post("/reset", async (c): Promise<Response> => {
   const defaultTheme = createDefaultTheme();
   await saveTheme(c.env, defaultTheme);
   c.header("HX-Refresh", "true");

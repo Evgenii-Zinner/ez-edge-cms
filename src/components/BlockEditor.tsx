@@ -9,6 +9,7 @@
 
 import { html } from "hono/html";
 import { EditorJsData } from "@utils/editorjs-parser";
+import { generateId } from "@core/templates";
 
 /**
  * Props for the BlockEditor component.
@@ -24,7 +25,7 @@ export interface BlockEditorProps {
  * Includes client-side logic for tool resolution, auto-saving to a hidden input,
  * and visual styling overrides for the editor blocks.
  */
-export const BlockEditor = ({ content }: BlockEditorProps) => {
+export const BlockEditor = ({ content }: BlockEditorProps): JSX.Element => {
   // Safe serialization: Escape '<' to prevent XSS and premature script termination
   const contentJson = JSON.stringify(content || { blocks: [] }).replace(
     /</g,

@@ -44,7 +44,7 @@ export interface HeadProps {
  * @param props - Component properties.
  * @returns A JSX element containing the head metadata.
  */
-export const Head = (props: HeadProps) => {
+export const Head = (props: HeadProps): JSX.Element => {
   const { title, theme, site, page, isAdmin, isEditor, detectedUrl } = props;
 
   // Generate SEO and Theme assets

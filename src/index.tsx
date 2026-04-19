@@ -28,8 +28,6 @@ app.use("*", injectUnoCSS());
 
 /**
  * Binary Image Delivery Route.
-...
-
  * Fetches binary image data from KV based on the slug and filename.
  */
 app.get("/images/*", async (c) => {

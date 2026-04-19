@@ -107,3 +107,7 @@
 ## [0.1.26] - 2026-04-18
 
 - fix(e2e): footer verify labels and refactor(utils): documentation and DRY
+
+## [0.1.27] - 2026-04-19
+
+- refactor: enforce explicit return types, consolidate path normalization, and add admin smoke tests

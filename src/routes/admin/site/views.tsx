@@ -33,7 +33,7 @@ const views = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML identity fields fragment.
  */
-views.get("/identity-fields", async (c) => {
+views.get("/identity-fields", async (c): Promise<Response> => {
   const type = c.req.query("seo.identity.type") || "Organization";
 
   const siteMock: Partial<SiteConfig> = {
@@ -61,7 +61,7 @@ views.get("/identity-fields", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML Site Settings page.
  */
-views.get("/", async (c) => {
+views.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
 
   return c.html(

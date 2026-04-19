@@ -24,7 +24,7 @@ export interface PageRowProps {
  * @param props - Component properties.
  * @returns A JSX element representing a table row.
  */
-export const PageRow = (props: PageRowProps) => {
+export const PageRow = (props: PageRowProps): JSX.Element => {
   const { slug, isLive, isDraft } = props;
   const parts = slug.split("/");
   const displaySlug =

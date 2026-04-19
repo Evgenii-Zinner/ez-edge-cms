@@ -27,7 +27,7 @@ const views = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML Page Manager.
  */
-views.get("/", async (c) => {
+views.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
   const [liveSlugs, draftSlugs] = await Promise.all([
     listPages(c.env, "live"),
@@ -122,7 +122,7 @@ views.get("/", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML Page Editor.
  */
-views.get("/edit/:slug{.+}", async (c) => {
+views.get("/edit/:slug{.+}", async (c): Promise<Response> => {
   try {
     const slug = c.req.param("slug");
     const isProtected = (PROTECTED_SLUGS as readonly string[]).includes(slug);

@@ -12,7 +12,7 @@ import { html } from "hono/html";
  *
  * @returns A JSX element containing the site preview.
  */
-export const ThemePreview = () => {
+export const ThemePreview = (): JSX.Element => {
   return (
     <div class="relative border border-solid border-[var(--theme-accent-glow)] rounded-lg overflow-hidden">
       <style id="preview-theme-styles"></style>
@@ -99,13 +99,15 @@ export const ThemePreview = () => {
   );
 };
 
+import { HtmlEscapedString } from "hono/utils/html";
+
 /**
  * Component: ThemePreviewScript
  * Injects the client-side logic for real-time CSS variable updates.
  *
- * @returns A JSX element containing the preview logic script.
+ * @returns A Hono HTML template string.
  */
-export const ThemePreviewScript = () => {
+export const ThemePreviewScript = (): HtmlEscapedString => {
   return html`
     <script>
       (function () {
@@ -192,10 +194,10 @@ export const ThemePreviewScript = () => {
  * Component: ThemeFontPreloader
  * Loads all available font options in bulk when the Theme Styler is opened.
  *
- * @param props - Contains the array of font names.
+ * @param props - Component properties containing the array of font names.
  * @returns A JSX element containing the link tag.
  */
-export const ThemeFontPreloader = (props: { fonts: string[] }) => {
+export const ThemeFontPreloader = (props: { fonts: string[] }): JSX.Element => {
   const { fonts } = props;
   const uniqueFonts = [...new Set(fonts)];
 

@@ -24,8 +24,11 @@ import {
 /**
  * Component: BasicInfoCard
  * Renders core site identity fields (Title, Tagline, Author).
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the basic info card.
  */
-export const BasicInfoCard = ({ site }: { site: SiteConfig }) => (
+export const BasicInfoCard = ({ site }: { site: SiteConfig }): JSX.Element => (
   <AdminCard title="Basic Information">
     <FormGrid>
       <FormColumn>
@@ -94,8 +97,11 @@ export const BasicInfoCard = ({ site }: { site: SiteConfig }) => (
 /**
  * Component: OGImageField
  * Handles the OG Image upload and Facebook post preview.
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the OG image field.
  */
-export const OGImageField = ({ site }: { site: SiteConfig }) => (
+export const OGImageField = ({ site }: { site: SiteConfig }): JSX.Element => (
   <div>
     <label class="admin-label">Global Social (OG) Image</label>
     <div class="flex flex-col gap-4">
@@ -155,8 +161,11 @@ export const OGImageField = ({ site }: { site: SiteConfig }) => (
 /**
  * Component: BrandingCard
  * Renders Logo SVG input and absolute URL settings.
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the branding card.
  */
-export const BrandingCard = ({ site }: { site: SiteConfig }) => (
+export const BrandingCard = ({ site }: { site: SiteConfig }): JSX.Element => (
   <AdminCard title="Branding & Defaults" marginTop="2rem">
     <FormGrid>
       <FormColumn>
@@ -207,6 +216,9 @@ export const BrandingCard = ({ site }: { site: SiteConfig }) => (
 /**
  * Component: IdentityFields
  * Renders dynamic inputs based on selected Site Identity Type.
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the identity details.
  */
 export const IdentityFields = ({
   type,
@@ -214,7 +226,7 @@ export const IdentityFields = ({
 }: {
   type: string;
   site: Partial<SiteConfig>;
-}) => {
+}): JSX.Element => {
   const identity = site.seo?.identity || {
     name: "",
     description: "",
@@ -272,8 +284,15 @@ export const IdentityFields = ({
 /**
  * Component: SocialLinksCard
  * Dynamic table for managing Social Profile URLs.
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the social links card.
  */
-export const SocialLinksCard = ({ site }: { site: SiteConfig }) => (
+export const SocialLinksCard = ({
+  site,
+}: {
+  site: SiteConfig;
+}): JSX.Element => (
   <AdminCard title="SEO - Social Profiles" marginTop="2rem">
     <DynamicTable
       id="social-links"
@@ -311,8 +330,15 @@ export const SocialLinksCard = ({ site }: { site: SiteConfig }) => (
 /**
  * Component: SystemSettingsCard
  * Renders global script injections.
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the system settings card.
  */
-export const SystemSettingsCard = ({ site }: { site: SiteConfig }) => (
+export const SystemSettingsCard = ({
+  site,
+}: {
+  site: SiteConfig;
+}): JSX.Element => (
   <AdminCard title="Advanced System Settings" marginTop="2rem">
     <AdminField
       label="Global Custom Head Scripts"
@@ -333,8 +359,10 @@ export const SystemSettingsCard = ({ site }: { site: SiteConfig }) => (
 /**
  * Component: BackupRestoreCard
  * Interface for system backup and data restoration.
+ *
+ * @returns A JSX element representing the backup and restore section.
  */
-export const BackupRestoreCard = () => (
+export const BackupRestoreCard = (): JSX.Element => (
   <AdminCard title="Backup & Restore" marginTop="2rem">
     <div
       id="backup-progress-container"

@@ -50,7 +50,7 @@ export const CustomSelect = ({
   selectedValue,
   placeholder,
   onChange,
-}: CustomSelectProps) => {
+}: CustomSelectProps): JSX.Element => {
   const selectedOption =
     options.find((o) => o.value === selectedValue) || options[0];
 

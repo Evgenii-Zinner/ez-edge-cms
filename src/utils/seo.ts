@@ -8,6 +8,28 @@
 import { SiteConfig, PageConfig } from "@core/schema";
 
 /**
+ * Normalizes a navigation path to ensure it is absolute if it is an internal link.
+ * Prevents URL duplication (e.g. /articles/articles) when navigating from subpages.
+ *
+ * @param path - The raw path or URL.
+ * @returns A normalized absolute path or the original external URL.
+ */
+export const normalizePath = (path: string): string => {
+  if (!path) return "/";
+  const p = path.trim();
+  if (
+    p.startsWith("/") ||
+    p.startsWith("http") ||
+    p.startsWith("mailto:") ||
+    p.startsWith("tel:") ||
+    p.startsWith("#")
+  ) {
+    return p;
+  }
+  return `/${p}`;
+};
+
+/**
  * Normalizes the base URL by removing any trailing slashes to ensure consistent path joining.
  *
  * @param site - The global site configuration.

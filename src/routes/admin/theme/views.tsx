@@ -35,7 +35,7 @@ const views = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML Theme Styler.
  */
-views.get("/", async (c) => {
+views.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
 
   // Aggregate all fonts to preload them for zero-latency previews

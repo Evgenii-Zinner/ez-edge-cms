@@ -42,7 +42,7 @@ const auth = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
  * @param c - Hono context.
  * @returns An HTML response containing the Setup interface.
  */
-auth.get("/setup", async (c) => {
+auth.get("/setup", async (c): Promise<Response> => {
   const adminExists = await getAdminUser(c.env);
   if (adminExists) {
     return c.redirect("/admin/login");
@@ -82,7 +82,7 @@ auth.get("/setup", async (c) => {
  * @param c - Hono context.
  * @returns A redirect response or an HTMX form partial on error.
  */
-auth.post("/setup", async (c) => {
+auth.post("/setup", async (c): Promise<Response> => {
   const ip = c.req.header("CF-Connecting-IP") || "unknown";
   const rateLimit = await checkRateLimit(c.env, ip, "setup", 3, 600);
 
@@ -161,7 +161,7 @@ auth.post("/setup", async (c) => {
  * @param c - Hono context.
  * @returns An HTML response containing the Login interface.
  */
-auth.get("/login", async (c) => {
+auth.get("/login", async (c): Promise<Response> => {
   const adminExists = await getAdminUser(c.env);
   if (!adminExists) {
     return c.redirect("/admin/setup");
@@ -204,7 +204,7 @@ auth.get("/login", async (c) => {
  * @param c - Hono context.
  * @returns A redirect response or an HTMX form partial on error.
  */
-auth.post("/login", async (c) => {
+auth.post("/login", async (c): Promise<Response> => {
   const ip = c.req.header("CF-Connecting-IP") || "unknown";
   const rateLimit = await checkRateLimit(c.env, ip, "login", 5, 300);
 
@@ -290,7 +290,7 @@ auth.post("/login", async (c) => {
  * @param c - Hono context.
  * @returns A redirect response to the login page.
  */
-auth.get("/logout", async (c) => {
+auth.get("/logout", async (c): Promise<Response> => {
   const token = getCookie(c, "ez_session");
   if (token) {
     await Promise.all([

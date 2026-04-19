@@ -28,7 +28,7 @@ const mutations = new Hono<{
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX success or error toast notification.
  */
-mutations.post("/save", async (c) => {
+mutations.post("/save", async (c): Promise<Response> => {
   try {
     // 1. Process the main form data including zipped social links
     const validatedData = await validateForm(c.req, SiteSchema, {
@@ -86,7 +86,7 @@ mutations.post("/save", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to a JSON response containing the full site backup.
  */
-mutations.get("/backup", async (c) => {
+mutations.get("/backup", async (c): Promise<Response> => {
   try {
     const data = await exportAllData(c.env);
     return c.json(data);
@@ -103,7 +103,7 @@ mutations.get("/backup", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to a success message or an error notification.
  */
-mutations.post("/restore", async (c) => {
+mutations.post("/restore", async (c): Promise<Response> => {
   try {
     const body = await c.req.parseBody();
     const file = body.backup as File;

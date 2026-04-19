@@ -14,10 +14,12 @@ import { z } from "zod";
 type EditorJsData = z.infer<typeof EditorJsDataSchema>;
 
 /**
- * Internal helper to generate a random 10-character alphanumeric ID
- * for Editor.js blocks.
+ * Generates a random 10-character alphanumeric ID for Editor.js blocks.
+ *
+ * @returns A random 10-character alphanumeric string.
  */
-const generateId = () => Math.random().toString(36).substring(2, 12);
+export const generateId = (): string =>
+  Math.random().toString(36).substring(2, 12);
 
 /**
  * Generates a robust Terms of Service template.

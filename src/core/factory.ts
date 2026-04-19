@@ -7,7 +7,11 @@ import {
   VERSIONS,
 } from "@core/schema";
 import { DEFAULT_AUTHOR } from "@core/constants";
-import { getTermsTemplate, getPrivacyTemplate } from "@core/templates";
+import {
+  getTermsTemplate,
+  getPrivacyTemplate,
+  generateId,
+} from "@core/templates";
 
 /**
  * Factory for creating default content for root-level text files.
@@ -141,12 +145,12 @@ export const createDefaultPage = (title: string, slug: string): PageConfig => {
       time: new Date().getTime(),
       blocks: [
         {
-          id: Math.random().toString(36).substring(2, 12),
+          id: generateId(),
           type: "header",
           data: { text: title, level: 1 },
         },
         {
-          id: Math.random().toString(36).substring(2, 12),
+          id: generateId(),
           type: "paragraph",
           data: {
             text: 'Welcome to your new page. This is a minimal, block-based Editor where you can add text, images, and rich layouts. Start customizing this page by visiting the <a href="/admin">admin panel</a>.',

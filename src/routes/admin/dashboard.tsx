@@ -24,7 +24,7 @@ const admin = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML dashboard.
  */
-admin.get("/", async (c) => {
+admin.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
   const livePages = await listPages(c.env, "live");
   const draftPages = await listPages(c.env, "draft");
@@ -88,7 +88,7 @@ admin.get("/", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX success message.
  */
-admin.post("/clear-cache", async (c) => {
+admin.post("/clear-cache", async (c): Promise<Response> => {
   clearCache();
   return c.html('<span style="color: #00ff00;">CACHE PURGED</span>');
 });
@@ -101,7 +101,7 @@ admin.post("/clear-cache", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX update notice or an empty string.
  */
-admin.get("/check-update", async (c) => {
+admin.get("/check-update", async (c): Promise<Response> => {
   try {
     const response = await fetch(
       "https://api.github.com/repos/Evgenii-Zinner/ez-edge-cms/tags",

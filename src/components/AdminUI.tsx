@@ -27,7 +27,9 @@ export interface AdminCardProps {
  * @param props - Component properties and children.
  * @returns A JSX element representing the admin card.
  */
-export const AdminCard = (props: PropsWithChildren<AdminCardProps>) => (
+export const AdminCard = (
+  props: PropsWithChildren<AdminCardProps>,
+): JSX.Element => (
   <div class={`admin-card ${props.marginTop ? props.marginTop : "m-0"}`}>
     <h3 class="mt-0">{props.title}</h3>
     {props.description && <p class="admin-helper-text">{props.description}</p>}
@@ -54,7 +56,7 @@ export interface AdminHeaderProps {
  * @param props - Component properties.
  * @returns A JSX element representing the admin header.
  */
-export const AdminHeader = (props: AdminHeaderProps) => (
+export const AdminHeader = (props: AdminHeaderProps): JSX.Element => (
   <div class="flex justify-between items-center mb-8">
     <div>
       <h1 class="m-0">{props.title}</h1>
@@ -75,7 +77,9 @@ export const AdminHeader = (props: AdminHeaderProps) => (
  * @param props - Component properties including optional styles and children.
  * @returns A JSX element representing the form grid.
  */
-export const FormGrid = (props: PropsWithChildren<{ style?: any }>) => (
+export const FormGrid = (
+  props: PropsWithChildren<{ style?: any }>,
+): JSX.Element => (
   <div class="grid grid-cols-1 md:grid-cols-2 gap-8" style={props.style}>
     {props.children}
   </div>
@@ -88,7 +92,7 @@ export const FormGrid = (props: PropsWithChildren<{ style?: any }>) => (
  * @param props - Component children.
  * @returns A JSX element representing the form column.
  */
-export const FormColumn = (props: PropsWithChildren) => (
+export const FormColumn = (props: PropsWithChildren): JSX.Element => (
   <div class="flex flex-col gap-6">{props.children}</div>
 );
 
@@ -121,7 +125,7 @@ export interface AdminRangeProps {
  * @param props - Component properties.
  * @returns A JSX element representing the range field.
  */
-export const AdminRange = (props: AdminRangeProps) => {
+export const AdminRange = (props: AdminRangeProps): JSX.Element => {
   const { label, name, min, max, step, value, unit = "", id } = props;
   const fieldId = id || `inp-${name}`;
   const valId = `val-${name}`;
@@ -168,7 +172,7 @@ export interface AdminColorProps {
  * @param props - Component properties.
  * @returns A JSX element representing the color field.
  */
-export const AdminColor = (props: AdminColorProps) => {
+export const AdminColor = (props: AdminColorProps): JSX.Element => {
   const { label, name, value, id } = props;
   const fieldId = id || `inp-${name}`;
 
@@ -217,7 +221,7 @@ export interface DynamicTableProps {
  * @param props - Component properties.
  * @returns A JSX element representing the dynamic table.
  */
-export const DynamicTable = (props: DynamicTableProps) => {
+export const DynamicTable = (props: DynamicTableProps): JSX.Element => {
   const { id, headers, items, renderRow, template, addButtonLabel } = props;
   const containerId = `${id}-container`;
 
@@ -289,7 +293,7 @@ export const DynamicTable = (props: DynamicTableProps) => {
  *
  * @returns A JSX element containing sorting controls.
  */
-export const SortButtons = () => (
+export const SortButtons = (): JSX.Element => (
   <td class="p-2 w-80px align-middle text-center">
     <div class="flex gap-1 justify-center">
       <button
@@ -318,7 +322,7 @@ export const SortButtons = () => (
  *
  * @returns A JSX element containing a removal button.
  */
-export const AdminDeleteButton = () => (
+export const AdminDeleteButton = (): JSX.Element => (
   <td class="p-2 w-100px align-middle text-center">
     <div class="flex justify-center">
       <button
@@ -373,7 +377,7 @@ export interface AdminFieldProps {
  * @param props - Component properties.
  * @returns A JSX element representing the admin field.
  */
-export const AdminField = (props: AdminFieldProps) => {
+export const AdminField = (props: AdminFieldProps): JSX.Element => {
   const {
     label,
     name,

@@ -15,6 +15,7 @@ import {
   PageConfig,
 } from "@core/schema";
 import { Head } from "@components/Head";
+import { normalizePath } from "@utils/seo";
 
 /**
  * Props for the BaseLayout component.
@@ -39,32 +40,13 @@ export interface BaseLayoutProps {
   /** The base URL detected from the request context. */
   detectedUrl?: string;
 }
-
-/**
- * Helper to ensure a navigation path is absolute if it is an internal link.
- * Prevents URL duplication (e.g. /articles/articles) when navigating from subpages.
- */
-const normalizePath = (path: string): string => {
-  if (!path) return "/";
-  if (
-    path.startsWith("/") ||
-    path.startsWith("http") ||
-    path.startsWith("mailto:") ||
-    path.startsWith("tel:") ||
-    path.startsWith("#")
-  ) {
-    return path;
-  }
-  return `/${path}`;
-};
-
 /**
  * Component: BaseLayout
  * Provides the foundational HTML structure for the public site.
  * Includes interactive UI overlays (scanlines, dots) and handles
  * responsive navigation logic via client-side scripts.
  */
-export const BaseLayout = (props: BaseLayoutProps) => {
+export const BaseLayout = (props: BaseLayoutProps): JSX.Element => {
   const { site, title, theme, page, detectedUrl, nav, children, footer } =
     props;
   const siteTitle = site.title;

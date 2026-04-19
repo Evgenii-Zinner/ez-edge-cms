@@ -37,7 +37,7 @@ const mutations = new Hono<{
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX redirect or an error message.
  */
-mutations.post("/create", async (c) => {
+mutations.post("/create", async (c): Promise<Response> => {
   const body = await c.req.parseBody();
   const title = body.title as string;
   const pathPrefix = (body.path as string) || "";
@@ -141,7 +141,7 @@ async function processPageMutation(c: any, slug: string): Promise<PageConfig> {
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX success or error toast notification.
  */
-mutations.post("/save/:slug{.+}", async (c) => {
+mutations.post("/save/:slug{.+}", async (c): Promise<Response> => {
   const slug = c.req.param("slug");
   try {
     await processPageMutation(c, slug);
@@ -159,7 +159,7 @@ mutations.post("/save/:slug{.+}", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to a re-rendered PageRow or a toast notification.
  */
-mutations.post("/publish/:slug{.+}", async (c) => {
+mutations.post("/publish/:slug{.+}", async (c): Promise<Response> => {
   const slug = c.req.param("slug");
   try {
     const body = await c.req.parseBody();
@@ -189,7 +189,7 @@ mutations.post("/publish/:slug{.+}", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to a re-rendered PageRow or an error message.
  */
-mutations.post("/unpublish/:slug{.+}", async (c) => {
+mutations.post("/unpublish/:slug{.+}", async (c): Promise<Response> => {
   const slug = c.req.param("slug");
   const success = await unpublishPage(c.env, slug);
   if (success) {
@@ -205,7 +205,7 @@ mutations.post("/unpublish/:slug{.+}", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX trigger for page refresh.
  */
-mutations.post("/delete/:slug{.+}", async (c) => {
+mutations.post("/delete/:slug{.+}", async (c): Promise<Response> => {
   const slug = c.req.param("slug");
   const isProtected = (PROTECTED_SLUGS as readonly string[]).includes(slug);
 

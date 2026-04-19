@@ -20,6 +20,7 @@ import {
 } from "@components/AdminUI";
 import { validateForm } from "@utils/validation";
 import { toastResponse } from "@utils/admin-responses";
+import { normalizePath } from "@utils/seo";
 
 /**
  * Hono sub-app for navigation management.
@@ -30,31 +31,13 @@ const navAdmin = new Hono<{
 }>();
 
 /**
- * Internal helper to ensure a path starts with / if it is an internal relative link.
- */
-const normalizeSavePath = (path: string): string => {
-  if (!path) return "/";
-  const p = path.trim();
-  if (
-    p.startsWith("/") ||
-    p.startsWith("http") ||
-    p.startsWith("mailto:") ||
-    p.startsWith("tel:") ||
-    p.startsWith("#")
-  ) {
-    return p;
-  }
-  return `/${p}`;
-};
-
-/**
  * GET /admin/navigation
  * Renders the Navigation Manager interface.
  *
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML Navigation Manager.
  */
-navAdmin.get("/", async (c) => {
+navAdmin.get("/", async (c): Promise<Response> => {
   const { theme, nav, footer, site, seo } = c.var;
 
   /**
@@ -176,7 +159,7 @@ navAdmin.get("/", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX success or error toast notification.
  */
-navAdmin.post("/save", async (c) => {
+navAdmin.post("/save", async (c): Promise<Response> => {
   try {
     // Use the new zip-mapping feature of validateForm
     const validatedNav = await validateForm(c.req, NavSchema, {
@@ -190,12 +173,12 @@ navAdmin.post("/save", async (c) => {
     // Normalize paths before saving to ensure consistency
     validatedNav.items = (validatedNav.items || []).map((item) => ({
       ...item,
-      path: normalizeSavePath(item.path),
+      path: normalizePath(item.path),
     }));
 
     validatedFooter.links = (validatedFooter.links || []).map((link) => ({
       ...link,
-      path: normalizeSavePath(link.path),
+      path: normalizePath(link.path),
     }));
 
     // Perform saves in parallel

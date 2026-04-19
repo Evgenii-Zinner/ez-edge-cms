@@ -37,7 +37,7 @@ export interface AdminLayoutProps {
  * 2. Unsaved changes detection via form tracking.
  * 3. Modal confirmations for potentially destructive navigation.
  */
-export const AdminLayout = (props: AdminLayoutProps) => {
+export const AdminLayout = (props: AdminLayoutProps): JSX.Element => {
   return (
     <>
       {raw("<!DOCTYPE html>\n")}

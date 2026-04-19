@@ -106,6 +106,6 @@ export let updateQueue: Promise<void> = Promise.resolve();
  * @param newQueue - The new promise to append to the queue.
  * @returns void
  */
-export const setUpdateQueue = (newQueue: Promise<void>) => {
+export const setUpdateQueue = (newQueue: Promise<void>): void => {
   updateQueue = newQueue;
 };

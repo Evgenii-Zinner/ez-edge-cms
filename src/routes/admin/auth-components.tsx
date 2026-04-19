@@ -9,8 +9,14 @@ import { AdminField } from "@components/AdminUI";
 /**
  * Component: SetupForm
  * Renders the initial administrator creation form.
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the setup form.
  */
-export const SetupForm = (props: { username?: string; error?: string }) => (
+export const SetupForm = (props: {
+  username?: string;
+  error?: string;
+}): JSX.Element => (
   <form
     id="setup-form"
     hx-post="/admin/setup"
@@ -61,8 +67,14 @@ export const SetupForm = (props: { username?: string; error?: string }) => (
 /**
  * Component: LoginForm
  * Renders the secure login interface.
+ *
+ * @param props - Component properties.
+ * @returns A JSX element representing the login form.
  */
-export const LoginForm = (props: { username?: string; error?: string }) => (
+export const LoginForm = (props: {
+  username?: string;
+  error?: string;
+}): JSX.Element => (
   <form
     id="login-form"
     hx-post="/admin/login"

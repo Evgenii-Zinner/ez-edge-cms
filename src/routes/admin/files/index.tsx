@@ -10,7 +10,12 @@ import { AdminLayout } from "@layouts/AdminLayout";
 import { saveSite } from "@core/kv";
 import { SiteSchema } from "@core/schema";
 import { GlobalConfigVariables } from "@core/middleware";
-import { AdminCard, AdminField, FormGrid } from "@components/AdminUI";
+import {
+  AdminCard,
+  AdminField,
+  FormGrid,
+  AdminHeader,
+} from "@components/AdminUI";
 import { validateForm } from "@utils/validation";
 import { toastResponse } from "@utils/admin-responses";
 import { createDefaultTxtFiles } from "@core/factory";
@@ -30,7 +35,7 @@ const filesAdmin = new Hono<{
  * @param c - Hono context.
  * @returns A promise resolving to the rendered HTML Text Files Manager.
  */
-filesAdmin.get("/", async (c) => {
+filesAdmin.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
   // Safety: Initialize txtFiles if missing from legacy data
   const files = site.txtFiles || {};
@@ -39,21 +44,18 @@ filesAdmin.get("/", async (c) => {
     <AdminLayout title="Text Files Manager" theme={theme} site={site} seo={seo}>
       <div class="flex flex-col">
         {/* HEADER ZONE */}
-        <div class="flex justify-between items-center mb-8">
-          <h1>Text Files Manager</h1>
-          <div class="flex gap-4 items-center">
-            <button
-              hx-post="/admin/files/reset"
-              data-confirm="Overwrite all text files with factory defaults? This cannot be undone."
-              class="btn-primary border-[#ff4444] color-[#ff4444]"
-            >
-              RESET DEFAULTS
-            </button>
-            <button class="btn-primary" type="submit" form="files-form">
-              SAVE ALL FILES
-            </button>
-          </div>
-        </div>
+        <AdminHeader title="Text Files Manager">
+          <button
+            hx-post="/admin/files/reset"
+            data-confirm="Overwrite all text files with factory defaults? This cannot be undone."
+            class="btn-primary border-[#ff4444] color-[#ff4444]"
+          >
+            RESET DEFAULTS
+          </button>
+          <button class="btn-primary" type="submit" form="files-form">
+            SAVE ALL FILES
+          </button>
+        </AdminHeader>
 
         {/* MAIN FORM AREA */}
         <form
@@ -182,7 +184,7 @@ filesAdmin.get("/", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX redirect or an error message.
  */
-filesAdmin.post("/reset", async (c) => {
+filesAdmin.post("/reset", async (c): Promise<Response> => {
   try {
     const { site } = c.var;
     const baseUrl = site.baseUrl || new URL(c.req.url).origin;
@@ -208,7 +210,7 @@ filesAdmin.post("/reset", async (c) => {
  * @param c - Hono context.
  * @returns A promise resolving to an HTMX success or error toast notification.
  */
-filesAdmin.post("/save", async (c) => {
+filesAdmin.post("/save", async (c): Promise<Response> => {
   try {
     const validatedData = await validateForm(c.req, SiteSchema, {
       partial: true,
