@@ -111,3 +111,7 @@
 ## [0.1.27] - 2026-04-19
 
 - refactor: enforce explicit return types, consolidate path normalization, and add admin smoke tests
+
+## [0.1.28] - 2026-04-19
+
+- test: expand administrative test coverage
