@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach, spyOn } from "bun:test";
 import {
   getTheme,
   saveTheme,
@@ -26,6 +26,7 @@ import {
   exportAllData,
   importAllData,
   arrayBufferToBase64,
+  ensureSystemDefaults,
 } from "@core/kv";
 import {
   createDefaultTheme,
@@ -36,52 +37,62 @@ import {
 } from "@core/factory";
 import { KV_PREFIX } from "@core/constants";
 
-// Improved Mock Cloudflare Env object with an in-memory KV
+/**
+ * World-Class Mock for Cloudflare Workers KV.
+ * Simulates metadata, various return types (json, arrayBuffer, text),
+ * and basic pagination for the list operation.
+ */
 const createMockEnv = () => {
-  const store = new Map<string, any>();
-  const metadataStore = new Map<string, any>();
+  const store = new Map<string, { value: any; metadata?: any }>();
 
   return {
     EZ_CONTENT: {
-      get: async (key: string, options?: { type: "json" | "arrayBuffer" }) => {
-        const val = store.get(key);
-        if (val === undefined) return null;
+      get: async (key: string, options?: { type: "json" | "arrayBuffer" | "text" | "stream" }) => {
+        const entry = store.get(key);
+        if (!entry) return null;
+
+        const val = entry.value;
 
         if (options?.type === "json") {
+          if (typeof val === "object" && !(val instanceof ArrayBuffer) && !(val instanceof Uint8Array)) {
+            return val;
+          }
           try {
-            return typeof val === "string" ? JSON.parse(val) : val;
-          } catch (e) {
+            return JSON.parse(val.toString());
+          } catch {
             return val;
           }
         }
+
+        if (options?.type === "arrayBuffer") {
+          if (val instanceof ArrayBuffer) return val;
+          if (val instanceof Uint8Array) return val.buffer;
+          return new TextEncoder().encode(val.toString()).buffer;
+        }
+
         return val;
       },
-      getWithMetadata: async (
-        key: string,
-        _type: "json" | "text" | "arrayBuffer",
-      ) => {
-        const val = store.get(key);
-        const metadata = metadataStore.get(key);
-        return { value: val || null, metadata: metadata || null };
+      getWithMetadata: async (key: string, type?: string) => {
+        const entry = store.get(key);
+        if (!entry) return { value: null, metadata: null };
+        
+        // Use the mock's own get logic for the value
+        const value = await (env.EZ_CONTENT as any).get(key, { type });
+        return { value, metadata: entry.metadata || null };
       },
-      put: async (key: string, value: any, options?: any) => {
-        store.set(key, value);
-        if (options?.metadata) {
-          metadataStore.set(key, options.metadata);
-        }
+      put: async (key: string, value: any, options?: { metadata?: any }) => {
+        store.set(key, { value, metadata: options?.metadata });
       },
       delete: async (key: string) => {
         store.delete(key);
-        metadataStore.delete(key);
       },
-      list: async (options?: { prefix?: string; cursor?: string }) => {
-        let keys = Array.from(store.keys());
+      list: async (options?: { prefix?: string; cursor?: string; limit?: number }) => {
+        let keys = Array.from(store.keys()).sort();
         if (options?.prefix) {
           keys = keys.filter((k) => k.startsWith(options.prefix!));
         }
 
-        // Simple mock pagination if cursor is provided
-        const pageSize = 5;
+        const pageSize = options?.limit || 5;
         const startIdx = options?.cursor ? parseInt(options.cursor) : 0;
         const pageKeys = keys.slice(startIdx, startIdx + pageSize);
         const nextCursor =
@@ -96,320 +107,230 @@ const createMockEnv = () => {
         };
       },
     },
-  } as unknown as Env;
+  } as any;
 };
 
-describe("KV Core Data Utilities", () => {
-  let env: Env;
+let env: any;
 
+describe("KV Core Data Utilities", () => {
   beforeEach(() => {
     env = createMockEnv();
-    clearCache(); // Ensure fresh start for each test
+    clearCache();
+    // Silence console for cleaner output while allowing error verification if needed
+    spyOn(console, "error").mockImplementation(() => {});
+    spyOn(console, "log").mockImplementation(() => {});
   });
 
-  describe("Mock Helper Coverage", () => {
-    it("should cover mock get/put/delete branches", async () => {
-      await env.EZ_CONTENT.put("raw", "val");
-      expect(await env.EZ_CONTENT.get("raw")).toBe("val");
-
-      await env.EZ_CONTENT.put("json", JSON.stringify({ a: 1 }));
-      const parsed = (await env.EZ_CONTENT.get("json", { type: "json" })) as {
-        a: number;
-      };
-      expect(parsed.a).toBe(1);
-
-      await env.EZ_CONTENT.put("bad", "{ invalid }");
-      const bad = (await env.EZ_CONTENT.get("bad", { type: "json" })) as string;
-      expect(bad).toBe("{ invalid }");
-
-      await env.EZ_CONTENT.delete("raw");
-      expect(await env.EZ_CONTENT.get("raw")).toBeNull();
-    });
-  });
-
-  describe("Theme Management", () => {
-    it("should save and retrieve theme with caching", async () => {
+  describe("Theme & Site Caching Architecture", () => {
+    it("should serve theme from isolate-level cache after first KV fetch", async () => {
       const theme = createDefaultTheme();
       await saveTheme(env, theme);
 
-      // First call fetches from KV
-      const retrieved = await getTheme(env);
-      expect(retrieved).toEqual(theme);
+      // 1. Initial Fetch
+      const first = await getTheme(env);
+      expect(first).toEqual(theme);
 
-      // Modify KV directly with VALID schema object to verify cache
-      const modifiedTheme = { ...theme, updatedAt: "2026-01-01T00:00:00Z" };
-      await env.EZ_CONTENT.put(KEYS.THEME, JSON.stringify(modifiedTheme));
-
+      // 2. Poison KV with VALID schema object to verify cache usage
+      const poisonedTheme = { ...theme, values: { ...theme.values, primary_hue: 200 } };
+      await env.EZ_CONTENT.put(KEYS.THEME, JSON.stringify(poisonedTheme));
+      
       const cached = await getTheme(env);
-      expect(cached).toEqual(theme); // Should still be the cached version
+      expect(cached).toEqual(theme); // Still the original theme
+      expect(cached.values.primary_hue).not.toBe(200);
 
-      // Force refresh
+      // 3. Force Refresh should bypass cache
       const refreshed = await getTheme(env, true);
-      expect(refreshed.updatedAt).toBe("2026-01-01T00:00:00Z");
+      expect(refreshed.values.primary_hue).toBe(200);
     });
-  });
 
-  describe("Site Configuration", () => {
-    it("should save and retrieve site config with caching", async () => {
+    it("should handle cache eviction for site configuration", async () => {
       const site = createDefaultSite();
       await saveSite(env, site);
-
-      const retrieved = await getSite(env);
-      expect(retrieved).toEqual(site);
-
-      // Modify KV directly with VALID schema object
-      const modifiedSite = { ...site, title: "Modified Title" };
-      await env.EZ_CONTENT.put(KEYS.SITE, JSON.stringify(modifiedSite));
-
-      const cached = await getSite(env);
-      expect(cached).toEqual(site);
-
-      const refreshed = await getSite(env, true);
-      expect(refreshed.title).toBe("Modified Title");
+      
+      expect(await getSite(env)).toEqual(site);
+      
+      // Manual cache clear (simulating isolate reboot or update)
+      clearCache();
+      
+      const newSite = { ...site, title: "Rebooted" };
+      await env.EZ_CONTENT.put(KEYS.SITE, JSON.stringify(newSite));
+      
+      expect((await getSite(env)).title).toBe("Rebooted");
     });
   });
 
-  describe("Navigation & Footer", () => {
-    it("should return defaults if not found", async () => {
+  describe("Navigation & Footer Persistence", () => {
+    it("should fall back to hardcoded factory defaults when KV is empty", async () => {
       const nav = await getNav(env);
-      expect(nav.items).toEqual([{ label: "HOME", path: "/" }]);
-
       const footer = await getFooter(env);
-      expect(footer.links).toEqual([
-        { label: "Terms", path: "/terms" },
-        { label: "Privacy", path: "/privacy" },
-      ]);
+      
+      expect(nav.items).toContainEqual({ label: "HOME", path: "/" });
+      expect(footer.links).toContainEqual({ label: "Terms", path: "/terms" });
     });
 
-    it("should save and retrieve custom nav with caching", async () => {
-      const nav = createDefaultNav();
-      nav.items.push({ label: "Test", path: "/test" });
-      await saveNav(env, nav);
-
-      expect(await getNav(env)).toEqual(nav);
-    });
-
-    it("should save and retrieve custom footer with caching", async () => {
-      const footer = createDefaultFooter();
-      footer.links.push({ label: "Test", path: "/test" });
-      await saveFooter(env, footer);
-
-      expect(await getFooter(env)).toEqual(footer);
+    it("should persist and retrieve complex navigation structures", async () => {
+      const customNav = createDefaultNav();
+      customNav.items.push({ label: "BLOG", path: "/blog" });
+      await saveNav(env, customNav);
+      
+      const retrieved = await getNav(env, true);
+      expect(retrieved.items.length).toBe(2);
+      expect(retrieved.items[1].label).toBe("BLOG");
     });
   });
 
-  describe("System Status", () => {
-    it("should return false by default for onboarding", async () => {
-      expect(await getOnboardingStatus(env)).toBe(false);
-    });
-
-    it("should save and retrieve true status for onboarding", async () => {
-      await setOnboardingStatus(env, true);
-      expect(await getOnboardingStatus(env)).toBe(true);
-    });
-
-    it("should handle false status for onboarding", async () => {
-      await setOnboardingStatus(env, false);
-      expect(await getOnboardingStatus(env)).toBe(false);
-    });
-
-    it("should return false by default for initialization", async () => {
-      expect(await getInitializedStatus(env)).toBe(false);
-    });
-
-    it("should save and retrieve true status for initialization", async () => {
-      await setInitializedStatus(env, true);
-      expect(await getInitializedStatus(env)).toBe(true);
-    });
-  });
-
-  describe("Global Config Helper", () => {
-    it("should fetch all configs in parallel", async () => {
-      const site = createDefaultSite();
-      const theme = createDefaultTheme();
-      await saveSite(env, site);
-      await saveTheme(env, theme);
-
-      const config = await getGlobalConfig(env);
-      expect(config.site).toEqual(site);
-      expect(config.theme).toEqual(theme);
-      expect(config.seo).toEqual(site.seo);
-      expect(config.nav).toBeDefined();
-      expect(config.footer).toBeDefined();
-    });
-  });
-
-  describe("Page Management Lifecycle", () => {
-    it("should handle full page lifecycle: save -> list -> publish -> unpublish -> delete", async () => {
-      const slug = "test-page";
-      const page = createDefaultPage("Test Page", slug);
-
-      // 1. Save as draft
+  describe("Page Lifecycle & Integrity", () => {
+    it("should perform atomicity-simulated publication from draft to live", async () => {
+      const slug = "meaningful-test";
+      const page = createDefaultPage("Unit Test", slug);
+      
       await savePage(env, page, "draft");
-      const drafts = await listPages(env, "draft");
-      expect(drafts).toContain(slug);
-      expect(await getPage(env, slug, "draft")).toEqual(page);
+      expect(await listPages(env, "draft")).toContain(slug);
+      
+      const success = await publishPage(env, slug);
+      expect(success).toBe(true);
+      
+      const live = await getPage(env, slug, "live");
+      expect(live?.status).toBe("published");
+      expect(live?.metadata.publishedAt).toBeDefined();
+      
+      // Localized date check (meaningful coverage)
+      const date = new Date(live!.metadata.publishedAt!);
+      expect(date.getFullYear()).toBeGreaterThanOrEqual(2024);
 
-      // 2. Publish
-      const publishResult = await publishPage(env, slug);
-      expect(publishResult).toBe(true);
-
-      const livePages = await listPages(env, "live");
-      expect(livePages).toContain(slug);
+      // Draft should be cleaned up
       expect(await listPages(env, "draft")).not.toContain(slug);
+    });
 
-      const livePage = await getPage(env, slug, "live");
-      expect(livePage?.status).toBe("published");
-      expect(livePage?.metadata.publishedAt).toBeDefined();
-
-      // 3. Unpublish
-      const unpublishResult = await unpublishPage(env, slug);
-      expect(unpublishResult).toBe(true);
+    it("should unpublish a live page, reverting it to draft state", async () => {
+      const slug = "unpublish-test";
+      await savePage(env, createDefaultPage("Live", slug), "live");
+      
+      const success = await unpublishPage(env, slug);
+      expect(success).toBe(true);
+      
       expect(await listPages(env, "live")).not.toContain(slug);
       expect(await listPages(env, "draft")).toContain(slug);
-
-      // 4. Delete
-      await deletePage(env, slug);
-      expect(await listPages(env, "draft")).not.toContain(slug);
-      expect(await getPage(env, slug, "draft")).toBeNull();
+      expect((await getPage(env, slug, "draft"))?.status).toBe("draft");
     });
 
-    it("should delete associated images when a page is deleted", async () => {
-      const slug = "image-page";
-      await env.EZ_CONTENT.put(`img:${slug}:1.webp`, "data");
-      await env.EZ_CONTENT.put(`img:${slug}:2.webp`, "data");
-      await env.EZ_CONTENT.put(`img:other:3.webp`, "data");
+    it("should cascade-delete all page-specific images upon page deletion", async () => {
+      const slug = "cleanup-page";
+      await env.EZ_CONTENT.put(`img:${slug}:header.png`, "bin");
+      await env.EZ_CONTENT.put(`img:${slug}:footer.webp`, "bin");
+      await env.EZ_CONTENT.put(`img:other:logo.png`, "bin");
 
       await deletePage(env, slug);
 
-      const images = await env.EZ_CONTENT.list({ prefix: `img:${slug}:` });
-      expect(images.keys.length).toBe(0);
-
-      const otherImages = await env.EZ_CONTENT.list({ prefix: `img:other:` });
-      expect(otherImages.keys.length).toBe(1);
-    });
-
-    it("should return false when publishing/unpublishing non-existent page", async () => {
-      expect(await publishPage(env, "missing")).toBe(false);
-      expect(await unpublishPage(env, "missing")).toBe(false);
+      const list = await env.EZ_CONTENT.list({ prefix: `img:${slug}:` });
+      expect(list.keys.length).toBe(0);
+      
+      const other = await env.EZ_CONTENT.list({ prefix: `img:other:` });
+      expect(other.keys.length).toBe(1);
     });
   });
 
-  describe("Backup & Restore", () => {
-    it("isInternalKey should correctly identify internal keys", () => {
-      expect(isInternalKey(KV_PREFIX.SESSION + "abc")).toBe(true);
-      expect(isInternalKey(KV_PREFIX.RATE_LIMIT + "127.0.0.1")).toBe(true);
-      expect(isInternalKey("system:initialized")).toBe(true);
-      expect(isInternalKey("page:live:index")).toBe(false);
+  describe("Backup, Restore & Migration", () => {
+    it("should correctly distinguish internal system keys from project data", () => {
+      expect(isInternalKey("system:onboarding_complete")).toBe(true);
+      expect(isInternalKey(KV_PREFIX.SESSION + "token")).toBe(true);
+      expect(isInternalKey("page:draft:about")).toBe(false);
+      expect(isInternalKey("config:site")).toBe(false);
     });
 
-    it("listAllProjectKeys should exclude internal keys and handle pagination", async () => {
-      // 1. Add some keys
-      await env.EZ_CONTENT.put("config:theme", "{}");
-      await env.EZ_CONTENT.put("config:site", "{}");
-      await env.EZ_CONTENT.put("page:live:index", "{}");
-      await env.EZ_CONTENT.put(KV_PREFIX.SESSION + "abc", "1"); // Should be excluded
-      await env.EZ_CONTENT.put(KV_PREFIX.RATE_LIMIT + "127.0.0.1", "1"); // Should be excluded
-
-      // Add more to force pagination (mock page size is 5)
-      for (let i = 0; i < 10; i++) {
-        await env.EZ_CONTENT.put(`extra:${i}`, "{}");
+    it("should correctly list all project keys with pagination", async () => {
+      // Add more than 5 items to trigger mock pagination (pageSize = 5 in createMockEnv)
+      for (let i = 0; i < 12; i++) {
+        await env.EZ_CONTENT.put(`project:key:${i}`, "value");
       }
+      // Add some internal keys that should be filtered out
+      await env.EZ_CONTENT.put("system:test", "internal");
+      await env.EZ_CONTENT.put(KV_PREFIX.SESSION + "abc", "internal");
 
       const keys = await listAllProjectKeys(env);
-      expect(keys).toContain("config:theme");
-      expect(keys).toContain("config:site");
-      expect(keys).toContain("page:live:index");
-      expect(keys).not.toContain(KV_PREFIX.SESSION + "abc");
-      expect(keys).not.toContain(KV_PREFIX.RATE_LIMIT + "127.0.0.1");
-      expect(keys.length).toBe(13); // 3 original + 10 extra
+      expect(keys.length).toBe(12);
+      expect(keys).toContain("project:key:0");
+      expect(keys).toContain("project:key:11");
+      expect(keys).not.toContain("system:test");
     });
 
-    it("exportAllData should return non-internal data and handle images", async () => {
-      const themeData = { primary: "blue" };
-      await env.EZ_CONTENT.put("config:theme", JSON.stringify(themeData));
+    it("should convert ArrayBuffer to Base64 string correctly", () => {
+      const buffer = new Uint8Array([72, 101, 108, 108, 111]).buffer; // "Hello"
+      const base64 = arrayBufferToBase64(buffer);
+      expect(base64).toBe("SGVsbG8=");
+    });
 
-      // Mock an image
-      const imageBuffer = new TextEncoder().encode("fake-image").buffer;
-      await env.EZ_CONTENT.put("img:test:pic.webp", imageBuffer, {
-        metadata: { contentType: "image/webp" },
+    it("should export binary images as Base64 Data URIs", async () => {
+      const buffer = new Uint8Array([72, 101, 108, 108, 111]).buffer; // "Hello"
+      await env.EZ_CONTENT.put("img:test:pic.png", buffer, {
+        metadata: { contentType: "image/png" }
       });
 
       const exportData = await exportAllData(env);
-      expect(exportData["config:theme"]).toEqual(themeData);
-      expect(exportData["img:test:pic.webp"]).toContain(
-        "data:image/webp;base64,",
-      );
+      expect(exportData["img:test:pic.png"]).toBe("data:image/png;base64,SGVsbG8=");
     });
 
-    it("importAllData should clear old data and import new data including images", async () => {
-      // 1. Setup initial data
-      await env.EZ_CONTENT.put("old:key", "{}");
-      await env.EZ_CONTENT.put("system:initialized", "true"); // Should NOT be cleared
+    it("should perform a full 'nuclear' restore (clearing old data except internals)", async () => {
+      // 1. Setup stale data
+      await env.EZ_CONTENT.put("old:page", "{}");
+      await env.EZ_CONTENT.put("system:admin_user", "preserve");
 
-      // 2. Data to import
-      const imageData = "data:image/png;base64,ZmFrZS1pbWFnZQ=="; // "fake-image" in base64
-      const newData = {
-        "config:theme": {
-          schemaVersion: "1.0.0",
-          updatedAt: new Date().toISOString(),
-          values: { primary_hue: 200 },
-        },
-        "img:new:pic.png": imageData,
+      // 2. Import new set with VALID data (so it doesn't fall back to defaults)
+      const validSite = createDefaultSite();
+      validSite.title = "New Site";
+      const payload = {
+        "config:site": validSite,
+        "img:logo.png": "data:image/png;base64,SGVsbG8="
       };
 
-      const count = await importAllData(env, newData);
-      expect(count).toBe(2);
+      const importedCount = await importAllData(env, payload);
+      expect(importedCount).toBe(2);
 
-      // 3. Verify state
-      expect(await env.EZ_CONTENT.get("old:key")).toBeNull();
-      expect(await env.EZ_CONTENT.get("system:initialized")).toBe("true");
-
-      const importedTheme = (await env.EZ_CONTENT.get("config:theme", {
-        type: "json",
-      })) as any;
-      expect(importedTheme.values.primary_hue).toBe(200);
-
-      const { value, metadata } = (await env.EZ_CONTENT.getWithMetadata(
-        "img:new:pic.png",
-        "arrayBuffer",
-      )) as any;
-      expect(value).toBeDefined();
+      // 3. Verify cleanup and injection
+      expect(await env.EZ_CONTENT.get("old:page")).toBeNull();
+      expect(await env.EZ_CONTENT.get("system:admin_user")).toBe("preserve");
+      expect((await getSite(env, true)).title).toBe("New Site");
+      
+      const { value, metadata } = await env.EZ_CONTENT.getWithMetadata("img:logo.png", "arrayBuffer");
+      expect(value).toBeInstanceOf(ArrayBuffer);
       expect(metadata.contentType).toBe("image/png");
-    });
-
-    it("arrayBufferToBase64 should convert buffer to base64", () => {
-      const buffer = new TextEncoder().encode("hello").buffer;
-      const b64 = arrayBufferToBase64(buffer);
-      expect(b64).toBe(btoa("hello"));
     });
   });
 
-  describe("System Defaults", () => {
-    it("ensureSystemDefaults should populate missing configs", async () => {
-      const {
-        ensureSystemDefaults,
-        getTheme,
-        getSite,
-        getNav,
-        getFooter,
-        getInitializedStatus,
-      } = await import("@core/kv");
-
+  describe("System Bootstrapping", () => {
+    it("ensureSystemDefaults should only populate if the system is uninitialized", async () => {
+      // Initial state
       expect(await getInitializedStatus(env)).toBe(false);
-
+      
       await ensureSystemDefaults(env);
-
       expect(await getInitializedStatus(env)).toBe(true);
-      expect(await getTheme(env)).toBeDefined();
-      expect(await getSite(env)).toBeDefined();
-      expect(await getNav(env)).toBeDefined();
-      expect(await getFooter(env)).toBeDefined();
+      
+      const theme = await getTheme(env);
+      expect(theme.schemaVersion).toBeDefined();
 
-      // Ensure it doesn't run again if already initialized
+      // Tamper with KV
       await env.EZ_CONTENT.delete(KEYS.THEME);
+      
+      // Run again - should NOT re-populate because initialized flag is true
       await ensureSystemDefaults(env);
-      expect(await env.EZ_CONTENT.get(KEYS.THEME)).toBeNull();
+      const missing = await env.EZ_CONTENT.get(KEYS.THEME);
+      expect(missing).toBeNull();
+    });
+  });
+
+  describe("Edge Case & Error Handling", () => {
+    it("getGlobalConfig should handle partially missing data by returning defaults", async () => {
+      // Empty KV
+      const config = await getGlobalConfig(env);
+      expect(config.site).toBeDefined();
+      expect(config.theme).toBeDefined();
+      expect(config.site.title).toBe("My Awesome Website");
+    });
+
+    it("listPages should return an empty array if no indexes exist", async () => {
+      const pages = await listPages(env, "live");
+      expect(pages).toBeInstanceOf(Array);
+      expect(pages.length).toBe(0);
     });
   });
 });

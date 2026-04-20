@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeEach, beforeAll, spyOn } from "bun:test";
 import { Hono } from "hono";
 import filesAdmin from "@routes/admin/files/index";
 import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
@@ -13,7 +13,7 @@ import {
 /**
  * Mock Environment Factory
  */
-const createMockEnv = () => {
+const createMockEnv = (overrides: any = {}) => {
   const store = new Map<string, string>();
   return {
     EZ_CONTENT: {
@@ -24,6 +24,10 @@ const createMockEnv = () => {
         return val;
       },
       put: async (key: string, value: string) => {
+        if (overrides.put) {
+           await overrides.put(key, value);
+           return;
+        }
         store.set(key, value);
       },
     },
@@ -33,6 +37,13 @@ const createMockEnv = () => {
 describe("Admin Files Route", () => {
   let env: Env;
   let app: Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>;
+
+  // Silence console during tests to keep output clean
+  beforeAll(() => {
+    spyOn(console, "log").mockImplementation(() => {});
+    spyOn(console, "error").mockImplementation(() => {});
+    spyOn(console, "warn").mockImplementation(() => {});
+  });
 
   beforeEach(async () => {
     env = createMockEnv();
@@ -70,7 +81,7 @@ describe("Admin Files Route", () => {
       expect(html).toContain("google.com, pub-123, DIRECT");
     });
 
-    it("should handle missing txtFiles in site config", async () => {
+    it("should handle missing txtFiles in site config and still render", async () => {
       const site = createDefaultSite();
       delete (site as any).txtFiles;
       await saveSite(env, site);
@@ -108,6 +119,30 @@ describe("Admin Files Route", () => {
       expect(html).toContain("User-agent: Googlebot\nDisallow: /");
       expect(html).toContain("Updated LLM Content");
     });
+
+    it("should return error toast when KV persistence fails during save", async () => {
+      const failApp = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
+      failApp.use("*", async (c, next) => {
+        c.set("site", createDefaultSite());
+        await next();
+      });
+      failApp.route("/admin/files", filesAdmin);
+
+      const res = await failApp.request(
+        "http://localhost/admin/files/save",
+        { method: "POST" },
+        {
+          EZ_CONTENT: {
+            put: async () => {
+              throw new Error("KV Failure");
+            },
+          },
+        } as any,
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain("SAVE FAILED");
+    });
   });
 
   describe("POST /admin/files/reset", () => {
@@ -125,6 +160,30 @@ describe("Admin Files Route", () => {
 
       const body = await res.text();
       expect(body).toContain("Files reset to defaults");
+    });
+
+    it("should return error toast when KV persistence fails during reset", async () => {
+      const failApp = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
+      failApp.use("*", async (c, next) => {
+        c.set("site", createDefaultSite());
+        await next();
+      });
+      failApp.route("/admin/files", filesAdmin);
+
+      const res = await failApp.request(
+        "http://localhost/admin/files/reset",
+        { method: "POST" },
+        {
+          EZ_CONTENT: {
+            put: async () => {
+              throw new Error("KV Failure");
+            },
+          },
+        } as any,
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain("RESET FAILED");
     });
   });
 });

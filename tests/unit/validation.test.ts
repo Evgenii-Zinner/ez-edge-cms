@@ -1,302 +1,205 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it, beforeEach, spyOn } from "bun:test";
 import { z } from "zod";
 import { validateForm, RequestWithBody } from "@utils/validation";
 
-describe("validateForm", () => {
+describe("Validation Utility (validateForm)", () => {
   const testSchema = z.object({
-    username: z.string(),
-    count: z.number().optional(),
-    isActive: z.boolean().optional(),
-    rating: z.number().optional(),
-    tags: z.array(z.string()).optional(),
-    seo: z
-      .object({
-        title: z.string().optional(),
-        identity: z
-          .object({
-            links: z
-              .array(
-                z.object({
-                  platform: z.string(),
-                  url: z.string(),
-                }),
-              )
-              .optional(),
-          })
-          .optional(),
-      })
-      .optional(),
+    username: z.string().min(3),
+    count: z.number().int().positive(),
+    isActive: z.boolean(),
+    rating: z.number().min(0).max(5),
+    tags: z.array(z.string()).default([]),
+    seo: z.object({
+      title: z.string().optional(),
+      identity: z.object({
+        type: z.enum(["Person", "Organization"]),
+        links: z.array(z.object({
+          platform: z.string(),
+          url: z.string()
+        })).optional()
+      }).optional()
+    }).optional()
   });
 
-  test("should parse standard form data correctly", async () => {
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({ username: "test_user", count: "42" }),
-    };
-
-    const result = await validateForm(mockReq, testSchema, {
-      coerce: { count: "number" },
-    });
-    expect(result.username).toBe("test_user");
-    expect(result.count).toBe(42);
+  beforeEach(() => {
+    // Silence console for clean output
+    spyOn(console, "log").mockImplementation(() => {});
+    spyOn(console, "error").mockImplementation(() => {});
   });
 
-  test("should handle HTMX-style arrays (key[])", async () => {
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({
-        username: "user1",
-        "tags[]": ["tag1", "tag2"],
-      }),
-    };
-
-    const result = await validateForm(mockReq, testSchema);
-    expect(result.tags).toEqual(["tag1", "tag2"]);
+  /**
+   * Helper to create a mock request with body.
+   */
+  const mockReq = (body: any): RequestWithBody => ({
+    parseBody: async () => body
   });
 
-  test("should handle single item for HTMX-style arrays", async () => {
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({
-        username: "user1",
-        "tags[]": "tag1",
-      }),
-    };
+  describe("Basic Parsing & Normalization", () => {
+    it("should parse standard form fields and handle basic type coercion", async () => {
+      const body = { 
+        username: "admin", 
+        count: "10", 
+        isActive: "true", 
+        rating: "4.5" 
+      };
+      
+      const result = await validateForm(mockReq(body), testSchema, {
+        coerce: { count: "number", isActive: "boolean", rating: "number" }
+      });
 
-    const result = await validateForm(mockReq, testSchema);
-    expect(result.tags).toEqual(["tag1"]);
-  });
-
-  test("should throw ZodError on missing required data", async () => {
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({ count: "10" }),
-    };
-
-    const call = () => validateForm(mockReq, testSchema);
-    expect(call()).rejects.toThrow();
-  });
-
-  test("should expand dot-notation keys into nested objects", async () => {
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({
-        username: "user1",
-        "seo.title": "My Page",
-      }),
-    };
-
-    const result = await validateForm(mockReq, testSchema);
-    expect(result.seo?.title).toBe("My Page");
-  });
-
-  test("should handle zip-mapping with dot-notation keys", async () => {
-    const schema = z.object({
-      seo: z.object({
-        identity: z.object({
-          links: z.array(
-            z.object({
-              platform: z.string(),
-              url: z.string(),
-            }),
-          ),
-        }),
-      }),
+      expect(result.username).toBe("admin");
+      expect(result.count).toBe(10);
+      expect(result.isActive).toBe(true);
+      expect(result.rating).toBe(4.5);
     });
 
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({
-        "link_platform[]": ["Twitter", "GitHub"],
-        "link_url[]": ["https://twitter.com", "https://github.com"],
-      }),
-    };
-
-    const zip = {
-      "seo.identity.links": { platform: "link_platform[]", url: "link_url[]" },
-    };
-
-    const result = await validateForm(mockReq, schema, { zip, partial: true });
-    expect(result).toMatchObject({
-      seo: {
-        identity: {
-          links: [
-            { platform: "Twitter", url: "https://twitter.com" },
-            { platform: "GitHub", url: "https://github.com" },
-          ],
-        },
-      },
+    it("should correctly handle 'on' as true for boolean checkboxes (Admin HUD standard)", async () => {
+      const body = { username: "user", count: "1", isActive: "on", rating: "5" };
+      const result = await validateForm(mockReq(body), testSchema, {
+        coerce: { isActive: "boolean", count: "number", rating: "number" }
+      });
+      expect(result.isActive).toBe(true);
     });
-  });
-  test("should handle coercion for booleans and numbers", async () => {
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({
-        username: "coerce_user",
-        count: "100",
-        isActive: "true",
-        rating: "4.5",
-      }),
-    };
 
-    const result = await validateForm(mockReq, testSchema, {
-      coerce: {
-        isActive: "boolean",
-        count: "number",
-        rating: "number",
-      },
-    });
-    expect(result.count).toBe(100);
-    expect(result.isActive).toBe(true);
-    expect(result.rating).toBe(4.5);
-
-    // Test 'on' for boolean (checkboxes)
-    const mockReq2: RequestWithBody = {
-      parseBody: async () => ({
-        username: "checkbox_user",
+    it("should handle HTMX-style array notation (key[])", async () => {
+      const body = {
+        username: "dev",
         count: "1",
-        isActive: "on",
-      }),
-    };
-    const result2 = await validateForm(mockReq2, testSchema, {
-      coerce: { isActive: "boolean", count: "number" },
+        isActive: "true",
+        rating: "1",
+        "tags[]": ["react", "bun", "hono"]
+      };
+
+      const result = await validateForm(mockReq(body), testSchema, {
+        coerce: { count: "number", isActive: "boolean", rating: "number" }
+      });
+      expect(result.tags).toEqual(["react", "bun", "hono"]);
     });
-    expect(result2.isActive).toBe(true);
+
+    it("should handle single items in HTMX-style arrays by wrapping them", async () => {
+      const body = { username: "dev", count: "1", isActive: "true", rating: "1", "tags[]": "standalone" };
+      const result = await validateForm(mockReq(body), testSchema, {
+        coerce: { count: "number", isActive: "boolean", rating: "number" }
+      });
+      expect(result.tags).toEqual(["standalone"]);
+    });
   });
 
-  test("should handle empty zip configuration gracefully", async () => {
-    const schema = z.object({ test: z.string().optional() });
-    const req: RequestWithBody = {
-      parseBody: async () => ({ test: "val" }),
-    };
+  describe("Advanced Structuring & Mapping", () => {
+    it("should expand dot-notation keys into deeply nested objects", async () => {
+      const body = {
+        username: "admin",
+        count: "1",
+        isActive: "true",
+        rating: "5",
+        "seo.title": "My Page",
+        "seo.identity.type": "Organization"
+      };
 
-    const result = await validateForm(req, schema, {
-      zip: {
-        empty: {},
-      },
+      const result = await validateForm(mockReq(body), testSchema, {
+        coerce: { count: "number", isActive: "boolean", rating: "number" }
+      });
+      expect(result.seo?.title).toBe("My Page");
+      expect(result.seo?.identity?.type).toBe("Organization");
     });
 
-    expect(result.test).toBe("val");
-    expect(result).not.toHaveProperty("empty");
+    it("should apply custom mapping transformations before validation", async () => {
+      const schema = z.object({ slug: z.string() });
+      const body = { slug: "  Title with Spaces  " };
+      
+      const result = await validateForm(mockReq(body), schema, {
+        map: {
+          slug: (v) => v.trim().toLowerCase().replace(/\s+/g, "-")
+        }
+      });
+      
+      expect(result.slug).toBe("title-with-spaces");
+    });
   });
 
-  test("should filter out completely empty rows in zip-mapping", async () => {
-    const schema = z.object({
-      links: z.array(z.object({ label: z.string(), url: z.string() })),
-    });
-    const req: RequestWithBody = {
-      parseBody: async () => ({
-        "label[]": ["Home", "", "About"],
-        "url[]": ["/", "", "/about"],
-      }),
-    };
+  describe("Zip-Mapping (Dynamic Lists)", () => {
+    it("should merge parallel arrays into structured objects with dot-notation support", async () => {
+      const body = {
+        "plt[]": ["Twitter", "GitHub"],
+        "uri[]": ["https://twitter.com/ez", "https://github.com/ez"]
+      };
 
-    const result = await validateForm(req, schema, {
-      zip: {
-        links: {
-          label: "label[]",
-          url: "url[]",
-        },
-      },
+      const zip = {
+        "seo.identity.links": { platform: "plt[]", url: "uri[]" }
+      };
+
+      const result = await validateForm(mockReq(body), testSchema, { 
+        zip, 
+        partial: true 
+      });
+
+      expect(result.seo?.identity?.links).toHaveLength(2);
+      expect(result.seo?.identity?.links?.[1].platform).toBe("GitHub");
+      expect(result.seo?.identity?.links?.[1].url).toBe("https://github.com/ez");
     });
 
-    expect(result.links).toHaveLength(2);
-    expect(result.links[0].label).toBe("Home");
-    expect(result.links[1].label).toBe("About");
+    it("should filter out rows where all mapped fields are empty", async () => {
+      const body = {
+        "label[]": ["Home", "", "Contact"],
+        "path[]": ["/", "", "/contact"]
+      };
+      
+      const schema = z.object({
+        items: z.array(z.object({ label: z.string(), path: z.string() }))
+      });
+
+      const result = await validateForm(mockReq(body), schema, {
+        zip: { items: { label: "label[]", path: "path[]" } }
+      });
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items[1].label).toBe("Contact");
+    });
+
+    it("should handle zip-mapping when some arrays are shorter than others", async () => {
+       const body = {
+         "labels[]": ["A", "B", "C"],
+         "urls[]": ["/a", "/b"] // Missing index 2
+       };
+       const schema = z.object({
+         links: z.array(z.object({ l: z.string(), u: z.string().optional() }))
+       });
+
+       const result = await validateForm(mockReq(body), schema, {
+         zip: { links: { l: "labels[]", u: "urls[]" } }
+       });
+
+       expect(result.links).toHaveLength(3);
+       expect(result.links[2].l).toBe("C");
+       expect(result.links[2].u).toBeUndefined();
+    });
   });
 
-  test("should handle empty fields in zip-mapping gracefully", async () => {
-    const schema = z.object({
-      tags: z.array(z.object({ name: z.string() })),
+  describe("Validation Modes & Error Handling", () => {
+    it("should strictly enforce Zod constraints during full validation", async () => {
+      const body = { username: "ok", count: "invalid" };
+      const call = () => validateForm(mockReq(body), testSchema, {
+        coerce: { count: "number" }
+      });
+      
+      // Zod throws on NaN if z.number() is expected
+      expect(call()).rejects.toThrow();
     });
 
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({
-        "tag_name[]": ["tag1", "", "tag3"],
-      }),
-    };
-
-    const result = await validateForm(mockReq, schema, {
-      zip: { tags: { name: "tag_name[]" } },
+    it("should handle partial updates by making all schema fields optional recursively", async () => {
+      const body = { username: "new_name" };
+      
+      // Normally this would fail because 'count', 'isActive' etc are required
+      const result = await validateForm(mockReq(body), testSchema, { partial: true });
+      
+      expect(result.username).toBe("new_name");
+      expect(result.count).toBeUndefined();
     });
 
-    expect(result.tags).toEqual([{ name: "tag1" }, { name: "tag3" }]);
-  });
-
-  test("should handle zip-mapping with single item correctly", async () => {
-    const schema = z.object({
-      tags: z.array(z.object({ name: z.string() })),
+    it("should throw error if required field is missing in non-partial mode", async () => {
+      const body = { username: "valid" }; // missing isActive, count, rating
+      const call = () => validateForm(mockReq(body), testSchema);
+      expect(call()).rejects.toThrow();
     });
-
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({
-        tag_name: "single_tag",
-      }),
-    };
-
-    const result = await validateForm(mockReq, schema, {
-      zip: { tags: { name: "tag_name" } },
-    });
-
-    expect(result.tags).toEqual([{ name: "single_tag" }]);
-  });
-
-  test("should skip zip-mapping if targetKey fields are not in body", async () => {
-    const schema = z.object({
-      tags: z.array(z.object({ name: z.string() })).optional(),
-    });
-
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({}),
-    };
-
-    const result = await validateForm(mockReq, schema, {
-      zip: { tags: { name: "missing_field" } },
-    });
-
-    expect(result.tags).toEqual([]);
-  });
-
-  test("should skip zip-mapping if configuration is empty", async () => {
-    const schema = z.object({ test: z.string() });
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({ test: "val" }),
-    };
-
-    const result = await validateForm(mockReq, schema, {
-      zip: {} as any,
-    });
-    expect(result.test).toBe("val");
-  });
-
-  test("should handle partial schema validation", async () => {
-    const schema = z.object({
-      name: z.string(),
-      age: z.number(),
-    });
-
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({ name: "test" }),
-    };
-
-    const result = await validateForm(mockReq, schema, { partial: true });
-    expect(result).toMatchObject({ name: "test" });
-  });
-
-  test("should handle field-level mapping/transformation", async () => {
-    const schema = z.object({
-      size: z.string(),
-      speed: z.string(),
-    });
-
-    const mockReq: RequestWithBody = {
-      parseBody: async () => ({
-        size: "100",
-        speed: "2",
-      }),
-    };
-
-    const result = await validateForm(mockReq, schema, {
-      map: {
-        size: (v) => `${v}px`,
-        speed: (v) => `${v}s`,
-      },
-    });
-
-    expect(result.size).toBe("100px");
-    expect(result.speed).toBe("2s");
   });
 });

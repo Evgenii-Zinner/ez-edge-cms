@@ -9,7 +9,6 @@
 
 import { html } from "hono/html";
 import { EditorJsData } from "@utils/editorjs-parser";
-import { generateId } from "@core/templates";
 
 /**
  * Props for the BlockEditor component.

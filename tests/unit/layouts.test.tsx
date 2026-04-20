@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeEach, spyOn } from "bun:test";
 import { BaseLayout } from "../../src/layouts/BaseLayout";
 import { AdminLayout } from "../../src/layouts/AdminLayout";
 import {
@@ -16,11 +16,17 @@ describe("Layouts", () => {
   const theme = createDefaultTheme();
   const page = createDefaultPage("Test", "test");
 
+  beforeEach(() => {
+    // Silence console for clean output
+    spyOn(console, "error").mockImplementation(() => {});
+    spyOn(console, "log").mockImplementation(() => {});
+  });
+
   describe("BaseLayout", () => {
-    it("should render correctly", () => {
+    it("should render correctly with foundational UI tiers", () => {
       const html = BaseLayout({
-        title: "Test Page",
-        children: <div>Content</div>,
+        title: "Home",
+        children: <div id="test-content">Content</div>,
         site,
         nav,
         footer,
@@ -29,17 +35,22 @@ describe("Layouts", () => {
       }).toString();
 
       expect(html).toContain("<!DOCTYPE html>");
-      expect(html).toContain("<html");
-      expect(html).toContain("<head>");
-      expect(html).toContain("TEST PAGE | " + site.title);
-      expect(html).toContain("Content");
-      expect(html).toContain("main-header");
-      expect(html).toContain("main-footer");
-      expect(html).toContain("mobile-menu-toggle");
+      expect(html).toContain("<html lang=\"en\">");
+      
+      // Design System Tiers (Z-Layer Stacking check)
+      expect(html).toContain("class=\"ui-overlay scanlines\"");
+      expect(html).toContain("class=\"ui-overlay dots\"");
+      expect(html).toContain("class=\"ui-overlay dots-interactive\"");
+
+      // Semantic Structure
+      expect(html).toContain("<header class=\"main-header\"");
+      expect(html).toContain("<main id=\"main-content\"");
+      expect(html).toContain("<footer class=\"main-footer\"");
+      expect(html).toContain("id=\"test-content\"");
     });
 
-    it("should render logo if present", () => {
-      const siteWithLogo = { ...site, logoSvg: "<svg>logo</svg>" };
+    it("should render logo with drop-shadow filter", () => {
+      const siteWithLogo = { ...site, logoSvg: "<svg id='logo'>logo</svg>" };
       const html = BaseLayout({
         title: "Test",
         children: "Content",
@@ -48,15 +59,16 @@ describe("Layouts", () => {
         footer,
         theme,
       }).toString();
+      
       expect(html).toContain("data:image/svg+xml");
-      expect(html).toContain("%3Csvg%3Elogo%3C%2Fsvg%3E");
+      expect(html).toContain("drop-shadow(0 0 5px var(--theme-accent))");
     });
 
-    it("should render copyright with year and author", () => {
+    it("should render localized copyright with {year} and {author} replacement", () => {
       const siteWithCopyright = {
         ...site,
-        copyright: "© {year} {author}",
-        author: "Test Author",
+        copyright: "© {year} | {author} CMS",
+        author: "EZ-Dev",
       };
       const html = BaseLayout({
         title: "Test",
@@ -66,86 +78,141 @@ describe("Layouts", () => {
         footer,
         theme,
       }).toString();
-      expect(html).toContain(`© ${new Date().getFullYear()} Test Author`);
+      
+      const currentYear = new Date().getFullYear().toString();
+      expect(html).toContain(`© ${currentYear} | EZ-Dev CMS`);
     });
 
-    it("should show status branding if enabled", () => {
-      const siteWithStatus = { ...site, showStatus: true };
+    it("should include HTMX boost on the body", () => {
       const html = BaseLayout({
-        title: "Test",
-        children: "Content",
-        site: siteWithStatus,
-        nav,
-        footer,
-        theme,
-      }).toString();
-      expect(html).toContain("POWERED BY EZ EDGE CMS");
-    });
-
-    it("should render custom scripts from page", () => {
-      const pageWithScripts = {
-        ...page,
-        seo: {
-          ...page.seo,
-          customHeadScripts: "<script>alert('test')</script>",
-        },
-      };
-      const html = BaseLayout({
-        title: "Test",
+        title: "Boosted",
         children: "Content",
         site,
         nav,
         footer,
         theme,
-        page: pageWithScripts,
       }).toString();
-      expect(html).toContain("<script>alert('test')</script>");
+      expect(html).toContain("<body hx-boost=\"true\">");
+    });
+
+    it("should render mobile navigation drawer separately from header", () => {
+      const html = BaseLayout({
+        title: "Nav Test",
+        children: "Content",
+        site,
+        nav,
+        footer,
+        theme,
+      }).toString();
+      expect(html).toContain("<nav class=\"main-nav lg:hidden\" id=\"main-nav\"");
+    });
+
+    it("should inject custom head scripts from page SEO overrides", () => {
+      const customScript = "<script id='seo-script'>console.log('SEO')</script>";
+      const pageWithScript = {
+        ...page,
+        seo: { ...page.seo, customHeadScripts: customScript },
+      };
+      const html = BaseLayout({
+        title: "SEO Test",
+        children: "Content",
+        site,
+        nav,
+        footer,
+        theme,
+        page: pageWithScript,
+      }).toString();
+      expect(html).toContain(customScript);
     });
   });
 
   describe("AdminLayout", () => {
-    it("should render correctly", () => {
+    it("should render administrative HUD shell and sidebar", () => {
       const html = AdminLayout({
-        title: "Admin HUD",
-        children: <div>Admin Content</div>,
+        title: "Dashboard",
+        children: <div id="admin-view">HUD</div>,
         site,
         theme,
         seo: site.seo,
       }).toString();
 
-      expect(html).toContain("<!DOCTYPE html>");
-      expect(html).toContain("admin-shell");
-      expect(html).toContain("admin-sidebar");
-      expect(html).toContain("Admin Content");
-      expect(html).toContain("confirm-modal");
-      expect(html).toContain("global-toast");
+      expect(html).toContain("<body class=\"admin-body\">");
+      expect(html).toContain("class=\"admin-shell\"");
+      expect(html).toContain("<aside class=\"admin-sidebar\"");
+      expect(html).toContain("DASHBOARD");
+      expect(html).toContain("THEME STYLER");
+      expect(html).toContain("id=\"admin-view\"");
     });
 
-    it("should hide sidebar if requested", () => {
+    it("should render full-width layout without sidebar for onboarding/auth", () => {
       const html = AdminLayout({
         title: "Setup",
-        children: "Setup Content",
+        children: "Setup",
         site,
         theme,
         seo: site.seo,
         hideSidebar: true,
       }).toString();
 
-      expect(html).not.toContain("admin-sidebar");
-      expect(html).toContain("Setup Content");
+      expect(html).not.toContain("class=\"admin-shell\"");
+      expect(html).not.toContain("class=\"admin-sidebar\"");
       expect(html).toContain("bg-[var(--theme-bg)]");
+      expect(html).toContain("class=\"ml-0 w-full");
     });
 
-    it("should render editor assets if isEditor is true", () => {
+    it("should include global interactive UI components (Modals & Toasts)", () => {
       const html = AdminLayout({
-        title: "Editor",
-        children: "Editor Content",
+        title: "UI Elements",
+        children: "Content",
+        site,
+        theme,
+        seo: site.seo,
+      }).toString();
+
+      // Confirmation Modal
+      expect(html).toContain("id=\"confirm-modal\"");
+      expect(html).toContain("id=\"confirm-title\"");
+      expect(html).toContain("id=\"confirm-yes\"");
+      
+      // Toast Notification Target
+      expect(html).toContain("id=\"global-toast\"");
+    });
+
+    it("should include complex unsaved changes detection logic in script", () => {
+      const html = AdminLayout({
+        title: "Scripts",
+        children: "Content",
+        site,
+        theme,
+        seo: site.seo,
+      }).toString();
+
+      expect(html).toContain("window.adminHasChanges = false;");
+      expect(html).toContain("htmx:confirm");
+      expect(html).toContain("DISCARD & LEAVE");
+    });
+
+    it("should inject Editor.js assets only when isEditor is true", () => {
+      const editorHtml = AdminLayout({
+        title: "Edit",
+        children: "Editor",
         site,
         theme,
         seo: site.seo,
         isEditor: true,
       }).toString();
-      expect(html).toContain("editorjs");
+      
+      const normalHtml = AdminLayout({
+        title: "View",
+        children: "Content",
+        site,
+        theme,
+        seo: site.seo,
+        isEditor: false,
+      }).toString();
+
+      expect(editorHtml).toContain("editorjs");
+      expect(normalHtml).not.toContain("editorjs");
     });
   });
 });

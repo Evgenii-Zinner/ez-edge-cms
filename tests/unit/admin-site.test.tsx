@@ -1,4 +1,4 @@
-import { describe, it, expect, spyOn, mock, afterEach } from "bun:test";
+import { describe, it, expect, spyOn, mock, afterEach, beforeEach } from "bun:test";
 import { Hono } from "hono";
 import siteAdmin from "@routes/admin/site";
 import { GlobalConfigVariables } from "@core/middleware";
@@ -9,6 +9,12 @@ import { getSite, clearCache } from "@core/kv/config";
  * Tests for Administrative Site Settings and Maintenance.
  */
 describe("Admin Site Routes", () => {
+  beforeEach(() => {
+    // Silence console for clean output
+    spyOn(console, "error").mockImplementation(() => {});
+    spyOn(console, "log").mockImplementation(() => {});
+  });
+
   afterEach(() => {
     clearCache();
     mock.restore();
@@ -60,7 +66,7 @@ describe("Admin Site Routes", () => {
         },
         put: async (key: string, val: any) => {
           if (overrides.put) await overrides.put(key, val);
-          const finalVal = typeof val === "string" ? JSON.parse(val) : val;
+          const finalVal = typeof val === "string" ? (tryParse(val) || val) : val;
           store.set(key, finalVal);
         },
         delete: async (key: string) => {
@@ -74,6 +80,10 @@ describe("Admin Site Routes", () => {
       },
     } as any;
   };
+
+  function tryParse(v: any) {
+    try { return JSON.parse(v); } catch { return null; }
+  }
 
   describe("GET /admin/site", () => {
     it("should render the site settings interface", async () => {
@@ -281,8 +291,6 @@ describe("Admin Site Routes", () => {
       const formData = new FormData();
       formData.append("adminEmail", "invalid-email");
 
-      const spy = spyOn(console, "error").mockImplementation(() => {});
-
       const res = await app.request(
         "http://localhost/admin/site/save",
         {
@@ -294,14 +302,12 @@ describe("Admin Site Routes", () => {
 
       expect(res.status).toBe(200);
       expect(await res.text()).toContain("SAVE FAILED");
-      spy.mockRestore();
     });
   });
 
   describe("Maintenance Operations", () => {
     it("GET /backup should handle errors gracefully", async () => {
       const app = setupApp();
-      const spy = spyOn(console, "error").mockImplementation(() => {});
 
       const res = await app.request(
         "http://localhost/admin/site/backup",
@@ -315,7 +321,6 @@ describe("Admin Site Routes", () => {
 
       expect(res.status).toBe(500);
       expect(await res.json()).toEqual({ error: "KV Error" });
-      spy.mockRestore();
     });
 
     it("GET /backup should return JSON backup", async () => {
@@ -373,7 +378,6 @@ describe("Admin Site Routes", () => {
 
     it("POST /restore should fail if no file provided", async () => {
       const app = setupApp();
-      const spy = spyOn(console, "error").mockImplementation(() => {});
 
       const res = await app.request(
         "http://localhost/admin/site/restore",
@@ -385,7 +389,6 @@ describe("Admin Site Routes", () => {
       expect(await res.text()).toContain(
         "RESTORE FAILED: No backup file provided",
       );
-      spy.mockRestore();
     });
 
     it("POST /restore should fail if JSON is invalid", async () => {
@@ -394,8 +397,6 @@ describe("Admin Site Routes", () => {
       const file = new File([blob], "backup.json");
       const formData = new FormData();
       formData.append("backup", file);
-
-      const spy = spyOn(console, "error").mockImplementation(() => {});
 
       const res = await app.request(
         "http://localhost/admin/site/restore",
@@ -408,11 +409,34 @@ describe("Admin Site Routes", () => {
 
       expect(res.status).toBe(500);
       expect(await res.text()).toContain("RESTORE FAILED");
-      spy.mockRestore();
     });
   });
 
-  describe("Components Coverage", () => {
+  describe("Specific Component Scenarios", () => {
+    it("should render logo preview as Data URI when logoSvg is provided", async () => {
+      const siteWithLogo = { ...createDefaultSite(), logoSvg: "<svg id='test-logo'></svg>" };
+      const app = setupApp();
+      const env = mockEnv({ initialData: { "config:site": siteWithLogo } });
+
+      const res = await app.request("http://localhost/admin/site", {}, env);
+      const html = await res.text();
+      
+      expect(html).toContain('src="data:image/svg+xml');
+      expect(html).toContain("test-logo");
+    });
+
+    it("should render all functional elements of the BackupRestoreCard", async () => {
+      const app = setupApp();
+      const res = await app.request("http://localhost/admin/site", {}, mockEnv());
+      const html = await res.text();
+
+      expect(html).toContain('id="backup-progress-container"');
+      expect(html).toContain('id="backup-progress-bar"');
+      expect(html).toContain('id="restore-upload"');
+      expect(html).toContain('id="restore-filename"');
+      expect(html).toContain("RESTORE NOW");
+    });
+
     it("should handle missing logoSvg in BrandingCard and omit data URIs", async () => {
       // Create a site specifically WITHOUT a logo
       const siteWithoutLogo = createDefaultSite();
@@ -435,18 +459,6 @@ describe("Admin Site Routes", () => {
       // Proof that the logic works: no image data string is rendered in src or href
       expect(html).not.toContain('src="data:image/svg+xml');
       expect(html).not.toContain('href="data:image/svg+xml');
-    });
-
-    it("should render BackupRestoreCard via app request", async () => {
-      const app = setupApp();
-      const res = await app.request(
-        "http://localhost/admin/site",
-        { method: "GET" },
-        mockEnv(),
-      );
-      const html = await res.text();
-      expect(html).toContain("Backup &amp; Restore");
-      expect(html).toContain("START BACKUP");
     });
   });
 });

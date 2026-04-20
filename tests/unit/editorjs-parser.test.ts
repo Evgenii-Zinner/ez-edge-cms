@@ -1,4 +1,4 @@
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe, beforeAll, spyOn } from "bun:test";
 import {
   renderEditorJs,
   EditorJsData,
@@ -6,6 +6,13 @@ import {
 } from "../../src/utils/editorjs-parser";
 
 describe("EditorJsParser", () => {
+  // Silence console during tests to keep output clean
+  beforeAll(() => {
+    spyOn(console, "log").mockImplementation(() => {});
+    spyOn(console, "error").mockImplementation(() => {});
+    spyOn(console, "warn").mockImplementation(() => {});
+  });
+
   test("should return empty string for invalid data", () => {
     expect(renderEditorJs(null as any)).toBe("");
     expect(renderEditorJs({} as any)).toBe("");
@@ -19,10 +26,15 @@ describe("EditorJsParser", () => {
           type: "header",
           data: { text: "Hello World", level: 2 },
         },
+        {
+          type: "header",
+          data: { text: "Sub Header", level: 3 },
+        },
       ],
     };
     const html = renderEditorJs(data);
     expect(html).toContain("<h2>Hello World</h2>");
+    expect(html).toContain("<h3>Sub Header</h3>");
   });
 
   test("should render paragraph blocks", () => {
@@ -51,6 +63,19 @@ describe("EditorJsParser", () => {
     expect(html).toBe("<ul><li>Item 1</li><li>Item 2</li></ul>");
   });
 
+  test("should handle empty or malformed list items", () => {
+    const data: EditorJsData = {
+      blocks: [
+        {
+          type: "list",
+          data: { style: "ordered", items: null },
+        },
+      ],
+    };
+    const html = renderEditorJs(data);
+    expect(html).toBe("<ol></ol>");
+  });
+
   test("should render nested List v2 items", () => {
     const data: EditorJsData = {
       blocks: [
@@ -72,7 +97,7 @@ describe("EditorJsParser", () => {
     expect(html).toBe("<ol><li>Parent<ol><li>Child</li></ol></li></ol>");
   });
 
-  test("should render images with wrapper classes", () => {
+  test("should render images with wrapper classes and variations", () => {
     const data: EditorJsData = {
       blocks: [
         {
@@ -80,12 +105,15 @@ describe("EditorJsParser", () => {
           data: {
             url: "https://example.com/img.png",
             caption: "Beautiful View",
+            stretched: true,
+            withBorder: true,
+            withBackground: true,
           },
         },
       ],
     };
     const html = renderEditorJs(data);
-    expect(html).toContain('class="content-frame"');
+    expect(html).toContain('class="content-frame image-stretched image-with-border image-with-background"');
     expect(html).toContain('src="https://example.com/img.png"');
     expect(html).toContain('alt="Beautiful View"');
     expect(html).toContain("Beautiful View</div>");
@@ -109,12 +137,16 @@ describe("EditorJsParser", () => {
     expect(html).toContain('src="/images/slug/image.webp"');
   });
 
-  test("should render hero blocks", () => {
+  test("should render hero blocks with title and optional subtitle", () => {
     const data: EditorJsData = {
       blocks: [
         {
           type: "hero",
           data: { url: "/hero.jpg", title: "HERO TITLE", subtitle: "Sub" },
+        },
+        {
+          type: "hero",
+          data: { url: "/hero2.jpg", title: "TITLE ONLY" },
         },
       ],
     };
@@ -122,9 +154,10 @@ describe("EditorJsParser", () => {
     expect(html).toContain("background-image: url('/hero.jpg')");
     expect(html).toContain("HERO TITLE");
     expect(html).toContain("Sub");
+    expect(html).toContain("TITLE ONLY");
   });
 
-  test("should render table blocks", () => {
+  test("should render table blocks with headings", () => {
     const data: EditorJsData = {
       blocks: [
         {
@@ -140,10 +173,26 @@ describe("EditorJsParser", () => {
       ],
     };
     const html = renderEditorJs(data);
-    expect(html).toContain("<table");
     expect(html).toContain("<thead");
     expect(html).toContain("H1");
     expect(html).toContain("R1C1");
+  });
+
+  test("should render table blocks without headings", () => {
+    const data: EditorJsData = {
+      blocks: [
+        {
+          type: "table",
+          data: {
+            withHeadings: false,
+            content: [["Simple", "Cell"]],
+          },
+        },
+      ],
+    };
+    const html = renderEditorJs(data);
+    expect(html).not.toContain("<thead");
+    expect(html).toContain("Simple");
   });
 
   test("should render code blocks", () => {

@@ -6,7 +6,7 @@
  * consistency and reduce duplication across admin interfaces.
  */
 
-import { Child, PropsWithChildren } from "hono/jsx";
+import { Child, PropsWithChildren, JSX } from "hono/jsx";
 
 /**
  * Props for the AdminCard component.

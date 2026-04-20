@@ -44,7 +44,8 @@ export async function checkRateLimit(
    * If the key does not exist, it defaults to zero.
    */
   const current = await env.EZ_CONTENT.get(key);
-  const count = current ? parseInt(current, 10) : 0;
+  let count = current ? parseInt(current, 10) : 0;
+  if (isNaN(count)) count = 0;
 
   if (count >= limit) {
     return { success: false, remaining: 0, limit };

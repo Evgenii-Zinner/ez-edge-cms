@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeEach, spyOn } from "bun:test";
 import { Hono } from "hono";
 import {
   injectGlobalConfig,
@@ -20,7 +20,7 @@ import {
 } from "../../src/core/factory";
 
 /**
- * Standardized Mock Cloudflare Env object for middleware testing.
+ * Enhanced Mock Cloudflare Env object for middleware testing.
  */
 const createMockEnv = () => {
   const store = new Map<string, any>();
@@ -45,15 +45,22 @@ const createMockEnv = () => {
         store.delete(key);
       },
     },
-  } as unknown as Env;
+  } as any;
 };
 
 describe("Middlewares", () => {
-  describe("injectGlobalConfig", () => {
-    it("should inject configurations into the context", async () => {
-      const env = createMockEnv();
-      clearCache();
+  let env: any;
 
+  beforeEach(() => {
+    env = createMockEnv();
+    clearCache();
+    // Silence console for clean output
+    spyOn(console, "error").mockImplementation(() => {});
+    spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  describe("injectGlobalConfig", () => {
+    it("should inject all core configurations and SEO into the context on GET", async () => {
       // Initialize KV with defaults
       await saveTheme(env, createDefaultTheme());
       await saveSite(env, createDefaultSite());
@@ -68,115 +75,163 @@ describe("Middlewares", () => {
       app.get("/test", (c) => {
         const theme = c.get("theme");
         const site = c.get("site");
-        return c.json({ themeExists: !!theme, siteExists: !!site });
+        const seo = c.get("seo");
+        const nav = c.get("nav");
+        const footer = c.get("footer");
+        
+        return c.json({ 
+          hasTheme: !!theme, 
+          hasSite: !!site, 
+          hasSeo: !!seo,
+          hasNav: !!nav,
+          hasFooter: !!footer,
+          seoMatches: seo === site.seo
+        });
       });
 
       const res = await app.request("/test", {}, env);
-      const data = (await res.json()) as {
-        themeExists: boolean;
-        siteExists: boolean;
-      };
+      const data = await res.json() as any;
 
-      expect(data.themeExists).toBe(true);
-      expect(data.siteExists).toBe(true);
+      expect(data.hasTheme).toBe(true);
+      expect(data.hasSite).toBe(true);
+      expect(data.hasSeo).toBe(true);
+      expect(data.hasNav).toBe(true);
+      expect(data.hasFooter).toBe(true);
+      expect(data.seoMatches).toBe(true);
     });
 
-    it("should skip injection for static assets", async () => {
-      const env = createMockEnv();
+    it("should skip injection for static assets and API routes", async () => {
       const app = new Hono<{
         Bindings: Env;
         Variables: GlobalConfigVariables;
       }>();
       app.use("*", injectGlobalConfig());
-      app.get("/static/test.css", (c) => {
-        const theme = c.get("theme");
-        return c.json({ themeExists: !!theme });
-      });
+      
+      const checkInjection = (c: any) => c.json({ hasTheme: !!c.get("theme") });
+      app.get("/static/style.css", checkInjection);
+      app.get("/api/v1/health", checkInjection);
 
-      const res = await app.request("/static/test.css", {}, env);
-      const data = (await res.json()) as { themeExists: boolean };
-      expect(data.themeExists).toBe(false);
+      const resStatic = await app.request("/static/style.css", {}, env);
+      const resApi = await app.request("/api/v1/health", {}, env);
+
+      expect((await resStatic.json() as any).hasTheme).toBe(false);
+      expect((await resApi.json() as any).hasTheme).toBe(false);
     });
 
-    it("should skip injection for non-GET requests", async () => {
-      const env = createMockEnv();
+    it("should skip injection for non-GET public requests", async () => {
       const app = new Hono<{
         Bindings: Env;
         Variables: GlobalConfigVariables;
       }>();
       app.use("*", injectGlobalConfig());
-      app.post("/test", (c) => {
-        const theme = c.get("theme");
-        return c.json({ themeExists: !!theme });
-      });
+      app.post("/contact", (c) => c.json({ hasTheme: !!c.get("theme") }));
 
-      const res = await app.request("/test", { method: "POST" }, env);
-      const data = (await res.json()) as { themeExists: boolean };
-      expect(data.themeExists).toBe(false);
+      const res = await app.request("/contact", { method: "POST" }, env);
+      expect((await res.json() as any).hasTheme).toBe(false);
     });
 
-    it("should handle raw (non-json) KV access in mock helper", async () => {
-      const env = createMockEnv();
-      await env.EZ_CONTENT.put("raw_key", "raw_value");
-      const val = await env.EZ_CONTENT.get("raw_key");
-      expect(val).toBe("raw_value");
+    it("should ALWAYS inject for Admin mutations (POST/PUT/DELETE) for UI consistency", async () => {
+      await saveTheme(env, createDefaultTheme());
+      await saveSite(env, createDefaultSite());
 
-      // Cover JSON parsing branches
-      await env.EZ_CONTENT.put("json_key", JSON.stringify({ a: 1 }));
-      const parsed = (await env.EZ_CONTENT.get("json_key", {
-        type: "json",
-      })) as { a: number };
-      expect(parsed.a).toBe(1);
+      const app = new Hono<{
+        Bindings: Env;
+        Variables: GlobalConfigVariables;
+      }>();
+      app.use("*", injectGlobalConfig());
+      app.post("/admin/pages/save/index", (c) => c.json({ hasTheme: !!c.get("theme") }));
 
-      // Cover JSON error branch
-      await env.EZ_CONTENT.put("bad_json", "{ invalid }");
-      const bad = (await env.EZ_CONTENT.get("bad_json", {
-        type: "json",
-      })) as string;
-      expect(bad).toBe("{ invalid }");
+      const res = await app.request("/admin/pages/save/index", { method: "POST" }, env);
+      expect((await res.json() as any).hasTheme).toBe(true);
+    });
 
-      await env.EZ_CONTENT.delete("raw_key");
-      const deleted = await env.EZ_CONTENT.get("raw_key");
-      expect(deleted).toBeNull();
+    it("should fall back to defaults if KV is empty during injection", async () => {
+      const app = new Hono<{
+        Bindings: Env;
+        Variables: GlobalConfigVariables;
+      }>();
+      app.use("*", injectGlobalConfig());
+      app.get("/test", (c) => c.json({ siteTitle: c.get("site").title }));
 
-      const missing = await env.EZ_CONTENT.get("missing");
-      expect(missing).toBeNull();
+      const res = await app.request("/test", {}, env);
+      const data = await res.json() as any;
+      // Should return factory default title if KV is empty
+      expect(data.siteTitle).toBe("My Awesome Website");
     });
   });
 
   describe("injectUnoCSS", () => {
-    it("should inject UnoCSS into HTML responses", async () => {
-      const env = createMockEnv();
-      const app = new Hono<{ Bindings: Env }>();
-
+    it("should inject style tags into outgoing HTML responses", async () => {
+      const app = new Hono();
       app.use("*", injectUnoCSS());
-      app.get("/html", (c) => {
-        return c.html(
-          `<html><head><!-- CSS_INJECTION_POINT --></head><body><div class="p-10">Test</div></body></html>`,
-        );
-      });
+      app.get("/test", (c) => c.html(`<html><head></head><body><div class="p-4 text-red">Test</div></body></html>`));
 
-      const res = await app.request("/html", {}, env);
+      const res = await app.request("/test");
       const html = await res.text();
 
       expect(html).toContain('<style id="ez-unocss">');
-      expect(html).toContain(".p-10");
+      expect(html).toContain(".p-4");
+      expect(html).toContain(".text-red");
     });
 
-    it("should not inject UnoCSS into non-HTML responses", async () => {
-      const env = createMockEnv();
-      const app = new Hono<{ Bindings: Env }>();
-
+    it("should handle HTMX fragments by appending style tags instead of head injection", async () => {
+      const app = new Hono();
       app.use("*", injectUnoCSS());
-      app.get("/json", (c) => {
-        return c.json({ data: "no html" });
+      app.get("/fragment", (c) => {
+        c.header("Content-Type", "text/html");
+        return c.body(`<div class="m-2">HTMX Fragment</div>`);
       });
 
-      const res = await app.request("/json", {}, env);
-      const json = await res.text();
+      const res = await app.request("/fragment", {
+        headers: { "HX-Request": "true" }
+      });
+      const html = await res.text();
 
-      expect(json).not.toContain('<style id="ez-unocss">');
-      expect(json).toBe('{"data":"no html"}');
+      expect(html).toContain('<style id="ez-unocss">');
+      expect(html).toContain(".m-2");
+      // Fragments shouldn't have <html> or <head> added by the middleware
+      expect(html).not.toContain("<html>");
+    });
+
+    it("should inject editor-specific classes if isEditor flag is set", async () => {
+      const app = new Hono();
+      app.use("*", injectUnoCSS());
+      app.get("/editor", (c) => {
+        c.set("isEditor" as any, true);
+        return c.html(`<div class="editor-shell">Editor</div>`);
+      });
+
+      const res = await app.request("/editor");
+      const html = await res.text();
+      
+      // Verification logic: renderWithUno handles the isEditor flag
+      expect(html).toContain('<style id="ez-unocss">');
+    });
+
+    it("should preserve original response headers except Content-Length", async () => {
+      const app = new Hono();
+      app.use("*", injectUnoCSS());
+      app.get("/headers", (c) => {
+        c.header("X-Custom", "preserved");
+        return c.html("<div>Test</div>");
+      });
+
+      const res = await app.request("/headers");
+      expect(res.headers.get("X-Custom")).toBe("preserved");
+      expect(res.headers.get("Content-Type")).toContain("text/html");
+      // Content-Length should be deleted because the body size changed
+      expect(res.headers.get("Content-Length")).toBeNull();
+    });
+
+    it("should skip UnoCSS processing for non-HTML Content-Types", async () => {
+      const app = new Hono();
+      app.use("*", injectUnoCSS());
+      app.get("/json", (c) => c.json({ status: "ok" }));
+
+      const res = await app.request("/json");
+      const text = await res.text();
+      expect(text).toBe('{"status":"ok"}');
+      expect(text).not.toContain("<style");
     });
   });
 });

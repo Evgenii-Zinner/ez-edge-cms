@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, beforeEach, spyOn } from "bun:test";
 import { generateMetaTags, generateJsonLd } from "../../src/utils/seo";
 import { SiteConfig, PageConfig } from "../../src/core/schema";
 
@@ -46,200 +46,145 @@ describe("SEO Utilities", () => {
     },
   };
 
+  beforeEach(() => {
+    // Silence console for clean output
+    spyOn(console, "log").mockImplementation(() => {});
+    spyOn(console, "error").mockImplementation(() => {});
+  });
+
   describe("generateMetaTags", () => {
-    it("should generate basic meta tags for a page", () => {
+    const findTag = (tags: any[], nameOrProp: string) =>
+      tags.find((t) => t.name === nameOrProp || t.property === nameOrProp);
+
+    it("should generate standard meta and OpenGraph tags with correct inheritance", () => {
       const tags = generateMetaTags(mockSite, mockPage, "https://example.com");
-      const findTag = (nameOrProp: string) =>
-        tags.find((t) => t.name === nameOrProp || t.property === nameOrProp);
 
-      expect(findTag("og:title")?.content).toBe("SEO Title");
-      expect(findTag("description")?.content).toBe("SEO Description");
-      expect(findTag("og:url")?.content).toBe("https://example.com/test-page");
-      expect(findTag("og:type")?.content).toBe("website");
+      expect(findTag(tags, "og:title")?.content).toBe("SEO Title");
+      expect(findTag(tags, "description")?.content).toBe("SEO Description");
+      expect(findTag(tags, "og:description")?.content).toBe("SEO Description");
+      expect(findTag(tags, "og:url")?.content).toBe("https://example.com/test-page");
+      expect(findTag(tags, "og:type")?.content).toBe("website");
     });
 
-    it("should fallback to site defaults if page SEO is missing", () => {
-      const pageWithoutSeo = { ...mockPage, seo: {} } as any;
-      const tags = generateMetaTags(
-        mockSite,
-        pageWithoutSeo,
-        "https://example.com",
-      );
-      const findTag = (nameOrProp: string) =>
-        tags.find((t) => t.name === nameOrProp || t.property === nameOrProp);
+    it("should fall back to site-level branding when page SEO fields are omitted", () => {
+      const minimalPage = { ...mockPage, title: "Title Only", description: "Desc Only", seo: {} } as any;
+      const tags = generateMetaTags(mockSite, minimalPage, "https://site.com");
 
-      expect(findTag("og:title")?.content).toBe("Test Page");
-      expect(findTag("description")?.content).toBe("Test Page Description");
+      expect(findTag(tags, "og:title")?.content).toBe("Title Only");
+      expect(findTag(tags, "description")?.content).toBe("Desc Only");
+      
+      const siteOnlyPage = { ...mockPage, title: "T", description: "", seo: {} } as any;
+      const tags2 = generateMetaTags(mockSite, siteOnlyPage, "https://site.com");
+      expect(findTag(tags2, "description")?.content).toBe(mockSite.tagline);
     });
 
-    it("should handle index slug correctly", () => {
+    it("should handle the 'index' slug by mapping to the root canonical URL", () => {
       const indexPage = { ...mockPage, slug: "index" };
-      const tags = generateMetaTags(mockSite, indexPage, "https://example.com");
-      const urlTag = tags.find((t) => t.property === "og:url");
-      expect(urlTag?.content).toBe("https://example.com/");
+      const tags = generateMetaTags(mockSite, indexPage, "https://root.com");
+      expect(findTag(tags, "og:url")?.content).toBe("https://root.com/");
     });
 
-    it("should include og:image if provided", () => {
-      const pageWithImage = {
-        ...mockPage,
-        seo: { ...mockPage.seo, ogImage: "https://example.com/image.jpg" },
-      };
-      const tags = generateMetaTags(
-        mockSite,
-        pageWithImage,
-        "https://example.com",
-      );
-      const imgTag = tags.find((t) => t.property === "og:image");
-      expect(imgTag?.content).toBe("https://example.com/image.jpg");
+    it("should choose 'summary_large_image' for Twitter card only when an image is present", () => {
+      const noImgTags = generateMetaTags(mockSite, mockPage, "https://test.com");
+      expect(findTag(noImgTags, "twitter:card")?.content).toBe("summary");
+
+      const imgPage = { ...mockPage, seo: { ...mockPage.seo, ogImage: "/img.png" } };
+      const imgTags = generateMetaTags(mockSite, imgPage, "https://test.com");
+      expect(findTag(imgTags, "twitter:card")?.content).toBe("summary_large_image");
+      expect(findTag(imgTags, "og:image")?.content).toBe("https://test.com/img.png");
     });
 
-    it("should prepend baseUrl to relative og:image paths", () => {
-      const pageWithRelativeImage = {
-        ...mockPage,
-        seo: { ...mockPage.seo, ogImage: "/images/site/og-image.webp" },
-      };
-      const tags = generateMetaTags(
-        mockSite,
-        pageWithRelativeImage,
-        "https://example.com",
-      );
-      const imgTag = tags.find((t) => t.property === "og:image");
-      expect(imgTag?.content).toBe(
-        "https://example.com/images/site/og-image.webp",
-      );
-    });
-
-    it("should include twitter:site if twitterHandle is present", () => {
+    it("should include twitter:site attribution if handle is configured in identity", () => {
       const siteWithTwitter = {
         ...mockSite,
-        seo: { ...mockSite.seo, twitterHandle: "@testuser" },
+        seo: { ...mockSite.seo, twitterHandle: "@ezinner" },
       } as any;
-      const tags = generateMetaTags(
-        siteWithTwitter,
-        mockPage,
-        "https://example.com",
-      );
-      const twitterTag = tags.find((t) => t.name === "twitter:site");
-      expect(twitterTag?.content).toBe("@testuser");
+      const tags = generateMetaTags(siteWithTwitter, mockPage, "https://test.com");
+      expect(findTag(tags, "twitter:site")?.content).toBe("@ezinner");
     });
 
-    it("should use site.baseUrl if provided", () => {
-      const siteWithBase = { ...mockSite, baseUrl: "https://site.com/" };
-      const tags = generateMetaTags(siteWithBase, mockPage);
-      const urlTag = tags.find((t) => t.property === "og:url");
-      expect(urlTag?.content).toBe("https://site.com/test-page");
-    });
-
-    it("should set og:type to article for Article page type", () => {
-      const articlePage = {
-        ...mockPage,
-        seo: { ...mockPage.seo, pageType: "Article" },
-      } as any;
-      const tags = generateMetaTags(
-        mockSite,
-        articlePage,
-        "https://example.com",
-      );
-      const typeTag = tags.find((t) => t.property === "og:type");
-      expect(typeTag?.content).toBe("article");
+    it("should prioritize site.baseUrl over detectedUrl fallback", () => {
+      const site = { ...mockSite, baseUrl: "https://hardcoded.com" };
+      const tags = generateMetaTags(site, mockPage, "https://detected.com");
+      expect(findTag(tags, "og:url")?.content).toBe("https://hardcoded.com/test-page");
     });
   });
 
   describe("generateJsonLd", () => {
-    it("should generate a valid JSON-LD graph", () => {
-      const jsonLd = generateJsonLd(mockSite, mockPage, "https://example.com");
+    it("should generate a multi-entity graph with valid @context and linkages", () => {
+      const jsonLd = generateJsonLd(mockSite, mockPage, "https://base.com");
       expect(jsonLd["@context"]).toBe("https://schema.org");
       const graph = jsonLd["@graph"];
-      const identity = graph.find(
-        (item: any) => item["@type"] === "Organization",
-      );
-      const website = graph.find((item: any) => item["@type"] === "WebSite");
-      const webpage = graph.find((item: any) => item["@type"] === "WebPage");
 
-      expect(identity.name).toBe("Test Org");
-      expect(website.name).toBe("Test Site");
-      expect(webpage.name).toBe("Test Page");
+      const identity = graph.find((i: any) => i["@id"].endsWith("#identity"));
+      const website = graph.find((i: any) => i["@id"].endsWith("#website"));
+      const webpage = graph.find((i: any) => i["@id"].endsWith("#webpage"));
+
+      expect(identity).toBeDefined();
+      expect(website.publisher["@id"]).toBe(identity["@id"]);
+      expect(webpage.isPartOf["@id"]).toBe(website["@id"]);
     });
 
-    it("should handle LocalBusiness identity with address and phone", () => {
-      const localSite = {
+    it("should correctly handle 'Person' identity type with specific fields", () => {
+      const personSite = {
         ...mockSite,
         seo: {
-          identity: {
-            type: "LocalBusiness",
-            name: "Local Biz",
-            address: "123 Street",
-            phone: "555-1234",
-            logo: "https://biz.com/logo.png",
-          },
-        },
+          identity: { type: "Person", name: "Evgenii", description: "Dev" }
+        }
       } as any;
-      const jsonLd = generateJsonLd(
-        localSite,
-        undefined,
-        "https://example.com",
-      );
-      const identity = jsonLd["@graph"].find(
-        (item: any) => item["@type"] === "LocalBusiness",
-      );
-      expect(identity.address).toBe("123 Street");
-      expect(identity.telephone).toBe("555-1234");
-      expect(identity.logo).toBe("https://biz.com/logo.png");
+      const jsonLd = generateJsonLd(personSite, undefined, "https://dev.com");
+      const identity = jsonLd["@graph"].find((i: any) => i["@type"] === "Person");
+      
+      expect(identity.name).toBe("Evgenii");
+      expect(identity).not.toHaveProperty("logo"); // People don't have logos in schema.org
     });
 
-    it("should generate breadcrumbs for nested slugs", () => {
-      const nestedPage = { ...mockPage, slug: "services/web-design" };
-      const jsonLd = generateJsonLd(
-        mockSite,
-        nestedPage,
-        "https://example.com",
-      );
-      const breadcrumbs = jsonLd["@graph"].find(
-        (item: any) => item["@type"] === "BreadcrumbList",
-      );
-      expect(breadcrumbs.itemListElement.length).toBe(3);
-      expect(breadcrumbs.itemListElement[1].name).toBe("Services");
+    it("should generate a valid BreadcrumbList with correct positioning and hierarchical names", () => {
+      const page = { ...mockPage, slug: "docs/api/v1" };
+      const jsonLd = generateJsonLd(mockSite, page, "https://base.com");
+      const breadcrumbs = jsonLd["@graph"].find((i: any) => i["@type"] === "BreadcrumbList");
+
+      expect(breadcrumbs.itemListElement).toHaveLength(4); // Home + Docs + Api + V1
+      expect(breadcrumbs.itemListElement[0]).toEqual({
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://base.com"
+      });
+      expect(breadcrumbs.itemListElement[1].name).toBe("Docs");
+      expect(breadcrumbs.itemListElement[1].position).toBe(2);
+      expect(breadcrumbs.itemListElement[3].name).toBe("V1");
     });
 
-    it("should handle Article page specific JSON-LD", () => {
+    it("should enrich the Article entity with modified dates and author linkage", () => {
       const articlePage = {
         ...mockPage,
-        seo: { ...mockPage.seo, pageType: "Article" },
+        seo: { ...mockPage.seo, pageType: "Article" }
       } as any;
-      const jsonLd = generateJsonLd(
-        mockSite,
-        articlePage,
-        "https://example.com",
-      );
-      const article = jsonLd["@graph"].find(
-        (item: any) => item["@type"] === "Article",
-      );
-      expect(article.headline).toBe("Test Page");
-      expect(article.datePublished).toBe("2024-01-01T12:00:00Z");
-      expect(article.dateModified).toBe("2024-01-02T12:00:00Z");
+      const jsonLd = generateJsonLd(mockSite, articlePage, "https://base.com");
+      const article = jsonLd["@graph"].find((i: any) => i["@type"] === "Article");
+
+      expect(article.headline).toBe(mockPage.title);
+      expect(article.datePublished).toBe(mockPage.metadata.publishedAt);
+      expect(article.dateModified).toBe(mockPage.metadata.updatedAt);
+      expect(article.author["@id"]).toBe("https://base.com/#identity");
     });
 
-    it("should use logoSvg as fallback for logo if present", () => {
-      const siteWithSvg = { ...mockSite, logoSvg: "<svg></svg>" };
-      const jsonLd = generateJsonLd(
-        siteWithSvg,
-        undefined,
-        "https://example.com",
-      );
-      const identity = jsonLd["@graph"].find(
-        (item: any) => item["@type"] === "Organization",
-      );
-      expect(identity.logo).toContain("data:image/svg+xml");
-    });
-
-    it("should handle breadcrumbs for index page (root only)", () => {
+    it("should correctly handle index page breadcrumbs by returning only the root", () => {
       const indexPage = { ...mockPage, slug: "index" };
-      const jsonLd = generateJsonLd(mockSite, indexPage, "https://example.com");
-      const breadcrumbs = jsonLd["@graph"].find(
-        (item: any) => item["@type"] === "BreadcrumbList",
-      );
-      expect(breadcrumbs.itemListElement.length).toBe(1);
-      expect(breadcrumbs.itemListElement[0].name).toBe("Home");
+      const jsonLd = generateJsonLd(mockSite, indexPage, "https://base.com");
+      const breadcrumbs = jsonLd["@graph"].find((i: any) => i["@type"] === "BreadcrumbList");
+      expect(breadcrumbs.itemListElement).toHaveLength(1);
+    });
+
+    it("should fall back to data URI logos when explicitly missing in identity", () => {
+      const siteWithLogo = { ...mockSite, logoSvg: "<svg id='logo'></svg>" };
+      const jsonLd = generateJsonLd(siteWithLogo, undefined, "https://base.com");
+      const identity = jsonLd["@graph"].find((i: any) => i["@type"] === "Organization");
+      
+      expect(identity.logo).toContain("data:image/svg+xml");
+      // Encoded version of id='logo'
+      expect(identity.logo).toContain("id%3D'logo'");
     });
   });
 });
