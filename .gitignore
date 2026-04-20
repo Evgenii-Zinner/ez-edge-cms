@@ -49,5 +49,6 @@ docs/
 unocss-docs/
 editorjs-docs/
 temp-editorjs/
+temp-kv-state/
 results/
 typedoc.config.js

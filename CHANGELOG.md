@@ -115,3 +115,7 @@
 ## [0.1.28] - 2026-04-19
 
 - test: expand administrative test coverage
+
+## [0.1.29] - 2026-04-21
+
+- fix(ts): resolve typescript errors and onboarding e2e timeout, expand test coverage
