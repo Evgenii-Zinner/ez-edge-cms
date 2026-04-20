@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeAll, spyOn } from "bun:test";
 import { Hono } from "hono";
 import themeAdmin from "@routes/admin/theme";
 import { GlobalConfigVariables } from "@core/middleware";
@@ -8,8 +8,16 @@ import { createDefaultTheme, createDefaultSite } from "@core/factory";
  * Tests for Administrative Theme Styler.
  */
 describe("Admin Theme Routes", () => {
+  // Silence console during tests to keep output clean
+  beforeAll(() => {
+    spyOn(console, "log").mockImplementation(() => {});
+    spyOn(console, "error").mockImplementation(() => {});
+    spyOn(console, "warn").mockImplementation(() => {});
+  });
+
   const setupApp = () => {
     const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
+    
     app.use("*", async (c, next) => {
       const site = createDefaultSite();
       c.set("theme", createDefaultTheme());
@@ -78,10 +86,53 @@ describe("Admin Theme Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      expect(await res.text()).toContain("THEME SAVED");
+      const body = await res.text();
+      expect(body).toContain("THEME SAVED");
+      expect(body).toContain("success"); // Check semantic type in toast
       expect(savedTheme.values.primary_hue).toBe(200);
       expect(savedTheme.values.primary_sat).toBe("50%");
       expect(savedTheme.values.boot_speed).toBe("0.8s");
+      expect(savedTheme.updatedAt).toBeDefined();
+    });
+
+    it("should fail validation for out-of-range values", async () => {
+      const app = setupApp();
+      const formData = new FormData();
+      formData.append("primary_hue", "400"); // Max 360
+
+      const res = await app.request("http://localhost/admin/theme/save", {
+        method: "POST",
+        body: formData,
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.text();
+      expect(body).toContain("SAVE FAILED");
+      expect(body).toContain("primary_hue"); // Should mention the field in Zod error
+    });
+
+    it("should handle KV persistence failure", async () => {
+      const app = setupApp();
+      const formData = new FormData();
+      formData.append("primary_hue", "200");
+
+      const res = await app.request(
+        "http://localhost/admin/theme/save",
+        {
+          method: "POST",
+          body: formData,
+        },
+        {
+          EZ_CONTENT: {
+            put: async () => {
+              throw new Error("KV Persistence Error");
+            },
+          },
+        } as any,
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain("SAVE FAILED: KV Persistence Error");
     });
   });
 
@@ -107,6 +158,28 @@ describe("Admin Theme Routes", () => {
       expect(res.status).toBe(200);
       expect(res.headers.get("HX-Refresh")).toBe("true");
       expect(resetSaved).toBe(true);
+    });
+
+    it("should handle KV failure on reset", async () => {
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/theme/reset",
+        {
+          method: "POST",
+        },
+        {
+          EZ_CONTENT: {
+            put: async () => {
+              throw new Error("KV Failure");
+            },
+          },
+        } as any,
+      );
+
+      // Current implementation of reset doesn't have a try-catch for the put operation,
+      // it might throw a 500 or crash if not handled by Hono's global error handler.
+      // Based on mutations.tsx, it's not wrapped in try-catch.
+      expect(res.status).toBe(500);
     });
   });
 });

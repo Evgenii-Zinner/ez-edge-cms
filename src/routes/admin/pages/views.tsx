@@ -140,15 +140,11 @@ views.get("/edit/:slug{.+}", async (c): Promise<Response> => {
     let lastSaved = "UNKNOWN";
     let lastPublished = "NEVER";
 
-    try {
-      if (page.metadata?.updatedAt) {
-        lastSaved = new Date(page.metadata.updatedAt).toLocaleString();
-      }
-      if (page.metadata?.publishedAt) {
-        lastPublished = new Date(page.metadata.publishedAt).toLocaleString();
-      }
-    } catch (e) {
-      console.error("Failed to parse page metadata dates", e);
+    if (page.metadata?.updatedAt) {
+      lastSaved = new Date(page.metadata.updatedAt).toLocaleString();
+    }
+    if (page.metadata?.publishedAt) {
+      lastPublished = new Date(page.metadata.publishedAt).toLocaleString();
     }
 
     const headerDescription = (
