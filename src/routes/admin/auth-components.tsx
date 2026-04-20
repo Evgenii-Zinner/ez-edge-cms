@@ -4,6 +4,7 @@
  * @description UI components for the administrative authentication flow.
  */
 
+import type { FC } from "hono/jsx";
 import { AdminField } from "@components/AdminUI";
 
 /**
@@ -13,10 +14,10 @@ import { AdminField } from "@components/AdminUI";
  * @param props - Component properties.
  * @returns A JSX element representing the setup form.
  */
-export const SetupForm = (props: {
+export const SetupForm: FC<{
   username?: string;
   error?: string;
-}): JSX.Element => (
+}> = (props) => (
   <form
     id="setup-form"
     hx-post="/admin/setup"
@@ -71,10 +72,10 @@ export const SetupForm = (props: {
  * @param props - Component properties.
  * @returns A JSX element representing the login form.
  */
-export const LoginForm = (props: {
+export const LoginForm: FC<{
   username?: string;
   error?: string;
-}): JSX.Element => (
+}> = (props) => (
   <form
     id="login-form"
     hx-post="/admin/login"

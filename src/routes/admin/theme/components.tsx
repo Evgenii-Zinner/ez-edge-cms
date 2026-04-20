@@ -4,6 +4,7 @@
  * @description Shared UI components for the Theme Styler.
  */
 
+import type { FC } from "hono/jsx";
 import { html } from "hono/html";
 
 /**
@@ -12,7 +13,7 @@ import { html } from "hono/html";
  *
  * @returns A JSX element containing the site preview.
  */
-export const ThemePreview = (): JSX.Element => {
+export const ThemePreview: FC = () => {
   return (
     <div class="relative border border-solid border-[var(--theme-accent-glow)] rounded-lg overflow-hidden">
       <style id="preview-theme-styles"></style>
@@ -99,15 +100,13 @@ export const ThemePreview = (): JSX.Element => {
   );
 };
 
-import { HtmlEscapedString } from "hono/utils/html";
-
 /**
  * Component: ThemePreviewScript
  * Injects the client-side logic for real-time CSS variable updates.
  *
  * @returns A Hono HTML template string.
  */
-export const ThemePreviewScript = (): HtmlEscapedString => {
+export const ThemePreviewScript = () => {
   return html`
     <script>
       (function () {
@@ -197,7 +196,7 @@ export const ThemePreviewScript = (): HtmlEscapedString => {
  * @param props - Component properties containing the array of font names.
  * @returns A JSX element containing the link tag.
  */
-export const ThemeFontPreloader = (props: { fonts: string[] }): JSX.Element => {
+export const ThemeFontPreloader: FC<{ fonts: string[] }> = (props) => {
   const { fonts } = props;
   const uniqueFonts = [...new Set(fonts)];
 

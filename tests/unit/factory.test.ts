@@ -76,7 +76,10 @@ describe("Factory Utilities", () => {
     });
 
     it("should allow partial overrides", () => {
-      const theme = createDefaultTheme({ primary_hue: 250, font_body: "Inter" });
+      const theme = createDefaultTheme({
+        primary_hue: 250,
+        font_body: "Inter",
+      });
       expect(theme.values.primary_hue).toBe(250);
       expect(theme.values.font_body).toBe("Inter");
       expect(theme.values.font_header).toBe("Orbitron"); // Preserved default
@@ -104,7 +107,7 @@ describe("Factory Utilities", () => {
       const page = createTermsPage("CoolSite", "EntityX");
       expect(page.title).toBe("Terms of Service");
       expect(page.slug).toBe("terms");
-      
+
       const contentStr = JSON.stringify(page.content);
       expect(contentStr).toContain("CoolSite");
       expect(contentStr).toContain("EntityX");
@@ -115,7 +118,7 @@ describe("Factory Utilities", () => {
       const page = createPrivacyPage("SafeSite", "OwnerY");
       expect(page.title).toBe("Privacy Policy");
       expect(page.slug).toBe("privacy");
-      
+
       const contentStr = JSON.stringify(page.content);
       expect(contentStr).toContain("SafeSite");
       expect(contentStr).toContain("OwnerY");

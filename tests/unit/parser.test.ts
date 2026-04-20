@@ -1,5 +1,11 @@
 import { expect, describe, it, beforeEach, spyOn } from "bun:test";
-import { parseTheme, parseSite, parseNav, parseFooter, parsePage } from "../../src/core/parser";
+import {
+  parseTheme,
+  parseSite,
+  parseNav,
+  parseFooter,
+  parsePage,
+} from "../../src/core/parser";
 import { VERSIONS } from "@core/schema";
 
 describe("Core Parser Utility", () => {
@@ -17,10 +23,10 @@ describe("Core Parser Utility", () => {
         values: {
           primary_hue: 220,
           surface_opacity: 0.8,
-          font_header: "Custom Font"
-        }
+          font_header: "Custom Font",
+        },
       };
-      
+
       const result = parseTheme(validTheme);
       expect(result.values.primary_hue).toBe(220);
       expect(result.values.surface_opacity).toBe(0.8);
@@ -32,7 +38,7 @@ describe("Core Parser Utility", () => {
     it("should coerce string values to numbers where schema allows (primary_hue)", () => {
       const raw = {
         updatedAt: new Date().toISOString(),
-        values: { primary_hue: "300" }
+        values: { primary_hue: "300" },
       };
       const result = parseTheme(raw);
       expect(result.values.primary_hue).toBe(300);
@@ -51,7 +57,9 @@ describe("Core Parser Utility", () => {
 
     it("should handle unexpected object access errors gracefully", () => {
       const bomb = {
-        get values() { throw new Error("Parser Bomb"); }
+        get values() {
+          throw new Error("Parser Bomb");
+        },
       };
       const result = parseTheme(bomb);
       expect(result.values.primary_hue).toBe(180);
@@ -67,11 +75,11 @@ describe("Core Parser Utility", () => {
         seo: {
           identity: {
             type: "LocalBusiness",
-            name: "Test Shop"
-          }
-        }
+            name: "Test Shop",
+          },
+        },
       };
-      
+
       const result = parseSite(validSite);
       expect(result.title).toBe("Parser Test");
       expect(result.adminEmail).toBe("dev@test.com");
@@ -96,8 +104,8 @@ describe("Core Parser Utility", () => {
       const raw = {
         items: [
           { label: "Home", path: "/" },
-          { label: "Blog", path: "/blog", icon: "mdi:blog" }
-        ]
+          { label: "Blog", path: "/blog", icon: "mdi:blog" },
+        ],
       };
       const result = parseNav(raw);
       expect(result.items).toHaveLength(2);
@@ -115,7 +123,7 @@ describe("Core Parser Utility", () => {
   describe("parseFooter", () => {
     it("should parse a valid footer configuration", () => {
       const raw = {
-        links: [{ label: "Help", path: "/help" }]
+        links: [{ label: "Help", path: "/help" }],
       };
       const result = parseFooter(raw);
       expect(result.links).toHaveLength(1);
@@ -137,10 +145,10 @@ describe("Core Parser Utility", () => {
         metadata: {
           author: "Admin",
           createdAt: now,
-          updatedAt: now
-        }
+          updatedAt: now,
+        },
       };
-      
+
       const result = parsePage(validPage);
       expect(result).not.toBeNull();
       expect(result?.slug).toBe("test-page");

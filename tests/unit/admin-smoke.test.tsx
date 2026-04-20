@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, spyOn } from "bun:test";
+import { describe, it, expect, beforeAll, spyOn } from "bun:test";
 import { Hono } from "hono";
 import admin from "@routes/admin/index";
 import { GlobalConfigVariables } from "@core/middleware";
@@ -95,7 +95,8 @@ describe("Admin Router Smoke Tests", () => {
       },
       {
         EZ_CONTENT: {
-          get: async (key: string) => (key === "system:admin_user" ? null : null),
+          get: async (key: string) =>
+            key === "system:admin_user" ? null : null,
         },
       } as any,
     );
@@ -123,7 +124,9 @@ describe("Admin Router Smoke Tests", () => {
     );
 
     expect(res.status).toBe(403);
-    expect(await res.text()).toContain("Security Violation: Unauthorized Origin");
+    expect(await res.text()).toContain(
+      "Security Violation: Unauthorized Origin",
+    );
   });
 
   it("should handle missing Host header gracefully", async () => {
@@ -187,8 +190,8 @@ describe("Admin Router Smoke Tests", () => {
       {
         EZ_CONTENT: {
           get: async (key: string) => {
-             if (key === "system:admin_user") return { username: "admin" };
-             return null;
+            if (key === "system:admin_user") return { username: "admin" };
+            return null;
           },
         },
       } as any,
@@ -267,8 +270,12 @@ describe("Admin Router Smoke Tests", () => {
 
     expect(res.headers.get("X-Frame-Options")).toBe("DENY");
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
-    expect(res.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
-    expect(res.headers.get("Content-Security-Policy")).toContain("default-src 'self'");
+    expect(res.headers.get("Referrer-Policy")).toBe(
+      "strict-origin-when-cross-origin",
+    );
+    expect(res.headers.get("Content-Security-Policy")).toContain(
+      "default-src 'self'",
+    );
   });
 
   /**

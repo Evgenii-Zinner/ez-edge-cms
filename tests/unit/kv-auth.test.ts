@@ -19,7 +19,7 @@ const createMockEnv = () => {
       get: async (key: string, options?: { type: "json" }) => {
         const entry = store.get(key);
         if (!entry) return null;
-        
+
         // Handle expiration (primitive mock)
         if (entry.expiration && entry.expiration < Date.now()) {
           store.delete(key);
@@ -32,7 +32,11 @@ const createMockEnv = () => {
         }
         return typeof val === "object" ? JSON.stringify(val) : val;
       },
-      put: async (key: string, value: any, options?: { expirationTtl?: number }) => {
+      put: async (
+        key: string,
+        value: any,
+        options?: { expirationTtl?: number },
+      ) => {
         const entry: { value: any; expiration?: number } = { value };
         if (options?.expirationTtl) {
           entry.expiration = Date.now() + options.expirationTtl * 1000;
@@ -74,7 +78,7 @@ describe("KV Authentication Utilities", () => {
       // Verify schema before saving (meaningful coverage)
       const validated = AdminUserSchema.parse(mockUser);
       await saveAdminUser(env, validated);
-      
+
       const retrieved = await getAdminUser(env);
       expect(retrieved).toEqual(mockUser);
       expect(retrieved?.username).toBe("admin_user");
@@ -100,7 +104,7 @@ describe("KV Authentication Utilities", () => {
       const entry = env.EZ_CONTENT._getEntry(`auth:session:${token}`);
       expect(entry).toBeDefined();
       expect(entry.value).toBe("1");
-      
+
       // Verify TTL was applied (approximate check)
       const now = Date.now();
       const expectedExp = now + 86400 * 1000;
@@ -111,7 +115,7 @@ describe("KV Authentication Utilities", () => {
     it("should verify active sessions return true", async () => {
       const token = "active_token";
       await createSession(env, token);
-      
+
       const isValid = await getSession(env, token);
       expect(isValid).toBe(true);
     });
@@ -125,7 +129,7 @@ describe("KV Authentication Utilities", () => {
       const token = "expired_token";
       // Manually inject expired entry
       env.EZ_CONTENT.put(`auth:session:${token}`, "1", { expirationTtl: -10 });
-      
+
       const isValid = await getSession(env, token);
       expect(isValid).toBe(false);
     });

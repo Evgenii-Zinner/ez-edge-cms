@@ -27,11 +27,11 @@ describe("AdminUI Components", () => {
         description: "Test Desc",
         children: <span>Content</span>,
       });
-      const html = card.toString();
+      const html = card?.toString() || "";
       expect(html).toContain("Test Card");
       expect(html).toContain("Test Desc");
       expect(html).toContain("<span>Content</span>");
-      expect(html).toContain("m-0"); // Default margin
+      expect(html).toContain("admin-card");
     });
 
     it("should apply custom marginTop", () => {
@@ -40,7 +40,7 @@ describe("AdminUI Components", () => {
         marginTop: "mt-10",
         children: "Content",
       });
-      expect(card.toString()).toContain("mt-10");
+      expect(card?.toString() || "").toContain("mt-10");
     });
   });
 
@@ -50,7 +50,7 @@ describe("AdminUI Components", () => {
         title: "Test Header",
         children: <button>ACTION</button>,
       });
-      const html = header.toString();
+      const html = header?.toString() || "";
       expect(html).toContain("Test Header");
       expect(html).toContain("<button>ACTION</button>");
     });
@@ -60,7 +60,7 @@ describe("AdminUI Components", () => {
         title: "Title",
         description: "Subtext",
       });
-      expect(header.toString()).toContain("Subtext");
+      expect(header?.toString() || "").toContain("Subtext");
     });
   });
 
@@ -70,9 +70,11 @@ describe("AdminUI Components", () => {
         children: FormColumn({ children: "Column Content" }),
         style: { color: "red" },
       });
-      const html = grid.toString();
-      expect(html).toContain("grid grid-cols-1 md:grid-cols-2 gap-8");
-      expect(html).toContain("flex flex-col gap-6");
+      const html = grid?.toString() || "";
+      expect(html).toContain(
+        "grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6",
+      );
+      expect(html).toContain("flex flex-col gap-4");
       expect(html).toContain("Column Content");
       expect(html).toContain('style="color:red"');
     });
@@ -88,13 +90,13 @@ describe("AdminUI Components", () => {
         value: 50,
         unit: "%",
       });
-      const html = range.toString();
+      const html = range?.toString() || "";
       expect(html).toContain("Range");
-      expect(html).toContain('<span id="val-test_range">50</span>%');
+      expect(html).toContain(
+        '<span id="range-test_range-value" class="font-mono text-xs color-[var(--theme-accent)]">50%</span>',
+      );
       expect(html).toContain('value="50"');
-      expect(html).toContain('id="inp-test_range"');
-      // Hono JSX escapes single quotes to &#39;
-      expect(html).toContain("oninput=\"document.getElementById(&#39;val-test_range&#39;).innerText = this.value\"");
+      expect(html).toContain('id="range-test_range"');
     });
 
     it("should respect custom id and step", () => {
@@ -103,11 +105,11 @@ describe("AdminUI Components", () => {
         name: "n",
         min: 0,
         max: 1,
-        step: 0.1,
+        step: "0.1",
         value: 0.5,
         id: "custom-id",
       });
-      const html = range.toString();
+      const html = range?.toString() || "";
       expect(html).toContain('id="custom-id"');
       expect(html).toContain('step="0.1"');
     });
@@ -120,11 +122,13 @@ describe("AdminUI Components", () => {
         name: "test_color",
         value: "#ff0000",
       });
-      const html = color.toString();
+      const html = color?.toString() || "";
       expect(html).toContain("Color");
       expect(html).toContain('value="#ff0000"');
-      expect(html).toContain('<code class="text-0.7rem color-[var(--theme-text-dim)]">#ff0000</code>');
-      expect(html).toContain('id="inp-test_color"');
+      expect(html).toContain(
+        '<span id="color-test_color-hex" class="font-mono text-sm color-[var(--theme-text-main)]">#FF0000</span>',
+      );
+      expect(html).toContain('id="color-test_color"');
     });
   });
 
@@ -136,30 +140,33 @@ describe("AdminUI Components", () => {
         items: ["Item 1"],
         addButtonLabel: "Add New Row",
         template: "<td>New</td>",
-        renderRow: (item) => (
+        renderRow: (item, _index) => (
           <tr>
-            {SortButtons()}
+            <SortButtons />
             <td>{item}</td>
-            {AdminDeleteButton()}
+            <AdminDeleteButton />
           </tr>
         ),
       });
-      const html = table.toString();
+      const html = table?.toString() || "";
       expect(html).toContain("Column A");
       expect(html).toContain("Item 1");
       expect(html).toContain("Add New Row");
       expect(html).toContain('id="test-table-container"');
-      expect(html).toContain("window.addDynamicRow");
-      expect(html).toContain("window.moveDynamicRow");
-      expect(html).toContain("▲"); // SortButtons
-      expect(html).toContain("DELETE"); // AdminDeleteButton
+      expect(html).toContain("addTableRow");
+      expect(html).toContain("⠿"); // SortButtons
+      expect(html).toContain("✕"); // AdminDeleteButton
     });
   });
 
   describe("AdminField", () => {
     it("should render text input by default", () => {
-      const field = AdminField({ label: "Text", name: "text_field", value: "val" });
-      const html = field.toString();
+      const field = AdminField({
+        label: "Text",
+        name: "text_field",
+        value: "val",
+      });
+      const html = field?.toString() || "";
       expect(html).toContain("Text");
       expect(html).toContain('value="val"');
       expect(html).toContain('type="text"');
@@ -167,8 +174,12 @@ describe("AdminUI Components", () => {
     });
 
     it("should handle dot notation in names for IDs", () => {
-      const field = AdminField({ label: "Nested", name: "seo.title", value: "T" });
-      expect(field.toString()).toContain('id="inp-seo-title"');
+      const field = AdminField({
+        label: "Nested",
+        name: "seo.title",
+        value: "T",
+      });
+      expect(field?.toString() || "").toContain('id="inp-seo-title"');
     });
 
     it("should render textarea", () => {
@@ -179,7 +190,7 @@ describe("AdminUI Components", () => {
         type: "textarea",
         rows: 10,
       });
-      const html = field.toString();
+      const html = field?.toString() || "";
       expect(html).toContain("Area");
       expect(html).toContain("content");
       expect(html).toContain("<textarea");
@@ -188,13 +199,13 @@ describe("AdminUI Components", () => {
 
     it("should support email, password, and number types", () => {
       const email = AdminField({ label: "E", name: "e", type: "email" });
-      expect(email.toString()).toContain('type="email"');
+      expect(email?.toString() || "").toContain('type="email"');
 
       const pass = AdminField({ label: "P", name: "p", type: "password" });
-      expect(pass.toString()).toContain('type="password"');
+      expect(pass?.toString() || "").toContain('type="password"');
 
       const num = AdminField({ label: "N", name: "n", type: "number" });
-      expect(num.toString()).toContain('type="number"');
+      expect(num?.toString() || "").toContain('type="number"');
     });
 
     it("should render optional helper text", () => {
@@ -203,7 +214,7 @@ describe("AdminUI Components", () => {
         name: "n",
         helper: "Helper information",
       });
-      expect(field.toString()).toContain("Helper information");
+      expect(field?.toString() || "").toContain("Helper information");
     });
 
     it("should respect attributes like required, placeholder, readonly, and autofocus", () => {
@@ -217,7 +228,7 @@ describe("AdminUI Components", () => {
         minlength: 5,
         autocomplete: "off",
       });
-      const html = field.toString();
+      const html = field?.toString() || "";
       expect(html).toContain("required");
       expect(html).toContain('placeholder="Enter here"');
       expect(html).toContain("readonly");

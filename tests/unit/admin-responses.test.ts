@@ -24,12 +24,19 @@ describe("AdminResponses Utilities", () => {
   it("toastResponse should log to console and return OOB swap for errors", async () => {
     const app = new Hono();
     app.get("/test", async (c) => {
-      return toastResponse(c, "Critical Error", "error", "<span>STATUS: FAILED</span>");
+      return toastResponse(
+        c,
+        "Critical Error",
+        "error",
+        "<span>STATUS: FAILED</span>",
+      );
     });
 
     const originalConsoleError = console.error;
     let loggedMessage = "";
-    console.error = (msg) => { loggedMessage = msg; };
+    console.error = (msg) => {
+      loggedMessage = msg;
+    };
 
     const res = await app.request("http://localhost/test");
 

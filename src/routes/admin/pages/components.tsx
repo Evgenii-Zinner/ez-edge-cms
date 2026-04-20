@@ -4,6 +4,7 @@
  * @description Shared UI components for the Page Manager.
  */
 
+import type { FC } from "hono/jsx";
 import { PROTECTED_SLUGS } from "@core/constants";
 
 /**
@@ -24,7 +25,7 @@ export interface PageRowProps {
  * @param props - Component properties.
  * @returns A JSX element representing a table row.
  */
-export const PageRow = (props: PageRowProps): JSX.Element => {
+export const PageRow: FC<PageRowProps> = (props) => {
   const { slug, isLive, isDraft } = props;
   const parts = slug.split("/");
   const displaySlug =

@@ -25,8 +25,8 @@ const createMockEnv = (overrides: any = {}) => {
       },
       put: async (key: string, value: string) => {
         if (overrides.put) {
-           await overrides.put(key, value);
-           return;
+          await overrides.put(key, value);
+          return;
         }
         store.set(key, value);
       },
@@ -121,7 +121,10 @@ describe("Admin Files Route", () => {
     });
 
     it("should return error toast when KV persistence fails during save", async () => {
-      const failApp = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
+      const failApp = new Hono<{
+        Bindings: Env;
+        Variables: GlobalConfigVariables;
+      }>();
       failApp.use("*", async (c, next) => {
         c.set("site", createDefaultSite());
         await next();
@@ -163,7 +166,10 @@ describe("Admin Files Route", () => {
     });
 
     it("should return error toast when KV persistence fails during reset", async () => {
-      const failApp = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
+      const failApp = new Hono<{
+        Bindings: Env;
+        Variables: GlobalConfigVariables;
+      }>();
       failApp.use("*", async (c, next) => {
         c.set("site", createDefaultSite());
         await next();

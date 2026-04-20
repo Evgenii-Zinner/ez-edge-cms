@@ -113,7 +113,9 @@ describe("EditorJsParser", () => {
       ],
     };
     const html = renderEditorJs(data);
-    expect(html).toContain('class="content-frame image-stretched image-with-border image-with-background"');
+    expect(html).toContain(
+      'class="content-frame image-stretched image-with-border image-with-background"',
+    );
     expect(html).toContain('src="https://example.com/img.png"');
     expect(html).toContain('alt="Beautiful View"');
     expect(html).toContain("Beautiful View</div>");

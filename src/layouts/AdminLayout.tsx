@@ -6,6 +6,7 @@
  * and advanced navigation logic, including unsaved changes detection.
  */
 
+import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import { ThemeConfig, SiteConfig } from "@core/schema";
 import { Head } from "@components/Head";
@@ -37,7 +38,7 @@ export interface AdminLayoutProps {
  * 2. Unsaved changes detection via form tracking.
  * 3. Modal confirmations for potentially destructive navigation.
  */
-export const AdminLayout = (props: AdminLayoutProps): JSX.Element => {
+export const AdminLayout: FC<AdminLayoutProps> = (props) => {
   return (
     <>
       {raw("<!DOCTYPE html>\n")}

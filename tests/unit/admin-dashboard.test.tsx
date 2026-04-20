@@ -76,8 +76,11 @@ describe("Admin Dashboard Routes", () => {
     const originalFetch = global.fetch;
 
     // Mock GitHub API to return a version significantly higher than current
-    global.fetch = async () =>
-      new Response(JSON.stringify([{ name: "v99.0.0" }]), { status: 200 });
+    global.fetch = Object.assign(
+      async () =>
+        new Response(JSON.stringify([{ name: "v99.0.0" }]), { status: 200 }),
+      { preconnect: () => {} },
+    ) as any;
 
     const res = await app.request(
       "http://localhost/admin/check-update",
@@ -98,10 +101,13 @@ describe("Admin Dashboard Routes", () => {
     const originalFetch = global.fetch;
     const { APP_VERSION } = await import("@core/constants");
 
-    global.fetch = async () =>
-      new Response(JSON.stringify([{ name: `v${APP_VERSION}` }]), {
-        status: 200,
-      });
+    global.fetch = Object.assign(
+      async () =>
+        new Response(JSON.stringify([{ name: `v${APP_VERSION}` }]), {
+          status: 200,
+        }),
+      { preconnect: () => {} },
+    ) as any;
 
     const res = await app.request(
       "http://localhost/admin/check-update",
@@ -121,18 +127,41 @@ describe("Admin Dashboard Routes", () => {
     console.error = () => {}; // Silence console error for expected failures
 
     // 1. HTTP Error (e.g., 500 Internal Server Error)
-    global.fetch = async () => new Response("Error", { status: 500 });
-    let res = await app.request("http://localhost/admin/check-update", { method: "GET" }, mockEnv());
+    global.fetch = Object.assign(
+      async () => new Response("Error", { status: 500 }),
+      { preconnect: () => {} },
+    ) as any;
+    let res = await app.request(
+      "http://localhost/admin/check-update",
+      { method: "GET" },
+      mockEnv(),
+    );
     expect(await res.text()).toBe("");
 
     // 2. Empty or invalid JSON response
-    global.fetch = async () => new Response("[]", { status: 200 });
-    res = await app.request("http://localhost/admin/check-update", { method: "GET" }, mockEnv());
+    global.fetch = Object.assign(
+      async () => new Response("[]", { status: 200 }),
+      { preconnect: () => {} },
+    ) as any;
+    res = await app.request(
+      "http://localhost/admin/check-update",
+      { method: "GET" },
+      mockEnv(),
+    );
     expect(await res.text()).toBe("");
 
     // 3. Network-level exception (e.g., DNS failure)
-    global.fetch = async () => { throw new Error("DNS Lookup Failed"); };
-    res = await app.request("http://localhost/admin/check-update", { method: "GET" }, mockEnv());
+    global.fetch = Object.assign(
+      async () => {
+        throw new Error("DNS Lookup Failed");
+      },
+      { preconnect: () => {} },
+    ) as any;
+    res = await app.request(
+      "http://localhost/admin/check-update",
+      { method: "GET" },
+      mockEnv(),
+    );
     expect(await res.text()).toBe("");
 
     global.fetch = originalFetch;

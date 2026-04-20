@@ -4,6 +4,7 @@
  * @description Domain components for the Site Settings interface.
  */
 
+import type { FC } from "hono/jsx";
 import { SiteConfig } from "@core/schema";
 import { html } from "hono/html";
 import {
@@ -28,7 +29,7 @@ import {
  * @param props - Component properties.
  * @returns A JSX element representing the basic info card.
  */
-export const BasicInfoCard = ({ site }: { site: SiteConfig }): JSX.Element => (
+export const BasicInfoCard: FC<{ site: SiteConfig }> = ({ site }) => (
   <AdminCard title="Basic Information">
     <FormGrid>
       <FormColumn>
@@ -101,7 +102,7 @@ export const BasicInfoCard = ({ site }: { site: SiteConfig }): JSX.Element => (
  * @param props - Component properties.
  * @returns A JSX element representing the OG image field.
  */
-export const OGImageField = ({ site }: { site: SiteConfig }): JSX.Element => (
+export const OGImageField: FC<{ site: SiteConfig }> = ({ site }) => (
   <div>
     <label class="admin-label">Global Social (OG) Image</label>
     <div class="flex flex-col gap-4">
@@ -165,7 +166,7 @@ export const OGImageField = ({ site }: { site: SiteConfig }): JSX.Element => (
  * @param props - Component properties.
  * @returns A JSX element representing the branding card.
  */
-export const BrandingCard = ({ site }: { site: SiteConfig }): JSX.Element => (
+export const BrandingCard: FC<{ site: SiteConfig }> = ({ site }) => (
   <AdminCard title="Branding & Defaults" marginTop="2rem">
     <FormGrid>
       <FormColumn>
@@ -220,13 +221,10 @@ export const BrandingCard = ({ site }: { site: SiteConfig }): JSX.Element => (
  * @param props - Component properties.
  * @returns A JSX element representing the identity details.
  */
-export const IdentityFields = ({
-  type,
-  site,
-}: {
+export const IdentityFields: FC<{
   type: string;
   site: Partial<SiteConfig>;
-}): JSX.Element => {
+}> = ({ type, site }) => {
   const identity = site.seo?.identity || {
     name: "",
     description: "",
@@ -288,11 +286,9 @@ export const IdentityFields = ({
  * @param props - Component properties.
  * @returns A JSX element representing the social links card.
  */
-export const SocialLinksCard = ({
-  site,
-}: {
+export const SocialLinksCard: FC<{
   site: SiteConfig;
-}): JSX.Element => (
+}> = ({ site }) => (
   <AdminCard title="SEO - Social Profiles" marginTop="2rem">
     <DynamicTable
       id="social-links"
@@ -334,11 +330,9 @@ export const SocialLinksCard = ({
  * @param props - Component properties.
  * @returns A JSX element representing the system settings card.
  */
-export const SystemSettingsCard = ({
-  site,
-}: {
+export const SystemSettingsCard: FC<{
   site: SiteConfig;
-}): JSX.Element => (
+}> = ({ site }) => (
   <AdminCard title="Advanced System Settings" marginTop="2rem">
     <AdminField
       label="Global Custom Head Scripts"
@@ -362,7 +356,7 @@ export const SystemSettingsCard = ({
  *
  * @returns A JSX element representing the backup and restore section.
  */
-export const BackupRestoreCard = (): JSX.Element => (
+export const BackupRestoreCard: FC = () => (
   <AdminCard title="Backup & Restore" marginTop="2rem">
     <div
       id="backup-progress-container"

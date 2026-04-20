@@ -6,6 +6,7 @@
  * dynamic CSS theme variables, and critical administrative assets.
  */
 
+import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import { ThemeConfig, SiteConfig, PageConfig } from "@core/schema";
 import { generateCssVariables, generateAdminCssVariables } from "@utils/styles";
@@ -44,7 +45,7 @@ export interface HeadProps {
  * @param props - Component properties.
  * @returns A JSX element containing the head metadata.
  */
-export const Head = (props: HeadProps): JSX.Element => {
+export const Head: FC<HeadProps> = (props) => {
   const { title, theme, site, page, isAdmin, isEditor, detectedUrl } = props;
 
   // Generate SEO and Theme assets

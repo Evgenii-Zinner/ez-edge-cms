@@ -6,6 +6,7 @@
  * responsive navigation, dynamic content area, and SEO-optimized footer.
  */
 
+import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import {
   ThemeConfig,
@@ -46,7 +47,7 @@ export interface BaseLayoutProps {
  * Includes interactive UI overlays (scanlines, dots) and handles
  * responsive navigation logic via client-side scripts.
  */
-export const BaseLayout = (props: BaseLayoutProps): JSX.Element => {
+export const BaseLayout: FC<BaseLayoutProps> = (props) => {
   const { site, title, theme, page, detectedUrl, nav, children, footer } =
     props;
   const siteTitle = site.title;

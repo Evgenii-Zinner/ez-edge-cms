@@ -38,20 +38,51 @@ describe("Core Zod Schemas", () => {
 
     it("should strictly enforce numeric boundaries for design system variables", () => {
       // primary_hue boundaries [0-360]
-      expect(ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: -1 } }).success).toBe(false);
-      expect(ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 361 } }).success).toBe(false);
-      expect(ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 0 } }).success).toBe(true);
-      expect(ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 360 } }).success).toBe(true);
+      expect(
+        ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: -1 } })
+          .success,
+      ).toBe(false);
+      expect(
+        ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 361 } })
+          .success,
+      ).toBe(false);
+      expect(
+        ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 0 } })
+          .success,
+      ).toBe(true);
+      expect(
+        ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 360 } })
+          .success,
+      ).toBe(true);
 
       // surface_opacity boundaries [0-1]
-      expect(ThemeSchema.safeParse({ ...baseTheme, values: { surface_opacity: -0.1 } }).success).toBe(false);
-      expect(ThemeSchema.safeParse({ ...baseTheme, values: { surface_opacity: 1.1 } }).success).toBe(false);
-      expect(ThemeSchema.safeParse({ ...baseTheme, values: { surface_opacity: 0 } }).success).toBe(true);
-      expect(ThemeSchema.safeParse({ ...baseTheme, values: { surface_opacity: 1 } }).success).toBe(true);
+      expect(
+        ThemeSchema.safeParse({
+          ...baseTheme,
+          values: { surface_opacity: -0.1 },
+        }).success,
+      ).toBe(false);
+      expect(
+        ThemeSchema.safeParse({
+          ...baseTheme,
+          values: { surface_opacity: 1.1 },
+        }).success,
+      ).toBe(false);
+      expect(
+        ThemeSchema.safeParse({ ...baseTheme, values: { surface_opacity: 0 } })
+          .success,
+      ).toBe(true);
+      expect(
+        ThemeSchema.safeParse({ ...baseTheme, values: { surface_opacity: 1 } })
+          .success,
+      ).toBe(true);
     });
 
     it("should perform automatic type coercion for numeric inputs (Admin HUD compatibility)", () => {
-      const raw = { ...baseTheme, values: { primary_hue: "180", surface_opacity: "0.9" } };
+      const raw = {
+        ...baseTheme,
+        values: { primary_hue: "180", surface_opacity: "0.9" },
+      };
       const result = ThemeSchema.safeParse(raw);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -82,15 +113,27 @@ describe("Core Zod Schemas", () => {
     });
 
     it("should enforce non-empty, slug-friendly characters (if enforced by regex in schema)", () => {
-      expect(PageSchema.safeParse({ ...basePage, slug: "" }).success).toBe(false);
+      expect(PageSchema.safeParse({ ...basePage, slug: "" }).success).toBe(
+        false,
+      );
     });
 
     it("should validate enum values for status and layout", () => {
-      expect(PageSchema.safeParse({ ...basePage, status: "published" }).success).toBe(true);
-      expect(PageSchema.safeParse({ ...basePage, status: "invalid" }).success).toBe(false);
-      
-      expect(PageSchema.safeParse({ ...basePage, appearance: { layout: "page" } }).success).toBe(true);
-      expect(PageSchema.safeParse({ ...basePage, appearance: { layout: "custom" } }).success).toBe(false);
+      expect(
+        PageSchema.safeParse({ ...basePage, status: "published" }).success,
+      ).toBe(true);
+      expect(
+        PageSchema.safeParse({ ...basePage, status: "invalid" }).success,
+      ).toBe(false);
+
+      expect(
+        PageSchema.safeParse({ ...basePage, appearance: { layout: "page" } })
+          .success,
+      ).toBe(true);
+      expect(
+        PageSchema.safeParse({ ...basePage, appearance: { layout: "custom" } })
+          .success,
+      ).toBe(false);
     });
 
     it("should handle optional SEO fields correctly", () => {
@@ -98,8 +141,8 @@ describe("Core Zod Schemas", () => {
         ...basePage,
         seo: {
           metaTitle: "SEO Override",
-          ogImage: "https://example.com/images/custom.png"
-        }
+          ogImage: "https://example.com/images/custom.png",
+        },
       };
       const result = PageSchema.safeParse(pageWithSeo);
       expect(result.success).toBe(true);
@@ -116,9 +159,16 @@ describe("Core Zod Schemas", () => {
     };
 
     it("should strictly validate email formats for admin and contact fields", () => {
-      expect(SiteSchema.safeParse({ ...baseSite, adminEmail: "invalid" }).success).toBe(false);
-      expect(SiteSchema.safeParse({ ...baseSite, contactEmail: "valid@test.com" }).success).toBe(true);
-      expect(SiteSchema.safeParse({ ...baseSite, contactEmail: "" }).success).toBe(true);
+      expect(
+        SiteSchema.safeParse({ ...baseSite, adminEmail: "invalid" }).success,
+      ).toBe(false);
+      expect(
+        SiteSchema.safeParse({ ...baseSite, contactEmail: "valid@test.com" })
+          .success,
+      ).toBe(true);
+      expect(
+        SiteSchema.safeParse({ ...baseSite, contactEmail: "" }).success,
+      ).toBe(true);
     });
 
     it("should validate complex nested objects like SEO identity and txtFiles", () => {
@@ -128,12 +178,12 @@ describe("Core Zod Schemas", () => {
           identity: {
             type: "Organization",
             name: "EZ-CORP",
-            links: [{ platform: "Twitter", url: "https://twitter.com/ez" }]
-          }
+            links: [{ platform: "Twitter", url: "https://twitter.com/ez" }],
+          },
         },
         txtFiles: {
-          robots: "User-agent: *"
-        }
+          robots: "User-agent: *",
+        },
       };
       const result = SiteSchema.safeParse(site);
       expect(result.success).toBe(true);
@@ -144,8 +194,13 @@ describe("Core Zod Schemas", () => {
     });
 
     it("should validate the baseUrl as a proper URL or empty string", () => {
-      expect(SiteSchema.safeParse({ ...baseSite, baseUrl: "https://ez-cms.com" }).success).toBe(true);
-      expect(SiteSchema.safeParse({ ...baseSite, baseUrl: "not-a-url" }).success).toBe(false);
+      expect(
+        SiteSchema.safeParse({ ...baseSite, baseUrl: "https://ez-cms.com" })
+          .success,
+      ).toBe(true);
+      expect(
+        SiteSchema.safeParse({ ...baseSite, baseUrl: "not-a-url" }).success,
+      ).toBe(false);
     });
   });
 
@@ -154,8 +209,12 @@ describe("Core Zod Schemas", () => {
       const nav = {
         items: [
           { label: "Home", path: "/" },
-          { label: "External", path: "https://google.com", icon: "mdi:external" }
-        ]
+          {
+            label: "External",
+            path: "https://google.com",
+            icon: "mdi:external",
+          },
+        ],
       };
       const result = NavSchema.safeParse(nav);
       expect(result.success).toBe(true);
@@ -167,7 +226,7 @@ describe("Core Zod Schemas", () => {
 
     it("FooterSchema should validate links array and apply versioning", () => {
       const footer = {
-        links: [{ label: "Help", path: "/help" }]
+        links: [{ label: "Help", path: "/help" }],
       };
       const result = FooterSchema.safeParse(footer);
       expect(result.success).toBe(true);
@@ -183,7 +242,7 @@ describe("Core Zod Schemas", () => {
       const block = {
         id: "123",
         type: "header",
-        data: { text: "Hello", level: 1 }
+        data: { text: "Hello", level: 1 },
       };
       const result = EditorJsBlockSchema.safeParse(block);
       expect(result.success).toBe(true);

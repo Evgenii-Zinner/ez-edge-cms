@@ -6,7 +6,7 @@
  * consistency and reduce duplication across admin interfaces.
  */
 
-import { Child, PropsWithChildren, JSX } from "hono/jsx";
+import type { FC, Child, PropsWithChildren } from "hono/jsx";
 
 /**
  * Props for the AdminCard component.
@@ -18,22 +18,32 @@ export interface AdminCardProps {
   description?: string | Child;
   /** Optional top margin for layout adjustment. */
   marginTop?: string;
+  /** Explicit children for type safety in some TS versions. */
+  children?: any;
 }
 
 /**
  * Component: AdminCard
- * A stylized container with a title, optional description, and background styling.
+ * A standard container for administrative sections with a futuristic border and header.
  *
- * @param props - Component properties and children.
- * @returns A JSX element representing the admin card.
+ * @param props - Component properties.
  */
-export const AdminCard = (
-  props: PropsWithChildren<AdminCardProps>,
-): JSX.Element => (
-  <div class={`admin-card ${props.marginTop ? props.marginTop : "m-0"}`}>
-    <h3 class="mt-0">{props.title}</h3>
-    {props.description && <p class="admin-helper-text">{props.description}</p>}
-    {props.children}
+export const AdminCard: FC<PropsWithChildren<AdminCardProps>> = ({
+  title,
+  description,
+  marginTop,
+  children,
+}) => (
+  <div
+    class="admin-card"
+    style={{ marginTop: marginTop || "0" }}
+    hx-boost="false"
+  >
+    <div class="admin-card-header">
+      <h2 class="admin-card-title">{title}</h2>
+      {description && <div class="admin-card-desc">{description}</div>}
+    </div>
+    <div class="admin-card-content">{children}</div>
   </div>
 );
 
@@ -41,59 +51,56 @@ export const AdminCard = (
  * Props for the AdminHeader component.
  */
 export interface AdminHeaderProps {
-  /** The primary title of the page section. */
+  /** The main title of the page/section. */
   title: string;
-  /** Optional descriptive text or element displayed below the title. */
+  /** Optional descriptive text. */
   description?: string | Child;
-  /** Optional action buttons or elements displayed on the right. */
-  children?: Child;
+  /** Explicit children for type safety. */
+  children?: any;
 }
 
 /**
  * Component: AdminHeader
- * A reusable page header with a title and an optional action slot.
+ * A top-level header for administrative pages, providing consistent spacing and typography.
  *
  * @param props - Component properties.
- * @returns A JSX element representing the admin header.
  */
-export const AdminHeader = (props: AdminHeaderProps): JSX.Element => (
-  <div class="flex justify-between items-center mb-8">
-    <div>
-      <h1 class="m-0">{props.title}</h1>
+export const AdminHeader: FC<PropsWithChildren<AdminHeaderProps>> = (props) => (
+  <div class="admin-header">
+    <div class="flex flex-col gap-1">
+      <h1 class="admin-title">{props.title}</h1>
       {props.description && (
-        <div class="mt-2 font-nav text-0.75rem color-[var(--theme-text-dim)]">
+        <p class="text-0.8rem color-[var(--theme-text-dim)] uppercase tracking-1px">
           {props.description}
-        </div>
+        </p>
       )}
     </div>
-    <div class="flex gap-4 items-center">{props.children}</div>
+    <div class="admin-header-actions">{props.children}</div>
   </div>
 );
 
 /**
  * Component: FormGrid
- * A two-column responsive grid layout for organizing admin form fields.
- *
- * @param props - Component properties including optional styles and children.
- * @returns A JSX element representing the form grid.
+ * A two-column responsive grid container for form fields.
  */
-export const FormGrid = (
-  props: PropsWithChildren<{ style?: any }>,
-): JSX.Element => (
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8" style={props.style}>
-    {props.children}
+export const FormGrid: FC<PropsWithChildren<{ style?: any }>> = ({
+  children,
+  style,
+}) => (
+  <div
+    class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6"
+    style={style || {}}
+  >
+    {children}
   </div>
 );
 
 /**
  * Component: FormColumn
- * A single vertical column designed for use within a FormGrid.
- *
- * @param props - Component children.
- * @returns A JSX element representing the form column.
+ * A layout column within a FormGrid.
  */
-export const FormColumn = (props: PropsWithChildren): JSX.Element => (
-  <div class="flex flex-col gap-6">{props.children}</div>
+export const FormColumn: FC<PropsWithChildren> = (props) => (
+  <div class="flex flex-col gap-4">{props.children}</div>
 );
 
 /**
@@ -102,50 +109,52 @@ export const FormColumn = (props: PropsWithChildren): JSX.Element => (
 export interface AdminRangeProps {
   /** Label for the range input. */
   label: string;
-  /** Form field name. */
+  /** Input field name. */
   name: string;
-  /** Minimum value. */
-  min: number | string;
-  /** Maximum value. */
-  max: number | string;
-  /** Optional step increment. */
-  step?: number | string;
   /** Current value. */
-  value: number | string;
-  /** Optional unit label (e.g., '%', 'px'). */
-  unit?: string;
-  /** Optional unique ID for the input. */
+  value: number;
+  /** Optional custom ID. */
   id?: string;
+  /** Step increment for the range. */
+  step?: string;
+  /** Minimum value. */
+  min?: string | number;
+  /** Maximum value. */
+  max?: string | number;
+  /** Optional unit display. */
+  unit?: string;
 }
 
 /**
  * Component: AdminRange
- * A styled range input with a real-time value display in the label.
- *
- * @param props - Component properties.
- * @returns A JSX element representing the range field.
+ * A styled range input (slider) for numerical theme values.
  */
-export const AdminRange = (props: AdminRangeProps): JSX.Element => {
-  const { label, name, min, max, step, value, unit = "", id } = props;
-  const fieldId = id || `inp-${name}`;
-  const valId = `val-${name}`;
-
+export const AdminRange: FC<AdminRangeProps> = (props) => {
+  const id = props.id || `range-${props.name}`;
   return (
-    <div class="mb-6">
-      <label class="admin-label" htmlFor={fieldId}>
-        {label}: <span id={valId}>{value}</span>
-        {unit}
-      </label>
+    <div class="admin-field">
+      <div class="flex justify-between items-center mb-2">
+        <label class="admin-label m-0" for={id}>
+          {props.label}
+        </label>
+        <span
+          id={`${id}-value`}
+          class="font-mono text-xs color-[var(--theme-accent)]"
+        >
+          {props.value}
+          {props.unit}
+        </span>
+      </div>
       <input
         type="range"
-        id={fieldId}
-        name={name}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        class="admin-range w-full"
-        oninput={`document.getElementById('${valId}').innerText = this.value`}
+        id={id}
+        name={props.name}
+        min={props.min || "0"}
+        max={props.max || "360"}
+        step={props.step || "1"}
+        value={props.value.toString()}
+        class="admin-range"
+        oninput={`document.getElementById('${id}-value').textContent = this.value + '${props.unit || ""}'`}
       />
     </div>
   );
@@ -155,42 +164,42 @@ export const AdminRange = (props: AdminRangeProps): JSX.Element => {
  * Props for the AdminColor component.
  */
 export interface AdminColorProps {
-  /** Label for the color picker. */
+  /** Label for the color input. */
   label: string;
-  /** Form field name. */
+  /** Input field name. */
   name: string;
   /** Current hex color value. */
   value: string;
-  /** Optional unique ID for the input. */
+  /** Optional custom ID. */
   id?: string;
 }
 
 /**
  * Component: AdminColor
- * A color picker input with an adjacent hex code readout.
- *
- * @param props - Component properties.
- * @returns A JSX element representing the color field.
+ * A styled color picker input with a hex value readout.
  */
-export const AdminColor = (props: AdminColorProps): JSX.Element => {
-  const { label, name, value, id } = props;
-  const fieldId = id || `inp-${name}`;
-
+export const AdminColor: FC<AdminColorProps> = (props) => {
+  const id = props.id || `color-${props.name}`;
   return (
-    <div>
-      <label class="admin-label text-0.6rem opacity-70" htmlFor={fieldId}>
-        {label}
+    <div class="admin-field">
+      <label class="admin-label" for={id}>
+        {props.label}
       </label>
-      <div class="flex gap-2 items-center">
+      <div class="flex items-center gap-4">
         <input
           type="color"
-          id={fieldId}
-          name={name}
-          value={value}
-          class="w-40px h-30px border border-solid border-[var(--theme-accent-glow)] bg-none cursor-pointer"
-          oninput="this.nextElementSibling.innerText = this.value"
+          id={id}
+          name={props.name}
+          value={props.value}
+          class="admin-color-picker"
+          oninput={`document.getElementById('${id}-hex').textContent = this.value.toUpperCase()`}
         />
-        <code class="text-0.7rem color-[var(--theme-text-dim)]">{value}</code>
+        <span
+          id={`${id}-hex`}
+          class="font-mono text-sm color-[var(--theme-text-main)]"
+        >
+          {props.value.toUpperCase()}
+        </span>
       </div>
     </div>
   );
@@ -200,139 +209,77 @@ export const AdminColor = (props: AdminColorProps): JSX.Element => {
  * Props for the DynamicTable component.
  */
 export interface DynamicTableProps {
-  /** Unique ID for the table element. */
+  /** Unique ID for the table. */
   id: string;
-  /** Array of column header labels. */
+  /** Column headers. */
   headers: string[];
-  /** Array of items to display in the table rows. */
+  /** Initial items to render. */
   items: any[];
-  /** Render function for each individual item row. */
+  /** Function to render a single row. Supports an index. */
   renderRow: (item: any, index: number) => Child;
-  /** HTML template string for newly added rows. */
+  /** HTML template for a new empty row. */
   template: string;
-  /** Label for the 'Add Item' button. */
-  addButtonLabel: string;
+  /** Label for the add button. */
+  addButtonLabel?: string;
 }
 
 /**
  * Component: DynamicTable
- * A sophisticated table for managing lists of data with sorting and addition capabilities.
- *
- * @param props - Component properties.
- * @returns A JSX element representing the dynamic table.
+ * A managed table that supports adding, removing, and sorting rows.
  */
-export const DynamicTable = (props: DynamicTableProps): JSX.Element => {
-  const { id, headers, items, renderRow, template, addButtonLabel } = props;
-  const containerId = `${id}-container`;
-
+export const DynamicTable: FC<DynamicTableProps> = (props) => {
   return (
-    <>
-      <table class="w-full border-collapse" id={id}>
+    <div class="dynamic-table-container" id={`${props.id}-container`}>
+      <table class="admin-table w-full border-collapse" id={props.id}>
         <thead>
-          <tr class="border-b border-b-solid border-[rgba(255,255,255,0.1)]">
-            <th class="text-center p-2 w-80px">Sort</th>
-            {headers.map((h) => (
-              <th class="text-left p-2">{h}</th>
+          <tr>
+            <th class="w-8"></th>
+            {props.headers.map((h) => (
+              <th class="text-left p-2 font-nav text-xs uppercase color-[var(--theme-text-dim)]">
+                {h}
+              </th>
             ))}
-            <th class="text-center p-2 w-100px">Action</th>
+            <th class="w-8"></th>
           </tr>
         </thead>
-
-        <tbody id={containerId}>
-          {items.map((item, i) => renderRow(item, i))}
-          <tr>
-            <td colSpan={headers.length + 2} class="p-2">
-              <button
-                type="button"
-                class="btn-primary w-full p-2"
-                onclick={`addDynamicRow('${containerId}', \`${template}\`)`}
-              >
-                {addButtonLabel}
-              </button>
-            </td>
-          </tr>
+        <tbody class="sortable">
+          {props.items.map((item, index) => props.renderRow(item, index))}
         </tbody>
       </table>
-
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-        if (typeof window.addDynamicRow === 'undefined') {
-          window.addDynamicRow = function(containerId, template) {
-            const tbody = document.getElementById(containerId);
-            const tr = document.createElement("tr");
-            tr.className = "border-b border-b-dotted border-[rgba(255,255,255,0.05)]";
-            tr.innerHTML = template;
-            tbody.insertBefore(tr, tbody.lastElementChild);
-          }
-        }
-        if (typeof window.moveDynamicRow === 'undefined') {
-          window.moveDynamicRow = function(btn, direction) {
-            const row = btn.closest('tr');
-            if (direction === 'up') {
-              const prev = row.previousElementSibling;
-              if (prev) row.parentNode.insertBefore(row, prev);
-            } else {
-              const next = row.nextElementSibling;
-              if (next && next.nextElementSibling) {
-                row.parentNode.insertBefore(next, row);
-              }
-            }
-          }
-        }
-      `,
-        }}
-      />
-    </>
+      <button
+        type="button"
+        class="mt-4 text-xs color-[var(--theme-accent)] hover:color-[var(--theme-text-main)] transition-colors uppercase tracking-1px flex items-center gap-1"
+        onclick={`addTableRow('${props.id}', \`${props.template}\`)`}
+      >
+        {props.addButtonLabel || "+ ADD ITEM"}
+      </button>
+    </div>
   );
 };
 
 /**
  * Component: SortButtons
- * Helper component that renders Up and Down sorting buttons for table rows.
- *
- * @returns A JSX element containing sorting controls.
+ * Rendering of sort handles for table rows.
  */
-export const SortButtons = (): JSX.Element => (
-  <td class="p-2 w-80px align-middle text-center">
-    <div class="flex gap-1 justify-center">
-      <button
-        type="button"
-        class="nav-item p-1 text-0.7rem"
-        onclick="moveDynamicRow(this, 'up')"
-        title="Move Up"
-      >
-        ▲
-      </button>
-      <button
-        type="button"
-        class="nav-item p-1 text-0.7rem"
-        onclick="moveDynamicRow(this, 'down')"
-        title="Move Down"
-      >
-        ▼
-      </button>
-    </div>
+export const SortButtons: FC = () => (
+  <td class="w-8 text-center color-[var(--theme-text-dim)]">
+    <div class="cursor-move sort-handle">⠿</div>
   </td>
 );
 
 /**
  * Component: AdminDeleteButton
- * Standardized delete button cell for removal of dynamic table rows.
- *
- * @returns A JSX element containing a removal button.
+ * Standardized delete button for table rows.
  */
-export const AdminDeleteButton = (): JSX.Element => (
-  <td class="p-2 w-100px align-middle text-center">
-    <div class="flex justify-center">
-      <button
-        type="button"
-        class="nav-item-error p-1 px-2 bg-transparent cursor-pointer text-0.7rem"
-        onclick="this.closest('tr').remove()"
-      >
-        DELETE
-      </button>
-    </div>
+export const AdminDeleteButton: FC = () => (
+  <td class="w-8 text-center">
+    <button
+      type="button"
+      class="color-[var(--color-error)] opacity-50 hover:opacity-100 transition-opacity"
+      onclick="this.closest('tr').remove(); window.adminHasChanges = true;"
+    >
+      ✕
+    </button>
   </td>
 );
 
@@ -340,100 +287,82 @@ export const AdminDeleteButton = (): JSX.Element => (
  * Props for the AdminField component.
  */
 export interface AdminFieldProps {
-  /** Label for the form field. */
+  /** Label for the field. */
   label: string;
-  /** Form field name. */
+  /** Input field name. */
   name: string;
-  /** Current field value. */
+  /** Current value. */
   value?: string | number;
-  /** The input type or textarea selection. */
-  type?: "text" | "email" | "password" | "url" | "number" | "textarea";
-  /** Whether the field is mandatory. */
-  required?: boolean;
-  /** Input placeholder text. */
+  /** Input type (text, url, email, password, etc.). */
+  type?: string;
+  /** Optional placeholder text. */
   placeholder?: string;
-  /** Optional descriptive or instructional text. */
+  /** Optional helper text or element. */
   helper?: string | Child;
-  /** Row count for textarea inputs. */
+  /** Number of rows for textarea type. */
   rows?: number;
-  /** Optional unique ID for the field. */
-  id?: string;
+  /** Optional inline styles. */
+  style?: any;
+  /** Whether the field is required. */
+  required?: boolean;
   /** Whether the field is read-only. */
   readonly?: boolean;
-  /** Custom styles for the input element. */
-  style?: any;
-  /** Standard HTML autocomplete attribute. */
-  autocomplete?: string;
-  /** Whether to focus the input on load. */
+  /** Whether the field should autofocus. */
   autofocus?: boolean;
-  /** Minimum length constraint. */
+  /** Optional custom ID. */
+  id?: string;
+  /** Optional autocomplete hint. */
+  autocomplete?: string;
+  /** Minimum length for text inputs. */
   minlength?: number;
+  /** Minimum value for number inputs. */
+  min?: string | number;
+  /** Maximum value for number inputs. */
+  max?: string | number;
+  /** Step increment. */
+  step?: string | number;
 }
 
 /**
  * Component: AdminField
- * A comprehensive form field unit combining label, input/textarea, and validation metadata.
- *
- * @param props - Component properties.
- * @returns A JSX element representing the admin field.
+ * A versatile form field component that supports various input types and textareas.
  */
-export const AdminField = (props: AdminFieldProps): JSX.Element => {
-  const {
-    label,
-    name,
-    value,
-    type = "text",
-    required,
-    placeholder,
-    helper,
-    rows = 3,
+export const AdminField: FC<AdminFieldProps> = (props) => {
+  const id = props.id || `inp-${props.name.replace(/\./g, "-")}`;
+  const commonProps = {
     id,
-    readonly,
-    style,
-    autocomplete,
-    autofocus,
-    minlength,
-  } = props;
-  const fieldId = id || `inp-${name.replace(/\./g, "-")}`;
+    name: props.name,
+    class: "admin-input",
+    placeholder: props.placeholder,
+    style: props.style,
+    required: props.required,
+    readonly: props.readonly,
+    autofocus: props.autofocus,
+    autocomplete: props.autocomplete,
+    minlength: props.minlength,
+    min: props.min,
+    max: props.max,
+    step: props.step,
+    oninput: "window.adminHasChanges = true;",
+  };
 
   return (
-    <div>
-      {label && (
-        <label class="admin-label" htmlFor={fieldId}>
-          {label}
-        </label>
-      )}
-      {type === "textarea" ? (
-        <textarea
-          id={fieldId}
-          name={name}
-          class="admin-input"
-          rows={rows}
-          placeholder={placeholder}
-          required={required}
-          readonly={readonly}
-          style={style}
-          autofocus={autofocus}
-        >
-          {value || ""}
+    <div class="admin-field">
+      <label class="admin-label" for={id}>
+        {props.label}
+      </label>
+      {props.type === "textarea" ? (
+        <textarea {...commonProps} rows={props.rows || 3}>
+          {props.value}
         </textarea>
       ) : (
         <input
-          type={type}
-          id={fieldId}
-          name={name}
-          value={value}
-          class="admin-input"
-          required={required}
-          placeholder={placeholder}
-          readonly={readonly}
-          style={style}
-          autocomplete={autocomplete}
-          autofocus={autofocus}
-          minlength={minlength}
+          {...commonProps}
+          type={props.type || "text"}
+          value={props.value?.toString()}
         />
       )}
-      {helper && <p class="admin-helper-text">{helper}</p>}
+      {props.helper && <div class="admin-helper">{props.helper}</div>}
     </div>
   );
 };

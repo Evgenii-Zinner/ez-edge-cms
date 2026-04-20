@@ -78,19 +78,19 @@ describe("Middlewares", () => {
         const seo = c.get("seo");
         const nav = c.get("nav");
         const footer = c.get("footer");
-        
-        return c.json({ 
-          hasTheme: !!theme, 
-          hasSite: !!site, 
+
+        return c.json({
+          hasTheme: !!theme,
+          hasSite: !!site,
           hasSeo: !!seo,
           hasNav: !!nav,
           hasFooter: !!footer,
-          seoMatches: seo === site.seo
+          seoMatches: seo === site.seo,
         });
       });
 
       const res = await app.request("/test", {}, env);
-      const data = await res.json() as any;
+      const data = (await res.json()) as any;
 
       expect(data.hasTheme).toBe(true);
       expect(data.hasSite).toBe(true);
@@ -106,7 +106,7 @@ describe("Middlewares", () => {
         Variables: GlobalConfigVariables;
       }>();
       app.use("*", injectGlobalConfig());
-      
+
       const checkInjection = (c: any) => c.json({ hasTheme: !!c.get("theme") });
       app.get("/static/style.css", checkInjection);
       app.get("/api/v1/health", checkInjection);
@@ -114,8 +114,8 @@ describe("Middlewares", () => {
       const resStatic = await app.request("/static/style.css", {}, env);
       const resApi = await app.request("/api/v1/health", {}, env);
 
-      expect((await resStatic.json() as any).hasTheme).toBe(false);
-      expect((await resApi.json() as any).hasTheme).toBe(false);
+      expect(((await resStatic.json()) as any).hasTheme).toBe(false);
+      expect(((await resApi.json()) as any).hasTheme).toBe(false);
     });
 
     it("should skip injection for non-GET public requests", async () => {
@@ -127,7 +127,7 @@ describe("Middlewares", () => {
       app.post("/contact", (c) => c.json({ hasTheme: !!c.get("theme") }));
 
       const res = await app.request("/contact", { method: "POST" }, env);
-      expect((await res.json() as any).hasTheme).toBe(false);
+      expect(((await res.json()) as any).hasTheme).toBe(false);
     });
 
     it("should ALWAYS inject for Admin mutations (POST/PUT/DELETE) for UI consistency", async () => {
@@ -139,10 +139,16 @@ describe("Middlewares", () => {
         Variables: GlobalConfigVariables;
       }>();
       app.use("*", injectGlobalConfig());
-      app.post("/admin/pages/save/index", (c) => c.json({ hasTheme: !!c.get("theme") }));
+      app.post("/admin/pages/save/index", (c) =>
+        c.json({ hasTheme: !!c.get("theme") }),
+      );
 
-      const res = await app.request("/admin/pages/save/index", { method: "POST" }, env);
-      expect((await res.json() as any).hasTheme).toBe(true);
+      const res = await app.request(
+        "/admin/pages/save/index",
+        { method: "POST" },
+        env,
+      );
+      expect(((await res.json()) as any).hasTheme).toBe(true);
     });
 
     it("should fall back to defaults if KV is empty during injection", async () => {
@@ -154,7 +160,7 @@ describe("Middlewares", () => {
       app.get("/test", (c) => c.json({ siteTitle: c.get("site").title }));
 
       const res = await app.request("/test", {}, env);
-      const data = await res.json() as any;
+      const data = (await res.json()) as any;
       // Should return factory default title if KV is empty
       expect(data.siteTitle).toBe("My Awesome Website");
     });
@@ -164,7 +170,11 @@ describe("Middlewares", () => {
     it("should inject style tags into outgoing HTML responses", async () => {
       const app = new Hono();
       app.use("*", injectUnoCSS());
-      app.get("/test", (c) => c.html(`<html><head></head><body><div class="p-4 text-red">Test</div></body></html>`));
+      app.get("/test", (c) =>
+        c.html(
+          `<html><head></head><body><div class="p-4 text-red">Test</div></body></html>`,
+        ),
+      );
 
       const res = await app.request("/test");
       const html = await res.text();
@@ -183,7 +193,7 @@ describe("Middlewares", () => {
       });
 
       const res = await app.request("/fragment", {
-        headers: { "HX-Request": "true" }
+        headers: { "HX-Request": "true" },
       });
       const html = await res.text();
 
@@ -197,13 +207,13 @@ describe("Middlewares", () => {
       const app = new Hono();
       app.use("*", injectUnoCSS());
       app.get("/editor", (c) => {
-        c.set("isEditor" as any, true);
+        (c as any).set("isEditor" as any, true);
         return c.html(`<div class="editor-shell">Editor</div>`);
       });
 
       const res = await app.request("/editor");
       const html = await res.text();
-      
+
       // Verification logic: renderWithUno handles the isEditor flag
       expect(html).toContain('<style id="ez-unocss">');
     });

@@ -6,8 +6,6 @@
 
 import { html } from "hono/html";
 
-import { HtmlEscapedString } from "hono/utils/html";
-
 /**
  * Component: SiteScripts
  * Injects the client-side logic for Logo previews, OG image resizing,
@@ -15,7 +13,7 @@ import { HtmlEscapedString } from "hono/utils/html";
  *
  * @returns A Hono HTML template string.
  */
-export const SiteScripts = (): HtmlEscapedString => html`
+export const SiteScripts = () => html`
   <script>
     (function () {
       // Logo Preview Logic

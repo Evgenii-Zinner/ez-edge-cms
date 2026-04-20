@@ -19,7 +19,8 @@ const createMockEnv = (overrides: any = {}) => {
       get: async (key: string, options?: { type: "json" }) => {
         const val = store.get(key);
         if (val === undefined) return null;
-        if (options?.type === "json") return typeof val === "string" ? JSON.parse(val) : val;
+        if (options?.type === "json")
+          return typeof val === "string" ? JSON.parse(val) : val;
         return val;
       },
       put: async (key: string, value: any) => {
@@ -62,14 +63,18 @@ describe("Admin Navigation Routes", () => {
   describe("GET /admin/navigation", () => {
     it("should render the Navigation Manager with existing links", async () => {
       const app = setupApp();
-      const res = await app.request("http://localhost/admin/navigation", { method: "GET" }, env);
+      const res = await app.request(
+        "http://localhost/admin/navigation",
+        { method: "GET" },
+        env,
+      );
 
       expect(res.status).toBe(200);
       const html = await res.text();
       expect(html).toContain("Navigation Manager");
       expect(html).toContain("Navbar Links");
       expect(html).toContain("Footer Links");
-      
+
       // Check for default home link
       expect(html).toContain("navLabel[]");
       expect(html).toContain("HOME");
@@ -79,8 +84,10 @@ describe("Admin Navigation Routes", () => {
 
     it("should include HTMX attributes for saving", async () => {
       const app = setupApp();
-      const html = await (await app.request("http://localhost/admin/navigation", {}, env)).text();
-      
+      const html = await (
+        await app.request("http://localhost/admin/navigation", {}, env)
+      ).text();
+
       expect(html).toContain('hx-post="/admin/navigation/save"');
       expect(html).toContain('hx-target="#global-toast"');
     });
@@ -90,13 +97,13 @@ describe("Admin Navigation Routes", () => {
     it("should validate, normalize paths, and persist navigation", async () => {
       const app = setupApp();
       const formData = new FormData();
-      
+
       // Navbar links
       formData.append("navLabel[]", "Blog");
       formData.append("navPath[]", "blog"); // Should be normalized to /blog
       formData.append("navLabel[]", "Contact");
       formData.append("navPath[]", "/contact");
-      
+
       // Footer links
       formData.append("footerLabel[]", "Privacy");
       formData.append("footerPath[]", "privacy"); // Should be normalized to /privacy
@@ -109,7 +116,7 @@ describe("Admin Navigation Routes", () => {
           const data = typeof val === "string" ? JSON.parse(val) : val;
           if (key === "config:nav") savedNav = data;
           if (key === "config:footer") savedFooter = data;
-        }
+        },
       });
 
       const res = await app.request(
@@ -118,7 +125,7 @@ describe("Admin Navigation Routes", () => {
           method: "POST",
           body: formData,
         },
-        mockEnv
+        mockEnv,
       );
 
       expect(res.status).toBe(200);
@@ -142,10 +149,14 @@ describe("Admin Navigation Routes", () => {
       const mockEnv = createMockEnv({
         put: async (key: string, val: any) => {
           if (key === "config:nav") savedNav = JSON.parse(val);
-        }
+        },
       });
 
-      await app.request("http://localhost/admin/navigation/save", { method: "POST", body: formData }, mockEnv);
+      await app.request(
+        "http://localhost/admin/navigation/save",
+        { method: "POST", body: formData },
+        mockEnv,
+      );
 
       expect(savedNav.items[0].path).toBe("https://twitter.com");
       expect(savedNav.items[1].path).toBe("#section");
@@ -164,10 +175,14 @@ describe("Admin Navigation Routes", () => {
       const mockEnv = createMockEnv({
         put: async (key: string, val: any) => {
           if (key === "config:nav") savedNav = JSON.parse(val);
-        }
+        },
       });
 
-      await app.request("http://localhost/admin/navigation/save", { method: "POST", body: formData }, mockEnv);
+      await app.request(
+        "http://localhost/admin/navigation/save",
+        { method: "POST", body: formData },
+        mockEnv,
+      );
 
       expect(savedNav.items.length).toBe(1);
       expect(savedNav.items[0].label).toBe("Home");
@@ -176,40 +191,52 @@ describe("Admin Navigation Routes", () => {
     it("should return error toast when validation fails (e.g. missing fields)", async () => {
       const app = setupApp();
       const formData = new FormData();
-      // navLabel provided, but navPath missing - zip-mapping should still handle it 
+      // navLabel provided, but navPath missing - zip-mapping should still handle it
       // but let's force a real Zod error by sending malformed data if possible.
-      // Actually, validateForm filters empty rows, so we need to bypass that 
+      // Actually, validateForm filters empty rows, so we need to bypass that
       // or send something that fails schema but passes zip-mapping.
-      
+
       // If we send nothing, it might return empty array which is valid.
       // Let's mock a KV failure instead for error branch coverage.
       const mockEnv = createMockEnv({
-        put: async () => { throw new Error("KV Failure"); }
+        put: async () => {
+          throw new Error("KV Failure");
+        },
       });
 
-      const res = await app.request("http://localhost/admin/navigation/save", { method: "POST", body: formData }, mockEnv);
-      
+      const res = await app.request(
+        "http://localhost/admin/navigation/save",
+        { method: "POST", body: formData },
+        mockEnv,
+      );
+
       expect(await res.text()).toContain("SAVE FAILED");
     });
 
     it("should return error toast when validation fails due to schema violation", async () => {
-       const app = setupApp();
-       const formData = new FormData();
-       // Force a Zod error by sending something that fails validation
-       // NavItemSchema expects 'label' as string, but zip-mapping might be bypassed or fail
-       // if we send something unexpected. 
-       // Let's use a simpler way: mock the validateForm to throw, 
-       // as testing the boundary of zip-mapping + zod is tricky.
-       
-       const res = await app.request("http://localhost/admin/navigation/save", { 
-         method: "POST", 
-         body: new FormData(), // Empty is valid, so this won't fail usually
-         headers: { "HX-Request": "true" }
-       }, createMockEnv({
-         put: async () => { throw new Error("Validation Failed"); }
-       }));
-       
-       expect(await res.text()).toContain("SAVE FAILED");
+      const app = setupApp();
+
+      // Force a Zod error by sending something that fails validation
+      // NavItemSchema expects 'label' as string, but zip-mapping might be bypassed or fail
+      // if we send something unexpected.
+      // Let's use a simpler way: mock the validateForm to throw,
+      // as testing the boundary of zip-mapping + zod is tricky.
+
+      const res = await app.request(
+        "http://localhost/admin/navigation/save",
+        {
+          method: "POST",
+          body: new FormData(), // Empty is valid, so this won't fail usually
+          headers: { "HX-Request": "true" },
+        },
+        createMockEnv({
+          put: async () => {
+            throw new Error("Validation Failed");
+          },
+        }),
+      );
+
+      expect(await res.text()).toContain("SAVE FAILED");
     });
   });
 });

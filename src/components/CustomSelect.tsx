@@ -6,6 +6,7 @@
  * that maintains compatibility with native form submissions via a hidden input.
  */
 
+import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 
 /**
@@ -43,14 +44,14 @@ export interface CustomSelectProps {
  * Renders a CSS-based dropdown that uses the `:focus-within` selector for state management.
  * Utilizes a data-attribute pattern and a single script delegator to minimize HTML bloat.
  */
-export const CustomSelect = ({
+export const CustomSelect: FC<CustomSelectProps> = ({
   name,
   id,
   options,
   selectedValue,
   placeholder,
   onChange,
-}: CustomSelectProps): JSX.Element => {
+}) => {
   const selectedOption =
     options.find((o) => o.value === selectedValue) || options[0];
 

@@ -12,7 +12,7 @@ const createMockEnv = () => {
       get: async (key: string) => {
         const entry = store.get(key);
         if (!entry) return null;
-        
+
         // Handle expiration (primitive mock)
         if (entry.expiration && entry.expiration < Date.now()) {
           store.delete(key);
@@ -20,8 +20,14 @@ const createMockEnv = () => {
         }
         return entry.value;
       },
-      put: async (key: string, value: any, options?: { expirationTtl?: number }) => {
-        const entry: { value: string; expiration?: number } = { value: value.toString() };
+      put: async (
+        key: string,
+        value: any,
+        options?: { expirationTtl?: number },
+      ) => {
+        const entry: { value: string; expiration?: number } = {
+          value: value.toString(),
+        };
         if (options?.expirationTtl) {
           entry.expiration = Date.now() + options.expirationTtl * 1000;
         }
@@ -69,7 +75,7 @@ describe("RateLimiter Utility", () => {
 
     it("should track different IPs and actions independently using unique KV keys", async () => {
       const limit = 1;
-      
+
       // Different IPs
       const resIp1 = await checkRateLimit(env, "1.1.1.1", "login", limit);
       const resIp2 = await checkRateLimit(env, "2.2.2.2", "login", limit);
@@ -86,13 +92,13 @@ describe("RateLimiter Utility", () => {
     it("should handle default limit (5) and window (60s) parameters", async () => {
       const ip = "4.4.4.4";
       const action = "default-check";
-      
+
       // Fire 5 requests (default limit)
       for (let i = 0; i < 5; i++) {
         const res = await checkRateLimit(env, ip, action);
         expect(res.success).toBe(true);
       }
-      
+
       // 6th should be blocked by default
       const blocked = await checkRateLimit(env, ip, action);
       expect(blocked.success).toBe(false);
@@ -114,7 +120,7 @@ describe("RateLimiter Utility", () => {
 
       // 1. Initial request (consumed)
       await checkRateLimit(env, ip, action, limit, window);
-      
+
       // 2. Second request (blocked)
       let result = await checkRateLimit(env, ip, action, limit, window);
       expect(result.success).toBe(false);
@@ -131,16 +137,16 @@ describe("RateLimiter Utility", () => {
     });
 
     it("should handle malformed or non-numeric counts in KV by defaulting to 0", async () => {
-       const ip = "6.6.6.6";
-       const action = "malformed-test";
-       
-       // Manually poison KV with non-numeric data
-       await env.EZ_CONTENT.put(`limit:${action}:${ip}`, "not-a-number");
-       
-       // Should recover and allow request as if count was 0
-       const result = await checkRateLimit(env, ip, action, 5);
-       expect(result.success).toBe(true);
-       expect(result.remaining).toBe(4);
+      const ip = "6.6.6.6";
+      const action = "malformed-test";
+
+      // Manually poison KV with non-numeric data
+      await env.EZ_CONTENT.put(`limit:${action}:${ip}`, "not-a-number");
+
+      // Should recover and allow request as if count was 0
+      const result = await checkRateLimit(env, ip, action, 5);
+      expect(result.success).toBe(true);
+      expect(result.remaining).toBe(4);
     });
   });
 });

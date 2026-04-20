@@ -35,7 +35,7 @@ describe("Admin Pages Routes", () => {
 
     return {
       EZ_CONTENT: {
-        get: async (key: string, options?: any) => {
+        get: async (key: string, _options?: any) => {
           if (overrides.get) {
             const res = await overrides.get(key);
             if (res !== undefined) return res;
@@ -137,7 +137,7 @@ describe("Admin Pages Routes", () => {
           initialData: { "page:draft:test": page },
         }),
       );
-      
+
       expect(res.status).toBe(200);
       const html = await res.text();
       expect(html).toContain("SAVED:");
@@ -154,12 +154,14 @@ describe("Admin Pages Routes", () => {
         "http://localhost/admin/pages/edit/error",
         { method: "GET" },
         mockEnv({
-          get: async () => { throw new Error("Database Failure"); }
+          get: async () => {
+            throw new Error("Database Failure");
+          },
         }),
       );
       expect(res.status).toBe(500);
       expect(await res.text()).toContain("500 EDITOR ERROR");
-      
+
       console.error = originalConsoleError;
     });
   });
@@ -189,12 +191,13 @@ describe("Admin Pages Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      expect(res.headers.get("HX-Redirect")).toBe("/admin/pages/edit/articles%2Fnew-page");
+      expect(res.headers.get("HX-Redirect")).toBe(
+        "/admin/pages/edit/articles%2Fnew-page",
+      );
       expect(savedData.title).toBe("New Page");
       expect(savedData.slug).toBe("articles/new-page");
       expect(savedData.status).toBe("draft");
     });
-
 
     it("should fail if page already exists", async () => {
       const app = setupApp();
@@ -215,7 +218,9 @@ describe("Admin Pages Routes", () => {
       );
 
       expect(res.status).toBe(400);
-      expect(await res.text()).toContain('Page "/existing-page" already exists.');
+      expect(await res.text()).toContain(
+        'Page "/existing-page" already exists.',
+      );
       console.error = originalConsoleError;
     });
 

@@ -32,21 +32,21 @@ describe("Layouts", () => {
         footer,
         theme,
         page,
-      }).toString();
+      })!.toString();
 
       expect(html).toContain("<!DOCTYPE html>");
-      expect(html).toContain("<html lang=\"en\">");
-      
+      expect(html).toContain('<html lang="en">');
+
       // Design System Tiers (Z-Layer Stacking check)
-      expect(html).toContain("class=\"ui-overlay scanlines\"");
-      expect(html).toContain("class=\"ui-overlay dots\"");
-      expect(html).toContain("class=\"ui-overlay dots-interactive\"");
+      expect(html).toContain('class="ui-overlay scanlines"');
+      expect(html).toContain('class="ui-overlay dots"');
+      expect(html).toContain('class="ui-overlay dots-interactive"');
 
       // Semantic Structure
-      expect(html).toContain("<header class=\"main-header\"");
-      expect(html).toContain("<main id=\"main-content\"");
-      expect(html).toContain("<footer class=\"main-footer\"");
-      expect(html).toContain("id=\"test-content\"");
+      expect(html).toContain('<header class="main-header"');
+      expect(html).toContain('<main id="main-content"');
+      expect(html).toContain('<footer class="main-footer"');
+      expect(html).toContain('id="test-content"');
     });
 
     it("should render logo with drop-shadow filter", () => {
@@ -58,8 +58,8 @@ describe("Layouts", () => {
         nav,
         footer,
         theme,
-      }).toString();
-      
+      })!.toString();
+
       expect(html).toContain("data:image/svg+xml");
       expect(html).toContain("drop-shadow(0 0 5px var(--theme-accent))");
     });
@@ -77,9 +77,9 @@ describe("Layouts", () => {
         nav,
         footer,
         theme,
-      }).toString();
-      
-      const currentYear = new Date().getFullYear().toString();
+      })!.toString();
+
+      const currentYear = new Date().getFullYear()!.toString();
       expect(html).toContain(`© ${currentYear} | EZ-Dev CMS`);
     });
 
@@ -91,8 +91,8 @@ describe("Layouts", () => {
         nav,
         footer,
         theme,
-      }).toString();
-      expect(html).toContain("<body hx-boost=\"true\">");
+      })!.toString();
+      expect(html).toContain('<body hx-boost="true">');
     });
 
     it("should render mobile navigation drawer separately from header", () => {
@@ -103,12 +103,13 @@ describe("Layouts", () => {
         nav,
         footer,
         theme,
-      }).toString();
-      expect(html).toContain("<nav class=\"main-nav lg:hidden\" id=\"main-nav\"");
+      })!.toString();
+      expect(html).toContain('<nav class="main-nav lg:hidden" id="main-nav"');
     });
 
     it("should inject custom head scripts from page SEO overrides", () => {
-      const customScript = "<script id='seo-script'>console.log('SEO')</script>";
+      const customScript =
+        "<script id='seo-script'>console.log('SEO')</script>";
       const pageWithScript = {
         ...page,
         seo: { ...page.seo, customHeadScripts: customScript },
@@ -121,7 +122,7 @@ describe("Layouts", () => {
         footer,
         theme,
         page: pageWithScript,
-      }).toString();
+      })!.toString();
       expect(html).toContain(customScript);
     });
   });
@@ -134,14 +135,14 @@ describe("Layouts", () => {
         site,
         theme,
         seo: site.seo,
-      }).toString();
+      })!.toString();
 
-      expect(html).toContain("<body class=\"admin-body\">");
-      expect(html).toContain("class=\"admin-shell\"");
-      expect(html).toContain("<aside class=\"admin-sidebar\"");
+      expect(html).toContain('<body class="admin-body">');
+      expect(html).toContain('class="admin-shell"');
+      expect(html).toContain('<aside class="admin-sidebar"');
       expect(html).toContain("DASHBOARD");
       expect(html).toContain("THEME STYLER");
-      expect(html).toContain("id=\"admin-view\"");
+      expect(html).toContain('id="admin-view"');
     });
 
     it("should render full-width layout without sidebar for onboarding/auth", () => {
@@ -152,12 +153,12 @@ describe("Layouts", () => {
         theme,
         seo: site.seo,
         hideSidebar: true,
-      }).toString();
+      })!.toString();
 
-      expect(html).not.toContain("class=\"admin-shell\"");
-      expect(html).not.toContain("class=\"admin-sidebar\"");
+      expect(html).not.toContain('class="admin-shell"');
+      expect(html).not.toContain('class="admin-sidebar"');
       expect(html).toContain("bg-[var(--theme-bg)]");
-      expect(html).toContain("class=\"ml-0 w-full");
+      expect(html).toContain('class="ml-0 w-full');
     });
 
     it("should include global interactive UI components (Modals & Toasts)", () => {
@@ -167,15 +168,15 @@ describe("Layouts", () => {
         site,
         theme,
         seo: site.seo,
-      }).toString();
+      })!.toString();
 
       // Confirmation Modal
-      expect(html).toContain("id=\"confirm-modal\"");
-      expect(html).toContain("id=\"confirm-title\"");
-      expect(html).toContain("id=\"confirm-yes\"");
-      
+      expect(html).toContain('id="confirm-modal"');
+      expect(html).toContain('id="confirm-title"');
+      expect(html).toContain('id="confirm-yes"');
+
       // Toast Notification Target
-      expect(html).toContain("id=\"global-toast\"");
+      expect(html).toContain('id="global-toast"');
     });
 
     it("should include complex unsaved changes detection logic in script", () => {
@@ -185,7 +186,7 @@ describe("Layouts", () => {
         site,
         theme,
         seo: site.seo,
-      }).toString();
+      })!.toString();
 
       expect(html).toContain("window.adminHasChanges = false;");
       expect(html).toContain("htmx:confirm");
@@ -200,8 +201,8 @@ describe("Layouts", () => {
         theme,
         seo: site.seo,
         isEditor: true,
-      }).toString();
-      
+      })!.toString();
+
       const normalHtml = AdminLayout({
         title: "View",
         children: "Content",
@@ -209,7 +210,7 @@ describe("Layouts", () => {
         theme,
         seo: site.seo,
         isEditor: false,
-      }).toString();
+      })!.toString();
 
       expect(editorHtml).toContain("editorjs");
       expect(normalHtml).not.toContain("editorjs");

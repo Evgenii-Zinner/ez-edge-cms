@@ -36,8 +36,11 @@ describe("Admin Auth Routes", () => {
         get: async (key: string, options?: any) => {
           if (key.startsWith("limit:")) {
             if (overrides.rateLimit !== undefined) {
-              const countStr = overrides.rateLimit ? overrides.rateLimit.count.toString() : null;
-              if (options?.type === "json") return countStr ? JSON.parse(countStr) : null;
+              const countStr = overrides.rateLimit
+                ? overrides.rateLimit.count.toString()
+                : null;
+              if (options?.type === "json")
+                return countStr ? JSON.parse(countStr) : null;
               return countStr;
             }
             return null;

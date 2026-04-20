@@ -17,7 +17,7 @@ describe("Admin Theme Routes", () => {
 
   const setupApp = () => {
     const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
-    
+
     app.use("*", async (c, next) => {
       const site = createDefaultSite();
       c.set("theme", createDefaultTheme());

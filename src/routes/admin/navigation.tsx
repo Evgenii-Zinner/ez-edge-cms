@@ -89,7 +89,7 @@ navAdmin.get("/", async (c): Promise<Response> => {
               items={nav.items}
               addButtonLabel="+ ADD NAVBAR LINK"
               template={linkTemplate("navLabel[]", "navPath[]")}
-              renderRow={(item, _i) => (
+              renderRow={(item, _index) => (
                 <tr class="border-b border-b-solid border-[rgba(255,255,255,0.05)]">
                   <SortButtons />
                   <td class="p-2">
@@ -121,7 +121,7 @@ navAdmin.get("/", async (c): Promise<Response> => {
               items={footer.links}
               addButtonLabel="+ ADD FOOTER LINK"
               template={linkTemplate("footerLabel[]", "footerPath[]")}
-              renderRow={(item, _i) => (
+              renderRow={(item, _index) => (
                 <tr class="border-b border-b-solid border-[rgba(255,255,255,0.05)]">
                   <SortButtons />
                   <td class="p-2">

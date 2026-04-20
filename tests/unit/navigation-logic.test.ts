@@ -25,31 +25,43 @@ describe("Navigation Logic Normalization", () => {
     it("should prepend / to relative internal paths", () => {
       expect(normalizePath("articles")).toBe("/articles");
       expect(normalizePath("blog/post-1")).toBe("/blog/post-1");
-      expect(normalizePath("deeply/nested/slug/structure")).toBe("/deeply/nested/slug/structure");
+      expect(normalizePath("deeply/nested/slug/structure")).toBe(
+        "/deeply/nested/slug/structure",
+      );
     });
 
     it("should NOT prepend / to already absolute internal paths", () => {
       expect(normalizePath("/")).toBe("/");
       expect(normalizePath("/articles")).toBe("/articles");
-      expect(normalizePath("/complex/path/with-dashes")).toBe("/complex/path/with-dashes");
+      expect(normalizePath("/complex/path/with-dashes")).toBe(
+        "/complex/path/with-dashes",
+      );
     });
 
     it("should handle internal paths with query parameters and fragments", () => {
       expect(normalizePath("search?q=test")).toBe("/search?q=test");
       expect(normalizePath("about#team")).toBe("/about#team");
-      expect(normalizePath("/already-absolute?debug=true#top")).toBe("/already-absolute?debug=true#top");
+      expect(normalizePath("/already-absolute?debug=true#top")).toBe(
+        "/already-absolute?debug=true#top",
+      );
     });
   });
 
   describe("normalizePath (External & Special Protocols)", () => {
     it("should NOT modify external HTTP/HTTPS URLs", () => {
       expect(normalizePath("https://google.com")).toBe("https://google.com");
-      expect(normalizePath("http://mysite.com/page")).toBe("http://mysite.com/page");
-      expect(normalizePath("https://sub.domain.tld/path?query=1#hash")).toBe("https://sub.domain.tld/path?query=1#hash");
+      expect(normalizePath("http://mysite.com/page")).toBe(
+        "http://mysite.com/page",
+      );
+      expect(normalizePath("https://sub.domain.tld/path?query=1#hash")).toBe(
+        "https://sub.domain.tld/path?query=1#hash",
+      );
     });
 
     it("should NOT modify mailto: and tel: protocols", () => {
-      expect(normalizePath("mailto:admin@example.com")).toBe("mailto:admin@example.com");
+      expect(normalizePath("mailto:admin@example.com")).toBe(
+        "mailto:admin@example.com",
+      );
       expect(normalizePath("tel:+1234567890")).toBe("tel:+1234567890");
     });
 
@@ -59,8 +71,8 @@ describe("Navigation Logic Normalization", () => {
     });
 
     it("should handle protocol-relative URLs as absolute internal paths", () => {
-       // Protocol-relative URLs start with / so they are returned as-is
-       expect(normalizePath("//google.com")).toBe("//google.com");
+      // Protocol-relative URLs start with / so they are returned as-is
+      expect(normalizePath("//google.com")).toBe("//google.com");
     });
   });
 

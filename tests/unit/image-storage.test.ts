@@ -55,7 +55,9 @@ describe("ImageStorage Utilities", () => {
 
     it("should handle null or undefined content gracefully", async () => {
       expect(await extractAndSaveImages(env, "test", null)).toBeNull();
-      expect(await extractAndSaveImages(env, "test", undefined)).toBeUndefined();
+      expect(
+        await extractAndSaveImages(env, "test", undefined),
+      ).toBeUndefined();
     });
 
     it("should extract base64 images and save as binary with metadata", async () => {
@@ -92,7 +94,8 @@ describe("ImageStorage Utilities", () => {
     });
 
     it("should extract images from custom hero blocks with 'hero-' prefix", async () => {
-      const base64Webp = "data:image/webp;base64,UklGRhoAAABXRUJQVlA4TAYAAAAvAAAAAAfQAA==";
+      const base64Webp =
+        "data:image/webp;base64,UklGRhoAAABXRUJQVlA4TAYAAAAvAAAAAAfQAA==";
       const content = {
         blocks: [
           {
@@ -105,11 +108,14 @@ describe("ImageStorage Utilities", () => {
 
       const result = await extractAndSaveImages(env, "home", content);
       expect(result.blocks[0].data.url).toBe("/images/home/hero-hero-1.webp");
-      expect(env.EZ_CONTENT._getMetadata("img:home:hero-hero-1.webp").contentType).toBe("image/webp");
+      expect(
+        env.EZ_CONTENT._getMetadata("img:home:hero-hero-1.webp").contentType,
+      ).toBe("image/webp");
     });
 
     it("should generate random IDs for blocks without an ID", async () => {
-      const base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+      const base64 =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
       const content = {
         blocks: [
           {
@@ -147,7 +153,7 @@ describe("ImageStorage Utilities", () => {
 
       const list = await env.EZ_CONTENT.list({ prefix: `img:${slug}:` });
       const keys = list.keys.map((k: any) => k.name);
-      
+
       expect(keys).toContain(`img:${slug}:keep-me.jpg`);
       expect(keys).not.toContain(`img:${slug}:old-1.png`);
       expect(keys).not.toContain(`img:${slug}:old-2.webp`);
@@ -159,35 +165,56 @@ describe("ImageStorage Utilities", () => {
 
       const content = {
         blocks: [
-          { type: "image", data: { file: { url: `/images/${slug}/test.png` } } },
+          {
+            type: "image",
+            data: { file: { url: `/images/${slug}/test.png` } },
+          },
           { type: "image", data: { file: { url: `images/${slug}/test.png` } } },
         ],
       };
 
       await extractAndSaveImages(env, slug, content);
-      
+
       const list = await env.EZ_CONTENT.list({ prefix: `img:${slug}:` });
       expect(list.keys.length).toBe(1); // Neither should be deleted as they are both "current"
     });
 
     it("should handle mixed content (base64, existing, external) in one pass", async () => {
       const slug = "mixed-test";
-      const base64 = "data:image/png;base64,abc";
+
       await env.EZ_CONTENT.put(`img:${slug}:existing.png`, "data");
 
       const content = {
         blocks: [
-          { id: "b64", type: "image", data: { file: { url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" } } },
-          { type: "image", data: { file: { url: `/images/${slug}/existing.png` } } },
-          { type: "image", data: { file: { url: "https://external.com/img.jpg" } } },
+          {
+            id: "b64",
+            type: "image",
+            data: {
+              file: {
+                url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+              },
+            },
+          },
+          {
+            type: "image",
+            data: { file: { url: `/images/${slug}/existing.png` } },
+          },
+          {
+            type: "image",
+            data: { file: { url: "https://external.com/img.jpg" } },
+          },
         ],
       };
 
       const result = await extractAndSaveImages(env, slug, content);
-      
+
       expect(result.blocks[0].data.file.url).toBe(`/images/${slug}/b64.png`);
-      expect(result.blocks[1].data.file.url).toBe(`/images/${slug}/existing.png`);
-      expect(result.blocks[2].data.file.url).toBe("https://external.com/img.jpg");
+      expect(result.blocks[1].data.file.url).toBe(
+        `/images/${slug}/existing.png`,
+      );
+      expect(result.blocks[2].data.file.url).toBe(
+        "https://external.com/img.jpg",
+      );
 
       const list = await env.EZ_CONTENT.list({ prefix: `img:${slug}:` });
       expect(list.keys.length).toBe(2); // b64 and existing
@@ -196,16 +223,21 @@ describe("ImageStorage Utilities", () => {
     it("should catch and log GC failures without crashing the main flow", async () => {
       const errorEnv = {
         EZ_CONTENT: {
-          list: async () => { throw new Error("KV Failure"); },
+          list: async () => {
+            throw new Error("KV Failure");
+          },
           put: async () => {},
-        }
+        },
       } as any;
 
       const content = { blocks: [] };
       const result = await extractAndSaveImages(errorEnv, "test", content);
-      
+
       expect(result).toEqual(content);
-      expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Image GC failed"), expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Image GC failed"),
+        expect.any(Error),
+      );
     });
   });
 
@@ -216,14 +248,15 @@ describe("ImageStorage Utilities", () => {
       await env.EZ_CONTENT.put("img:site:logo.jpg", "data");
       await env.EZ_CONTENT.put("img:site:other.webp", "data");
 
-      const base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+      const base64 =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
       const url = await saveSiteImage(env, "logo", base64);
 
       expect(url).toBe("/images/site/logo.webp");
-      
+
       const list = await env.EZ_CONTENT.list({ prefix: "img:site:" });
       const keys = list.keys.map((k: any) => k.name);
-      
+
       expect(keys).toContain("img:site:logo.webp");
       expect(keys).toContain("img:site:other.webp");
       expect(keys).not.toContain("img:site:logo.png");
@@ -239,8 +272,8 @@ describe("ImageStorage Utilities", () => {
     it("should handle empty or malformed base64 strings gracefully", async () => {
       // Not starting with data:image/
       expect(await saveSiteImage(env, "logo", "not-base64")).toBe("not-base64");
-      
-      // Starting but malformed (putBinaryImage might fail, but saveSiteImage should catch it if we add a try-catch, 
+
+      // Starting but malformed (putBinaryImage might fail, but saveSiteImage should catch it if we add a try-catch,
       // though currently it doesn't have one around putBinaryImage)
       // Actually, atob will throw on malformed data.
       const malformed = "data:image/png;base64,!!!";
@@ -254,16 +287,21 @@ describe("ImageStorage Utilities", () => {
     it("should handle cleanup errors gracefully during site image save", async () => {
       const errorEnv = {
         EZ_CONTENT: {
-          list: async () => { throw new Error("List Error"); },
+          list: async () => {
+            throw new Error("List Error");
+          },
           put: async () => {},
-        }
+        },
       } as any;
 
       const base64 = "data:image/png;base64,abc";
       const url = await saveSiteImage(errorEnv, "logo", base64);
-      
+
       expect(url).toBe("/images/site/logo.webp");
-      expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Failed to clean up old site image"), expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to clean up old site image"),
+        expect.any(Error),
+      );
     });
   });
 });

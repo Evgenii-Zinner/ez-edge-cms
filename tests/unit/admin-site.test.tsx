@@ -1,4 +1,12 @@
-import { describe, it, expect, spyOn, mock, afterEach, beforeEach } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  spyOn,
+  mock,
+  afterEach,
+  beforeEach,
+} from "bun:test";
 import { Hono } from "hono";
 import siteAdmin from "@routes/admin/site";
 import { GlobalConfigVariables } from "@core/middleware";
@@ -66,7 +74,7 @@ describe("Admin Site Routes", () => {
         },
         put: async (key: string, val: any) => {
           if (overrides.put) await overrides.put(key, val);
-          const finalVal = typeof val === "string" ? (tryParse(val) || val) : val;
+          const finalVal = typeof val === "string" ? tryParse(val) || val : val;
           store.set(key, finalVal);
         },
         delete: async (key: string) => {
@@ -82,7 +90,11 @@ describe("Admin Site Routes", () => {
   };
 
   function tryParse(v: any) {
-    try { return JSON.parse(v); } catch { return null; }
+    try {
+      return JSON.parse(v);
+    } catch {
+      return null;
+    }
   }
 
   describe("GET /admin/site", () => {
@@ -320,7 +332,7 @@ describe("Admin Site Routes", () => {
       );
 
       expect(res.status).toBe(500);
-      expect(await res.json()).toEqual({ error: "KV Error" });
+      expect(await res.text()).toBe(JSON.stringify({ error: "KV Error" }));
     });
 
     it("GET /backup should return JSON backup", async () => {
@@ -341,7 +353,7 @@ describe("Admin Site Routes", () => {
       );
 
       expect(res.status).toBe(200);
-      const data = await res.json();
+      const data = (await res.json()) as any;
       expect(data["config:site"]).toBeDefined();
       expect(data["config:site"].title).toBe("Backup Title");
     });
@@ -414,20 +426,27 @@ describe("Admin Site Routes", () => {
 
   describe("Specific Component Scenarios", () => {
     it("should render logo preview as Data URI when logoSvg is provided", async () => {
-      const siteWithLogo = { ...createDefaultSite(), logoSvg: "<svg id='test-logo'></svg>" };
+      const siteWithLogo = {
+        ...createDefaultSite(),
+        logoSvg: "<svg id='test-logo'></svg>",
+      };
       const app = setupApp();
       const env = mockEnv({ initialData: { "config:site": siteWithLogo } });
 
       const res = await app.request("http://localhost/admin/site", {}, env);
       const html = await res.text();
-      
+
       expect(html).toContain('src="data:image/svg+xml');
       expect(html).toContain("test-logo");
     });
 
     it("should render all functional elements of the BackupRestoreCard", async () => {
       const app = setupApp();
-      const res = await app.request("http://localhost/admin/site", {}, mockEnv());
+      const res = await app.request(
+        "http://localhost/admin/site",
+        {},
+        mockEnv(),
+      );
       const html = await res.text();
 
       expect(html).toContain('id="backup-progress-container"');
