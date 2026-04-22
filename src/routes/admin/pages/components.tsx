@@ -59,7 +59,7 @@ export const PageRow: FC<PageRowProps> = (props) => {
       </td>
       <td class="p-4 flex gap-2">
         <a
-          href={`/admin/pages/edit/${encodeURIComponent(slug)}`}
+          href={`/admin/pages/edit/${slug}`}
           class="btn-mini nav-item-info no-underline"
         >
           EDIT
@@ -67,7 +67,7 @@ export const PageRow: FC<PageRowProps> = (props) => {
 
         {isDraft && !isLive && (
           <button
-            hx-post={`/admin/pages/publish/${encodeURIComponent(slug)}`}
+            hx-post={`/admin/pages/publish/${slug}`}
             hx-target={`#row-${safeId}`}
             hx-swap="outerHTML"
             class="btn-mini nav-item-success"
@@ -78,7 +78,7 @@ export const PageRow: FC<PageRowProps> = (props) => {
 
         {isLive && !isProtected && (
           <button
-            hx-post={`/admin/pages/unpublish/${encodeURIComponent(slug)}`}
+            hx-post={`/admin/pages/unpublish/${slug}`}
             hx-target={`#row-${safeId}`}
             hx-swap="outerHTML"
             class="btn-mini nav-item-warning"
@@ -89,7 +89,7 @@ export const PageRow: FC<PageRowProps> = (props) => {
 
         {!isProtected && (
           <button
-            hx-post={`/admin/pages/delete/${encodeURIComponent(slug)}`}
+            hx-post={`/admin/pages/delete/${slug}`}
             data-confirm={`Permanently delete /${slug}?`}
             hx-target={`#row-${safeId}`}
             hx-swap="delete"

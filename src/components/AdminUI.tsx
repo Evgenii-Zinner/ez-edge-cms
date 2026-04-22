@@ -70,9 +70,9 @@ export const AdminHeader: FC<PropsWithChildren<AdminHeaderProps>> = (props) => (
     <div class="flex flex-col gap-1">
       <h1 class="admin-title">{props.title}</h1>
       {props.description && (
-        <p class="text-0.8rem color-[var(--theme-text-dim)] uppercase tracking-1px">
+        <div class="text-0.75rem color-[var(--theme-text-dim)] uppercase tracking-1px font-nav">
           {props.description}
-        </p>
+        </div>
       )}
     </div>
     <div class="admin-header-actions">{props.children}</div>

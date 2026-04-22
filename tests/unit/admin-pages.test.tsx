@@ -192,7 +192,7 @@ describe("Admin Pages Routes", () => {
 
       expect(res.status).toBe(200);
       expect(res.headers.get("HX-Redirect")).toBe(
-        "/admin/pages/edit/articles%2Fnew-page",
+        "/admin/pages/edit/articles/new-page",
       );
       expect(savedData.title).toBe("New Page");
       expect(savedData.slug).toBe("articles/new-page");

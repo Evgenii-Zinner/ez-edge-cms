@@ -186,7 +186,7 @@ views.get("/edit/:slug{.+}", async (c): Promise<Response> => {
           </button>
           <button
             class="btn-primary border-[#00ff00] color-[#00ff00]"
-            hx-post={`/admin/pages/publish/${encodeURIComponent(slug)}`}
+            hx-post={`/admin/pages/publish/${slug}`}
             hx-include="#editor-form"
             hx-target="#save-time"
           >
@@ -198,7 +198,7 @@ views.get("/edit/:slug{.+}", async (c): Promise<Response> => {
 
         <form
           id="editor-form"
-          hx-post={`/admin/pages/save/${encodeURIComponent(slug)}`}
+          hx-post={`/admin/pages/save/${slug}`}
           hx-target="#save-time"
         >
           <div class="admin-card">

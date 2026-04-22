@@ -5,7 +5,6 @@
  */
 
 import type { FC } from "hono/jsx";
-import { AdminField } from "@components/AdminUI";
 
 /**
  * Component: SetupForm
@@ -23,41 +22,57 @@ export const SetupForm: FC<{
     hx-post="/admin/setup"
     hx-target="#setup-form"
     hx-swap="outerHTML"
-    class="flex flex-col gap-4"
+    class="flex flex-col gap-4 no-track"
   >
     {props.error && (
       <div class="color-[#ff4444] mb-4 text-0.9rem font-nav">{props.error}</div>
     )}
-    <AdminField
-      label="Username"
-      name="username"
-      id="setup-username"
-      autocomplete="username"
-      required
-      minlength={3}
-      autofocus
-      value={props.username || ""}
-    />
+    <div class="admin-field">
+      <label class="admin-label" for="setup-username">
+        Username
+      </label>
+      <input
+        type="text"
+        name="username"
+        id="setup-username"
+        class="admin-input"
+        autocomplete="username"
+        required
+        minlength={3}
+        autofocus
+        value={props.username || ""}
+      />
+    </div>
 
-    <AdminField
-      label="Password"
-      name="password"
-      id="setup-password"
-      type="password"
-      autocomplete="new-password"
-      required
-      minlength={8}
-    />
+    <div class="admin-field">
+      <label class="admin-label" for="setup-password">
+        Password
+      </label>
+      <input
+        type="password"
+        name="password"
+        id="setup-password"
+        class="admin-input"
+        autocomplete="new-password"
+        required
+        minlength={8}
+      />
+    </div>
 
-    <AdminField
-      label="Repeat Password"
-      name="repeatPassword"
-      id="setup-repeat-password"
-      type="password"
-      autocomplete="new-password"
-      required
-      minlength={8}
-    />
+    <div class="admin-field">
+      <label class="admin-label" for="setup-repeat-password">
+        Repeat Password
+      </label>
+      <input
+        type="password"
+        name="repeatPassword"
+        id="setup-repeat-password"
+        class="admin-input"
+        autocomplete="new-password"
+        required
+        minlength={8}
+      />
+    </div>
 
     <button type="submit" class="btn-primary mt-4">
       CREATE ADMIN
@@ -81,29 +96,40 @@ export const LoginForm: FC<{
     hx-post="/admin/login"
     hx-target="#login-form"
     hx-swap="outerHTML"
-    class="flex flex-col gap-4"
+    class="flex flex-col gap-4 no-track"
   >
     {props.error && (
       <div class="color-[#ff4444] mb-4 text-0.9rem font-nav">{props.error}</div>
     )}
-    <AdminField
-      label="Username"
-      name="username"
-      id="login-username"
-      autocomplete="username"
-      required
-      autofocus
-      value={props.username || ""}
-    />
+    <div class="admin-field">
+      <label class="admin-label" for="login-username">
+        Username
+      </label>
+      <input
+        type="text"
+        name="username"
+        id="login-username"
+        class="admin-input"
+        autocomplete="username"
+        required
+        autofocus
+        value={props.username || ""}
+      />
+    </div>
 
-    <AdminField
-      label="Password"
-      name="password"
-      id="login-password"
-      type="password"
-      autocomplete="current-password"
-      required
-    />
+    <div class="admin-field">
+      <label class="admin-label" for="login-password">
+        Password
+      </label>
+      <input
+        type="password"
+        name="password"
+        id="login-password"
+        class="admin-input"
+        autocomplete="current-password"
+        required
+      />
+    </div>
 
     <button type="submit" class="btn-primary mt-4">
       AUTHORIZE

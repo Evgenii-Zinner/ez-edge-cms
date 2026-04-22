@@ -58,7 +58,7 @@ mutations.post("/create", async (c): Promise<Response> => {
   if (existingRaw) return c.text(`Page "/${slug}" already exists.`, 400);
 
   await savePage(c.env, createDefaultPage(title, slug), "draft");
-  c.header("HX-Redirect", `/admin/pages/edit/${encodeURIComponent(slug)}`);
+  c.header("HX-Redirect", `/admin/pages/edit/${slug}`);
   return c.text("Redirecting...");
 });
 

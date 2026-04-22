@@ -1,12 +1,12 @@
 {
   "name": "ez-edge-cms",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "description": "A KV-backed, no-code CMS for Cloudflare Workers.",
   "author": "Evgenii Zinner",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --local",
-    "dev:test": "powershell -ExecutionPolicy Bypass -File tests/e2e/run-test-server.ps1",
+    "dev:test": "wrangler dev --local --persist-to ./temp-kv-state --port 8788",
     "test:unit": "bun test tests/unit",
     "test:e2e": "playwright test",
     "deploy": "wrangler deploy",

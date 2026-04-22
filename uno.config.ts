@@ -463,6 +463,11 @@ export default defineConfig({
     "admin-sidebar":
       "bg-[rgba(10,20,20,0.9)] border-r border-r-solid border-[var(--theme-accent-glow)] p-8 flex flex-col gap-4 h-full",
     "admin-content": "p-12 overflow-y-auto h-full",
+    "admin-header":
+      "flex justify-between items-center mb-8 pb-4 border-b border-b-solid border-[var(--theme-accent-glow)]",
+    "admin-header-actions": "flex gap-4",
+    "admin-title":
+      "text-1.8rem font-header tracking-2px m-0 color-[var(--theme-accent)]",
 
     "modal-overlay":
       "fixed inset-0 bg-[rgba(0,0,0,0.85)] backdrop-blur-10px flex items-center justify-center z-[4000] opacity-0 pointer-events-none transition-opacity duration-300",

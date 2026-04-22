@@ -119,3 +119,7 @@
 ## [0.1.29] - 2026-04-21
 
 - fix(ts): resolve typescript errors and onboarding e2e timeout, expand test coverage
+
+## [0.1.30] - 2026-04-22
+
+- fix(admin): resolve layout issues and unwanted change tracking on auth forms
