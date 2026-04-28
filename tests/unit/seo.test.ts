@@ -174,6 +174,30 @@ describe("SEO Utilities", () => {
       expect(identity).not.toHaveProperty("logo"); // People don't have logos in schema.org
     });
 
+    it("should correctly handle 'LocalBusiness' identity type with specific fields", () => {
+      const businessSite = {
+        ...mockSite,
+        seo: {
+          identity: {
+            type: "LocalBusiness",
+            name: "Pizza Shop",
+            address: "123 Main St",
+            phone: "555-1234",
+            logo: "/logo.png",
+          },
+        },
+      } as any;
+      const jsonLd = generateJsonLd(businessSite, undefined, "https://pizza.com");
+      const identity = jsonLd["@graph"].find(
+        (i: any) => i["@type"] === "LocalBusiness",
+      );
+
+      expect(identity.name).toBe("Pizza Shop");
+      expect(identity.address).toBe("123 Main St");
+      expect(identity.telephone).toBe("555-1234");
+      expect(identity.logo).toBe("/logo.png");
+    });
+
     it("should generate a valid BreadcrumbList with correct positioning and hierarchical names", () => {
       const page = { ...mockPage, slug: "docs/api/v1" };
       const jsonLd = generateJsonLd(mockSite, page, "https://base.com");

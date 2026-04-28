@@ -372,5 +372,66 @@ describe("EditorJsParser", () => {
       const md = renderEditorJsToMarkdown(data);
       expect(md).toBe("1. P\n  1. C");
     });
+
+    test("should return empty string for empty table rows", () => {
+      const data: EditorJsData = {
+        blocks: [
+          {
+            type: "table",
+            data: { content: [] },
+          },
+        ],
+      };
+      expect(renderEditorJsToMarkdown(data)).toBe("");
+    });
+
+    test("should handle non-array list items in markdown", () => {
+      const data: EditorJsData = {
+        blocks: [
+          {
+            type: "list",
+            data: { items: null },
+          },
+        ],
+      };
+      expect(renderEditorJsToMarkdown(data)).toBe("");
+    });
+
+    test("should render tables without headings in markdown", () => {
+      const data: EditorJsData = {
+        blocks: [
+          {
+            type: "table",
+            data: {
+              withHeadings: false,
+              content: [
+                ["A1", "B1"],
+                ["A2", "B2"],
+              ],
+            },
+          },
+        ],
+      };
+      const md = renderEditorJsToMarkdown(data);
+      expect(md).toBe("| A1 | B1 |\n| A2 | B2 |");
+    });
+
+    test("should render embed blocks in markdown", () => {
+      const data: EditorJsData = {
+        blocks: [
+          {
+            type: "embed",
+            data: {
+              service: "youtube",
+              embed: "https://youtube.com/watch?v=123",
+              caption: "Video Caption",
+            },
+          },
+        ],
+      };
+      const md = renderEditorJsToMarkdown(data);
+      expect(md).toContain("[Embed: youtube](https://youtube.com/watch?v=123)");
+      expect(md).toContain("*Video Caption*");
+    });
   });
 });

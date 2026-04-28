@@ -125,12 +125,7 @@ app.get("/robots.txt", async (c) => {
  */
 app.get("/llms.txt", (c) => c.text(c.var.site.txtFiles?.llms || ""));
 app.get("/llms-full.txt", async (c) => {
-  // If user provided custom content, use it.
-  if (c.var.site.txtFiles?.llmsFull) {
-    return c.text(c.var.site.txtFiles.llmsFull);
-  }
-
-  // Otherwise, generate it dynamically from all published pages.
+  // Generate it dynamically from all published pages.
   const slugs = (await listPages(c.env, "live")).filter(
     (s) => s !== "terms" && s !== "privacy",
   );

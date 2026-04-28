@@ -129,6 +129,52 @@ describe("Admin Site Routes", () => {
       const html = await res.text();
       expect(html).toContain("DOMAIN.COM");
     });
+
+    it("should render 1200 x 630 placeholder when ogImage is missing", async () => {
+      const site = { ...createDefaultSite(), ogImage: "" };
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/site",
+        { method: "GET" },
+        mockEnv({
+          initialData: { "config:site": site },
+        }),
+      );
+      const html = await res.text();
+      expect(html).toContain("1200 x 630");
+    });
+
+    it("should render ogImage preview when present", async () => {
+      const site = { ...createDefaultSite(), ogImage: "/images/test.png" };
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/site",
+        { method: "GET" },
+        mockEnv({
+          initialData: { "config:site": site },
+        }),
+      );
+      const html = await res.text();
+      expect(html).toContain('src="/images/test.png?t=');
+    });
+
+    it("should render social links in SocialLinksCard", async () => {
+      const site = createDefaultSite();
+      site.seo.identity.links = [{ platform: "Twitter", url: "https://twitter.com/test" }];
+
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/site",
+        { method: "GET" },
+        mockEnv({
+          initialData: { "config:site": site },
+        }),
+      );
+      const html = await res.text();
+      expect(html).toContain("SEO - Social Profiles");
+      expect(html).toContain("Twitter");
+      expect(html).toContain("https://twitter.com/test");
+    });
   });
 
   describe("GET /admin/site/identity-fields", () => {
@@ -201,6 +247,29 @@ describe("Admin Site Routes", () => {
       const html = await res.text();
       expect(html).toContain('value="John Doe"');
       expect(html).toContain('name="seo.identity.name"');
+    });
+
+    it("should handle missing image/logo and empty business details in IdentityFields", async () => {
+      const site = createDefaultSite();
+      site.seo.identity = {
+        type: "LocalBusiness",
+        name: "No Detail Biz",
+        description: "",
+        links: [],
+      };
+
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/site/identity-fields?seo.identity.type=LocalBusiness",
+        { method: "GET" },
+        mockEnv({
+          initialData: { "config:site": site },
+        }),
+      );
+      const html = await res.text();
+      expect(html).toContain('name="seo.identity.logo"');
+      expect(html).toContain('name="seo.identity.address"');
+      expect(html).toContain('name="seo.identity.phone"');
     });
   });
 

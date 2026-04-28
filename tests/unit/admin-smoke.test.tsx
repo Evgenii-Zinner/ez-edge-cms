@@ -129,6 +129,50 @@ describe("Admin Router Smoke Tests", () => {
     );
   });
 
+  it("should skip origin validation if Host header is missing", async () => {
+    const app = setupApp();
+    const res = await app.request(
+      "http://localhost/admin/setup",
+      {
+        method: "GET",
+        headers: {
+          Origin: "http://attacker.com",
+          // Missing Host
+        },
+      },
+      {
+        EZ_CONTENT: {
+          get: async () => null,
+        },
+      } as any,
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it("should redirect to setup on POST if no admin exists", async () => {
+    const app = setupApp();
+    const res = await app.request(
+      "http://localhost/admin/site/save",
+      {
+        method: "POST",
+        headers: {
+          Host: "localhost",
+          Origin: "http://localhost",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      },
+      {
+        EZ_CONTENT: {
+          get: async (key: string) =>
+            key === "system:admin_user" ? null : null,
+        },
+      } as any,
+    );
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe("/admin/setup");
+  });
+
   it("should handle missing Host header gracefully", async () => {
     const app = setupApp();
     const res = await app.request(
