@@ -123,3 +123,7 @@
 ## [0.1.30] - 2026-04-22
 
 - fix(admin): resolve layout issues and unwanted change tracking on auth forms
+
+## [0.1.31] - 2026-04-28
+
+- feat(compliance): add support for security.txt, mta-sts, and AI metadata
