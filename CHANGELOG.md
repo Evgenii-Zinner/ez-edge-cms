@@ -127,3 +127,7 @@
 ## [0.1.31] - 2026-04-28
 
 - feat(compliance): add support for security.txt, mta-sts, and AI metadata
+
+## [0.1.32] - 2026-04-28
+
+- feat(compliance): dynamic llms-full and automated compliance files

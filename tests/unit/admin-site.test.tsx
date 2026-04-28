@@ -160,7 +160,9 @@ describe("Admin Site Routes", () => {
 
     it("should render social links in SocialLinksCard", async () => {
       const site = createDefaultSite();
-      site.seo.identity.links = [{ platform: "Twitter", url: "https://twitter.com/test" }];
+      site.seo.identity.links = [
+        { platform: "Twitter", url: "https://twitter.com/test" },
+      ];
 
       const app = setupApp();
       const res = await app.request(

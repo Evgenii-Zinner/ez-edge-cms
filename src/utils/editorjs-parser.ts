@@ -293,10 +293,7 @@ export const renderEditorJsToMarkdown = (data: EditorJsData): string => {
     return "";
   }
 
-  return data.blocks
-    .map(parseBlockToMarkdown)
-    .filter(Boolean)
-    .join("\n\n");
+  return data.blocks.map(parseBlockToMarkdown).filter(Boolean).join("\n\n");
 };
 
 /**

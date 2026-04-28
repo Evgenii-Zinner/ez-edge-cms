@@ -187,7 +187,11 @@ describe("SEO Utilities", () => {
           },
         },
       } as any;
-      const jsonLd = generateJsonLd(businessSite, undefined, "https://pizza.com");
+      const jsonLd = generateJsonLd(
+        businessSite,
+        undefined,
+        "https://pizza.com",
+      );
       const identity = jsonLd["@graph"].find(
         (i: any) => i["@type"] === "LocalBusiness",
       );
