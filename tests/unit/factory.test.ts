@@ -21,12 +21,20 @@ describe("Factory Utilities", () => {
 
   describe("createDefaultTxtFiles", () => {
     it("should generate standard compliance files", () => {
-      const files = createDefaultTxtFiles("https://example.com", "John Doe");
+      const files = createDefaultTxtFiles(
+        "https://example.com",
+        "John Doe",
+        "john@example.com",
+      );
       expect(files.robots).toContain("User-agent: *");
       expect(files.humans).toContain("Developer: John Doe");
       expect(files.humans).toContain("Site: https://example.com");
       expect(files.llms).toContain("# AI Crawler Instructions");
       expect(files.ads).toContain("# Add your authorized digital sellers here");
+      expect(files.security).toContain("Contact: mailto:john@example.com");
+      expect(files.llmsFull).toContain("# Full AI Site Content");
+      expect(files.mtaSts).toContain("version: STSv1");
+      expect(files.mtaSts).toContain("mx: *.example.com");
     });
 
     it("should use default parameters", () => {

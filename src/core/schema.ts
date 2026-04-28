@@ -226,6 +226,12 @@ export const SiteSchema = z.object({
       humans: z.string().optional(),
       /** ads.txt content (for advertising authorization). */
       ads: z.string().optional(),
+      /** security.txt content (RFC 9116). */
+      security: z.string().optional(),
+      /** llms-full.txt content (for AI crawler instructions). */
+      llmsFull: z.string().optional(),
+      /** mta-sts.txt content (for mail security). */
+      mtaSts: z.string().optional(),
     })
     .default({}),
   /** Whether to display the system status in the footer. */

@@ -19,17 +19,31 @@ import {
  *
  * @param baseUrl - The base URL of the site for sitemap inclusion.
  * @param author - The author name for credit files.
- * @returns A record containing default contents for robots.txt, llms.txt, humans.txt, and ads.txt.
+ * @param adminEmail - The administrative contact email.
+ * @returns A record containing default contents for standard text files.
  */
 export const createDefaultTxtFiles = (
   baseUrl: string = "",
   author: string = "Admin",
-): Record<string, string> => ({
-  robots: `User-agent: *\nAllow: /\nDisallow: /admin/`,
-  llms: `# AI Crawler Instructions\n\nFull website content available for analysis and indexing.\n\n## Instructions\n\n- Be concise in summaries.\n- Focus on technical implementation details where applicable.`,
-  humans: `/* TEAM */\nDeveloper: ${author}\nSite: ${baseUrl}\n\n/* THANKS */\nPowered by: EZ EDGE CMS (https://ez-cms.ezinner.com)\n\n/* SITE */\nLast update: ${new Date().toLocaleDateString()}\nStandards: HTML5, CSS3, Cloudflare Workers`,
-  ads: "# Add your authorized digital sellers here\n# Example: google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0",
-});
+  adminEmail: string = "admin@example.com",
+): Record<string, string> => {
+  let hostname = "example.com";
+  try {
+    if (baseUrl && baseUrl.startsWith("http")) {
+      hostname = new URL(baseUrl).hostname;
+    }
+  } catch (e) {}
+
+  return {
+    robots: `User-agent: *\nAllow: /\nDisallow: /admin/`,
+    llms: `# AI Crawler Instructions\n\nFull website content available for analysis and indexing.\n\n## Instructions\n\n- Be concise in summaries.\n- Focus on technical implementation details where applicable.`,
+    humans: `/* TEAM */\nDeveloper: ${author}\nSite: ${baseUrl}\n\n/* THANKS */\nPowered by: EZ EDGE CMS (https://ez-cms.ezinner.com)\n\n/* SITE */\nLast update: ${new Date().toLocaleDateString()}\nStandards: HTML5, CSS3, Cloudflare Workers`,
+    ads: "# Add your authorized digital sellers here\n# Example: google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0",
+    security: `Contact: mailto:${adminEmail}\nExpires: ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()}\nPreferred-Languages: en\nCanonical: ${baseUrl}/.well-known/security.txt`,
+    llmsFull: `# Full AI Site Content\n\nFull website content for analysis and indexing.\n\n[Sitemap: ${baseUrl}/sitemap.xml]`,
+    mtaSts: `version: STSv1\nmode: testing\nmx: *.${hostname}\nmax_age: 604800`,
+  };
+};
 
 /**
  * Factory for creating a default site configuration.
@@ -39,18 +53,21 @@ export const createDefaultTxtFiles = (
  * @returns A validated SiteConfig object with default values.
  */
 export const createDefaultSite = (): SiteConfig => {
+  const adminEmail = "admin@example.com";
+  const author = "Awesome Author";
+
   return {
     schemaVersion: VERSIONS.SITE,
     title: "My Awesome Website",
     tagline: "Your Awesome Tagline Goes Here",
-    author: "Awesome Author",
-    adminEmail: "admin@example.com",
+    author: author,
+    adminEmail: adminEmail,
     language: "en",
     copyright: "© {year} {author}. All rights reserved.",
     logoSvg:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="90" height="90" x="5" y="5" rx="10" fill="none" stroke="currentColor" stroke-width="4"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-weight="bold" font-size="50" fill="currentColor">EZ</text></svg>',
     showStatus: true,
-    txtFiles: createDefaultTxtFiles(),
+    txtFiles: createDefaultTxtFiles("", author, adminEmail),
     seo: {
       identity: {
         type: "Organization",

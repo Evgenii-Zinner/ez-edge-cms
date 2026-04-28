@@ -58,6 +58,9 @@ describe("Admin Files Route", () => {
         llms: "Custom LLM Info",
         humans: "Custom Human Info",
         ads: "google.com, pub-123, DIRECT",
+        security: "Custom Security Info",
+        llmsFull: "Custom LLM Full Info",
+        mtaSts: "Custom MTA STS Info",
       },
     });
     await saveNav(env, createDefaultNav());
@@ -79,6 +82,9 @@ describe("Admin Files Route", () => {
       expect(html).toContain("Custom LLM Info");
       expect(html).toContain("Custom Human Info");
       expect(html).toContain("google.com, pub-123, DIRECT");
+      expect(html).toContain("Custom Security Info");
+      expect(html).toContain("Custom LLM Full Info");
+      expect(html).toContain("Custom MTA STS Info");
     });
 
     it("should handle missing txtFiles in site config and still render", async () => {
@@ -99,6 +105,7 @@ describe("Admin Files Route", () => {
       const formData = new FormData();
       formData.append("txtFiles.robots", "User-agent: Googlebot\nDisallow: /");
       formData.append("txtFiles.llms", "Updated LLM Content");
+      formData.append("txtFiles.security", "Updated Security Content");
 
       const res = await app.request(
         "/admin/files/save",
@@ -118,6 +125,7 @@ describe("Admin Files Route", () => {
       const html = await siteRes.text();
       expect(html).toContain("User-agent: Googlebot\nDisallow: /");
       expect(html).toContain("Updated LLM Content");
+      expect(html).toContain("Updated Security Content");
     });
 
     it("should return error toast when KV persistence fails during save", async () => {

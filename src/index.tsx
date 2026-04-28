@@ -120,8 +120,34 @@ app.get("/robots.txt", async (c) => {
  * Metadata Files (LLMs, humans, ads).
  */
 app.get("/llms.txt", (c) => c.text(c.var.site.txtFiles?.llms || ""));
+app.get("/llms-full.txt", (c) => c.text(c.var.site.txtFiles?.llmsFull || ""));
 app.get("/humans.txt", (c) => c.text(c.var.site.txtFiles?.humans || ""));
 app.get("/ads.txt", (c) => c.text(c.var.site.txtFiles?.ads || ""));
+app.get("/security.txt", (c) =>
+  c.text(
+    c.var.site.txtFiles?.security ||
+      `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
+  ),
+);
+app.get("/.well-known/security.txt", (c) =>
+  c.text(
+    c.var.site.txtFiles?.security ||
+      `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
+  ),
+);
+app.get("/.well-known/mta-sts.txt", (c) =>
+  c.text(c.var.site.txtFiles?.mtaSts || ""),
+);
+app.get("/.well-known/traffic-advice", (c) =>
+  c.body('[{"user_agent": "prefetch-proxy", "fraction": 1.0}]', 200, {
+    "Content-Type": "application/json",
+  }),
+);
+
+/**
+ * Common Redirects.
+ */
+app.get("/.well-known/change-password", (c) => c.redirect("/admin"));
 
 /**
  * Admin HUD Sub-app.

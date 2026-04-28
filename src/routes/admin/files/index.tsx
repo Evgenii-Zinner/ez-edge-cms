@@ -171,6 +171,88 @@ filesAdmin.get("/", async (c): Promise<Response> => {
               />
             </AdminCard>
           </FormGrid>
+
+          <FormGrid>
+            <AdminCard
+              title="security.txt"
+              description={
+                <>
+                  Standard for reporting security vulnerabilities. Typically
+                  located at /.well-known/security.txt.{" "}
+                  <a
+                    href="https://securitytxt.org/"
+                    target="_blank"
+                    class="color-[var(--theme-accent)] no-underline border-b border-b-solid border-[var(--theme-accent-glow)]"
+                  >
+                    Learn more
+                  </a>
+                </>
+              }
+            >
+              <AdminField
+                label=""
+                name="txtFiles.security"
+                type="textarea"
+                rows={10}
+                value={files.security || ""}
+                placeholder="Contact: mailto:security@example.com..."
+              />
+            </AdminCard>
+
+            <AdminCard
+              title="llms-full.txt"
+              description={
+                <>
+                  An extension to llms.txt providing the full textual content of
+                  the site for AI analysis.{" "}
+                  <a
+                    href="https://llmstxt.org/"
+                    target="_blank"
+                    class="color-[var(--theme-accent)] no-underline border-b border-b-solid border-[var(--theme-accent-glow)]"
+                  >
+                    Learn more
+                  </a>
+                </>
+              }
+            >
+              <AdminField
+                label=""
+                name="txtFiles.llmsFull"
+                type="textarea"
+                rows={10}
+                value={files.llmsFull || ""}
+                placeholder="# Full AI Site Content..."
+              />
+            </AdminCard>
+          </FormGrid>
+
+          <FormGrid>
+            <AdminCard
+              title="mta-sts.txt"
+              description={
+                <>
+                  Mail Transfer Agent Strict Transport Security. Placed at
+                  /.well-known/mta-sts.txt.{" "}
+                  <a
+                    href="https://www.hardenize.com/blog/mta-sts"
+                    target="_blank"
+                    class="color-[var(--theme-accent)] no-underline border-b border-b-solid border-[var(--theme-accent-glow)]"
+                  >
+                    Learn more
+                  </a>
+                </>
+              }
+            >
+              <AdminField
+                label=""
+                name="txtFiles.mtaSts"
+                type="textarea"
+                rows={10}
+                value={files.mtaSts || ""}
+                placeholder="version: STSv1\nmode: testing..."
+              />
+            </AdminCard>
+          </FormGrid>
         </form>
       </div>
     </AdminLayout>,
@@ -188,7 +270,11 @@ filesAdmin.post("/reset", async (c): Promise<Response> => {
   try {
     const { site } = c.var;
     const baseUrl = site.baseUrl || new URL(c.req.url).origin;
-    const defaults = createDefaultTxtFiles(baseUrl, site.author);
+    const defaults = createDefaultTxtFiles(
+      baseUrl,
+      site.author,
+      site.adminEmail,
+    );
 
     const finalSite = {
       ...site,
