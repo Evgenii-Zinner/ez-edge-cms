@@ -40,7 +40,6 @@ export const createDefaultTxtFiles = (
     humans: `/* TEAM */\nDeveloper: ${author}\nSite: ${baseUrl}\n\n/* THANKS */\nPowered by: EZ EDGE CMS (https://ez-cms.ezinner.com)\n\n/* SITE */\nLast update: ${new Date().toLocaleDateString()}\nStandards: HTML5, CSS3, Cloudflare Workers`,
     ads: "# Add your authorized digital sellers here\n# Example: google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0",
     security: `Contact: mailto:${adminEmail}\nExpires: ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()}\nPreferred-Languages: en\nCanonical: ${baseUrl}/.well-known/security.txt`,
-    llmsFull: `# Full AI Site Content\n\nFull website content for analysis and indexing.\n\n[Sitemap: ${baseUrl}/sitemap.xml]`,
     mtaSts: `version: STSv1\nmode: testing\nmx: *.${hostname}\nmax_age: 604800`,
   };
 };

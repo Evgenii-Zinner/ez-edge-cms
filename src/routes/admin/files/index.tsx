@@ -200,34 +200,6 @@ filesAdmin.get("/", async (c): Promise<Response> => {
             </AdminCard>
 
             <AdminCard
-              title="llms-full.txt"
-              description={
-                <>
-                  An extension to llms.txt providing the full textual content of
-                  the site for AI analysis.{" "}
-                  <a
-                    href="https://llmstxt.org/"
-                    target="_blank"
-                    class="color-[var(--theme-accent)] no-underline border-b border-b-solid border-[var(--theme-accent-glow)]"
-                  >
-                    Learn more
-                  </a>
-                </>
-              }
-            >
-              <AdminField
-                label=""
-                name="txtFiles.llmsFull"
-                type="textarea"
-                rows={10}
-                value={files.llmsFull || ""}
-                placeholder="# Full AI Site Content..."
-              />
-            </AdminCard>
-          </FormGrid>
-
-          <FormGrid>
-            <AdminCard
               title="mta-sts.txt"
               description={
                 <>

@@ -16,7 +16,11 @@ import {
   getAdminUser,
   ensureSystemDefaults,
 } from "@core/kv";
-import { renderEditorJs, getFirstImage } from "@utils/editorjs-parser";
+import {
+  renderEditorJs,
+  renderEditorJsToMarkdown,
+  getFirstImage,
+} from "@utils/editorjs-parser";
 import admin from "@routes/admin/index";
 import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { injectUnoCSS } from "@core/unocss-middleware";
@@ -120,7 +124,32 @@ app.get("/robots.txt", async (c) => {
  * Metadata Files (LLMs, humans, ads).
  */
 app.get("/llms.txt", (c) => c.text(c.var.site.txtFiles?.llms || ""));
-app.get("/llms-full.txt", (c) => c.text(c.var.site.txtFiles?.llmsFull || ""));
+app.get("/llms-full.txt", async (c) => {
+  // If user provided custom content, use it.
+  if (c.var.site.txtFiles?.llmsFull) {
+    return c.text(c.var.site.txtFiles.llmsFull);
+  }
+
+  // Otherwise, generate it dynamically from all published pages.
+  const slugs = (await listPages(c.env, "live")).filter(
+    (s) => s !== "terms" && s !== "privacy",
+  );
+  const pages = await Promise.all(slugs.map((s) => getPage(c.env, s, "live")));
+
+  let content = `# Full Site Content: ${c.var.site.title}\n`;
+  if (c.var.site.tagline) content += `${c.var.site.tagline}\n`;
+  content += `\n[Sitemap: ${c.var.site.baseUrl || new URL(c.req.url).origin}/sitemap.xml]\n\n`;
+
+  for (const page of pages) {
+    if (!page) continue;
+    content += `--- PAGE: ${page.title} ---\n`;
+    content += `Path: /${page.slug === "index" ? "" : page.slug}\n\n`;
+    content += renderEditorJsToMarkdown(page.content);
+    content += "\n\n";
+  }
+
+  return c.text(content.trim());
+});
 app.get("/humans.txt", (c) => c.text(c.var.site.txtFiles?.humans || ""));
 app.get("/ads.txt", (c) => c.text(c.var.site.txtFiles?.ads || ""));
 app.get("/security.txt", (c) =>

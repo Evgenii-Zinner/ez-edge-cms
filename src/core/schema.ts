@@ -228,8 +228,6 @@ export const SiteSchema = z.object({
       ads: z.string().optional(),
       /** security.txt content (RFC 9116). */
       security: z.string().optional(),
-      /** llms-full.txt content (for AI crawler instructions). */
-      llmsFull: z.string().optional(),
       /** mta-sts.txt content (for mail security). */
       mtaSts: z.string().optional(),
     })

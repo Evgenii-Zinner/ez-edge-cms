@@ -192,6 +192,114 @@ export const renderEditorJs = (data: EditorJsData): string => {
 };
 
 /**
+ * Parses a single Editor.js block into its corresponding Markdown.
+ *
+ * @param block - The Editor.js block object to parse.
+ * @returns A Markdown string representing the block.
+ */
+const parseBlockToMarkdown = (block: EditorJsBlock): string => {
+  const data = block.data || {};
+  switch (block.type) {
+    case "header":
+      const level = data.level || 2;
+      return `${"#".repeat(level)} ${data.text}`;
+
+    case "paragraph":
+      return data.text.replace(/<br\s*\/?>/gi, "\n");
+
+    case "list":
+      const renderMarkdownListItems = (
+        items: any[],
+        tag: string,
+        depth = 0,
+      ): string => {
+        if (!items || !Array.isArray(items)) return "";
+        const indent = "  ".repeat(depth);
+        return items
+          .map((item: any, i: number) => {
+            const prefix = tag === "ol" ? `${i + 1}. ` : "- ";
+            if (typeof item === "string") {
+              return `${indent}${prefix}${item}`;
+            }
+            let md = `${indent}${prefix}${item.content || ""}`;
+            if (item.items && item.items.length > 0) {
+              md += `\n${renderMarkdownListItems(item.items, tag, depth + 1)}`;
+            }
+            return md;
+          })
+          .join("\n");
+      };
+      const style = data.style === "ordered" ? "ol" : "ul";
+      return renderMarkdownListItems(data.items || [], style);
+
+    case "image":
+      const url = data.file?.url || data.url;
+      const alt = data.caption || "Image";
+      return `![${alt}](${url})${data.caption ? `\n\n*${data.caption}*` : ""}`;
+
+    case "hero":
+      return `# ${data.title || ""}${data.subtitle ? `\n\n## ${data.subtitle}` : ""}\n\n![Hero Image](${data.url})`;
+
+    case "quote":
+      return `> ${data.text}${data.caption ? `\n> \n> — ${data.caption}` : ""}`;
+
+    case "delimiter":
+      return "---";
+
+    case "table":
+      const rows = data.content || [];
+      if (rows.length === 0) return "";
+      let tableMd = "";
+      const withHeadings = data.withHeadings || false;
+
+      const renderRow = (row: string[]) =>
+        `| ${row.map((cell) => cell.replace(/\|/g, "\\|")).join(" | ")} |`;
+
+      if (withHeadings) {
+        tableMd += renderRow(rows[0]) + "\n";
+        tableMd +=
+          `| ${rows[0].map(() => "---").join(" | ")} |` +
+          (rows.length > 1 ? "\n" : "");
+        for (let i = 1; i < rows.length; i++) {
+          tableMd += renderRow(rows[i]) + (i === rows.length - 1 ? "" : "\n");
+        }
+      } else {
+        for (let i = 0; i < rows.length; i++) {
+          tableMd += renderRow(rows[i]) + (i === rows.length - 1 ? "" : "\n");
+        }
+      }
+      return tableMd;
+
+    case "code":
+      return `\`\`\`\n${data.code || ""}\n\`\`\``;
+
+    case "embed":
+      return `[Embed: ${data.service || "External Content"}](${data.embed})${data.caption ? `\n\n*${data.caption}*` : ""}`;
+
+    default:
+      return "";
+  }
+};
+
+/**
+ * Converts Editor.js JSON data structure into a clean Markdown string.
+ * Optimized for LLM consumption in llms-full.txt.
+ *
+ * @param data - The full JSON output from Editor.js.
+ * @returns A string of concatenated Markdown blocks.
+ */
+export const renderEditorJsToMarkdown = (data: EditorJsData): string => {
+  if (!data || !data.blocks || !Array.isArray(data.blocks)) {
+    return "";
+  }
+
+  return data.blocks
+    .map(parseBlockToMarkdown)
+    .filter(Boolean)
+    .join("\n\n");
+};
+
+/**
  * Extracts the first image URL found within the Editor.js block data.
  * Used for automatic thumbnail generation in listings.
  *

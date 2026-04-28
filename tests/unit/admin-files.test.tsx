@@ -59,7 +59,6 @@ describe("Admin Files Route", () => {
         humans: "Custom Human Info",
         ads: "google.com, pub-123, DIRECT",
         security: "Custom Security Info",
-        llmsFull: "Custom LLM Full Info",
         mtaSts: "Custom MTA STS Info",
       },
     });
@@ -83,7 +82,6 @@ describe("Admin Files Route", () => {
       expect(html).toContain("Custom Human Info");
       expect(html).toContain("google.com, pub-123, DIRECT");
       expect(html).toContain("Custom Security Info");
-      expect(html).toContain("Custom LLM Full Info");
       expect(html).toContain("Custom MTA STS Info");
     });
 

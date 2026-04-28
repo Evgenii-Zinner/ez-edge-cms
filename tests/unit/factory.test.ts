@@ -32,7 +32,6 @@ describe("Factory Utilities", () => {
       expect(files.llms).toContain("# AI Crawler Instructions");
       expect(files.ads).toContain("# Add your authorized digital sellers here");
       expect(files.security).toContain("Contact: mailto:john@example.com");
-      expect(files.llmsFull).toContain("# Full AI Site Content");
       expect(files.mtaSts).toContain("version: STSv1");
       expect(files.mtaSts).toContain("mx: *.example.com");
     });

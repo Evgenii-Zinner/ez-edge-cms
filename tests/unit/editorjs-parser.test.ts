@@ -1,6 +1,7 @@
 import { expect, test, describe, beforeAll, spyOn } from "bun:test";
 import {
   renderEditorJs,
+  renderEditorJsToMarkdown,
   EditorJsData,
   getFirstImage,
 } from "../../src/utils/editorjs-parser";
@@ -296,6 +297,80 @@ describe("EditorJsParser", () => {
         blocks: [{ type: "image", data: { file: { url: "/img.png" } } }],
       };
       expect(getFirstImage(data)).toBe("/img.png");
+    });
+  });
+
+  describe("renderEditorJsToMarkdown", () => {
+    test("should convert blocks to clean markdown", () => {
+      const data: EditorJsData = {
+        blocks: [
+          { type: "header", data: { text: "Title", level: 1 } },
+          { type: "paragraph", data: { text: "Hello World" } },
+          {
+            type: "list",
+            data: { style: "unordered", items: ["Item 1", "Item 2"] },
+          },
+          {
+            type: "image",
+            data: { url: "img.png", caption: "Caption" },
+          },
+          { type: "delimiter", data: {} },
+          { type: "quote", data: { text: "Quote", caption: "Author" } },
+          {
+            type: "table",
+            data: {
+              withHeadings: true,
+              content: [
+                ["H1", "H2"],
+                ["V1", "V2"],
+              ],
+            },
+          },
+          { type: "code", data: { code: "const x = 1;" } },
+        ],
+      };
+      const md = renderEditorJsToMarkdown(data);
+      expect(md).toContain("# Title");
+      expect(md).toContain("Hello World");
+      expect(md).toContain("- Item 1");
+      expect(md).toContain("![Caption](img.png)");
+      expect(md).toContain("*Caption*");
+      expect(md).toContain("---");
+      expect(md).toContain("> Quote");
+      expect(md).toContain("> — Author");
+      expect(md).toContain("| H1 | H2 |");
+      expect(md).toContain("| --- | --- |");
+      expect(md).toContain("| V1 | V2 |");
+      expect(md).toContain("```\nconst x = 1;\n```");
+    });
+
+    test("should handle hero blocks", () => {
+      const data: EditorJsData = {
+        blocks: [
+          {
+            type: "hero",
+            data: { title: "Main", subtitle: "Sub", url: "hero.jpg" },
+          },
+        ],
+      };
+      const md = renderEditorJsToMarkdown(data);
+      expect(md).toBe("# Main\n\n## Sub\n\n![Hero Image](hero.jpg)");
+    });
+
+    test("should handle nested lists", () => {
+      const data: EditorJsData = {
+        blocks: [
+          {
+            type: "list",
+            data: {
+              style: "ordered",
+              items: [{ content: "P", items: [{ content: "C" }] }],
+            },
+          },
+        ],
+      };
+      const md = renderEditorJsToMarkdown(data);
+      expect(md).toBe("1. P\n  1. C");
     });
   });
 });
