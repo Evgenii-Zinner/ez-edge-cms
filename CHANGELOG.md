@@ -131,3 +131,7 @@
 ## [0.1.32] - 2026-04-28
 
 - feat(compliance): dynamic llms-full and automated compliance files
+
+## [0.1.33] - 2026-05-25
+
+- fix(admin): restore dynamic table client-side logic and unify row UI

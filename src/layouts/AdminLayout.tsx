@@ -155,6 +155,32 @@ export const AdminLayout: FC<AdminLayoutProps> = (props) => {
             window.adminHasChanges = false;
             let pendingAction = null;
 
+            // Global utilities for Dynamic Tables
+            window.addTableRow = function(tableId, template) {
+              const table = document.getElementById(tableId);
+              if (!table) return;
+              const tbody = table.querySelector('tbody');
+              if (!tbody) return;
+              const tr = document.createElement('tr');
+              tr.className = "border-b border-b-solid border-[rgba(255,255,255,0.05)]";
+              tr.innerHTML = template;
+              tbody.appendChild(tr);
+              window.adminHasChanges = true;
+            };
+
+            window.moveDynamicRow = function(btn, direction) {
+              const row = btn.closest('tr');
+              if (!row) return;
+              if (direction === 'up') {
+                const prev = row.previousElementSibling;
+                if (prev) row.parentNode.insertBefore(row, prev);
+              } else {
+                const next = row.nextElementSibling;
+                if (next) row.parentNode.insertBefore(next, row);
+              }
+              window.adminHasChanges = true;
+            };
+
             // Disable unsaved changes tracking on auth routes
             const isAuthRoute = window.location.pathname.startsWith("/admin/setup") || window.location.pathname.startsWith("/admin/login");
 

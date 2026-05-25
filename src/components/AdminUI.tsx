@@ -262,8 +262,25 @@ export const DynamicTable: FC<DynamicTableProps> = (props) => {
  * Rendering of sort handles for table rows.
  */
 export const SortButtons: FC = () => (
-  <td class="w-8 text-center color-[var(--theme-text-dim)]">
-    <div class="cursor-move sort-handle">⠿</div>
+  <td class="p-2 w-[80px] align-middle text-center">
+    <div class="flex gap-1 justify-center">
+      <button
+        type="button"
+        class="nav-item p-1 text-0.7rem"
+        onclick="moveDynamicRow(this, 'up')"
+        title="Move Up"
+      >
+        ▲
+      </button>
+      <button
+        type="button"
+        class="nav-item p-1 text-0.7rem"
+        onclick="moveDynamicRow(this, 'down')"
+        title="Move Down"
+      >
+        ▼
+      </button>
+    </div>
   </td>
 );
 

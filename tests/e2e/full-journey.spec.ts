@@ -105,26 +105,51 @@ test.describe("The Zero-to-Hero Journey", () => {
     // ==========================================
     // PHASE 4: NAVIGATION & STRUCTURE
     // ==========================================
-    await test.step("Update Site Navigation", async () => {
+    await test.step("Update Site Navigation & Test Dynamic Tables", async () => {
       await page.goto("/admin/navigation");
 
-      // Verified button label from src/routes/admin/navigation.tsx
-      await page.getByRole("button", { name: "+ ADD NAVBAR LINK" }).click();
-
-      // Field names verified from navigation.tsx: navLabel[] / navPath[]
       const labels = page.locator('input[name="navLabel[]"]');
       const paths = page.locator('input[name="navPath[]"]');
+      const initialCount = await labels.count();
+
+      // Test 1: Add a new link
+      await page.getByRole("button", { name: "+ ADD NAVBAR LINK" }).click();
+      await expect(labels).toHaveCount(initialCount + 1);
 
       await labels.last().fill("DYNAMIC_LINK");
       await paths.last().fill("/test-sector/e2e-dynamic-page");
 
-      // Verified from navigation.tsx: SAVE NAVIGATION
+      // Test 2: Add a temporary link for sorting and deletion
+      await page.getByRole("button", { name: "+ ADD NAVBAR LINK" }).click();
+      await expect(labels).toHaveCount(initialCount + 2);
+      await labels.last().fill("TEMP_LINK");
+      await paths.last().fill("/temp-path");
+
+      // Test 3: Sorting (Move Up)
+      const navTable = page.locator("#nav-items");
+      const upButtons = navTable.locator('button[title="Move Up"]');
+      // Click Move Up on the last row (TEMP_LINK)
+      await upButtons.last().click();
+      // Verify order has changed: DYNAMIC_LINK should now be the last item
+      await expect(labels.last()).toHaveValue("DYNAMIC_LINK");
+
+      // Test 4: Deletion (using the '✕' button)
+      // Since TEMP_LINK moved up, it is now at index (initialCount)
+      const deleteButtons = navTable.locator('button:text("✕")');
+      await deleteButtons.nth(initialCount).click();
+      // Verify count decreased
+      await expect(labels).toHaveCount(initialCount + 1);
+      // Verify DYNAMIC_LINK remains
+      await expect(labels.last()).toHaveValue("DYNAMIC_LINK");
+
+      // Save Navigation
       await page.getByRole("button", { name: "SAVE NAVIGATION" }).click();
       await expect(page.locator(".toast-notification")).toContainText("SAVED");
 
       // Verify on Public Site
       await page.goto("/");
       await expect(page.locator("nav.main-nav")).toContainText("DYNAMIC_LINK");
+      await expect(page.locator("nav.main-nav")).not.toContainText("TEMP_LINK");
     });
 
     // ==========================================

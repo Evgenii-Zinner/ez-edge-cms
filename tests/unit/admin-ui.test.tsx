@@ -154,7 +154,7 @@ describe("AdminUI Components", () => {
       expect(html).toContain("Add New Row");
       expect(html).toContain('id="test-table-container"');
       expect(html).toContain("addTableRow");
-      expect(html).toContain("⠿"); // SortButtons
+      expect(html).toContain("▲"); // SortButtons
       expect(html).toContain("✕"); // AdminDeleteButton
     });
   });

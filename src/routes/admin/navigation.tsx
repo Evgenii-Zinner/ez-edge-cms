@@ -60,10 +60,8 @@ navAdmin.get("/", async (c): Promise<Response> => {
     <td class="p-2">
       <input type="text" name="${pathName}" class="admin-input" placeholder="/path" required />
     </td>
-    <td class="p-2 w-100px align-middle text-center">
-      <div class="flex justify-center">
-        <button type="button" class="nav-item-error p-1 px-2 bg-transparent cursor-pointer text-0.7rem" onclick="this.closest('tr').remove()">DELETE</button>
-      </div>
+    <td class="w-8 text-center">
+      <button type="button" class="color-[var(--color-error)] opacity-50 hover:opacity-100 transition-opacity" onclick="this.closest('tr').remove(); window.adminHasChanges = true;">✕</button>
     </td>
   `;
 
