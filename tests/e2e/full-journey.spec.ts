@@ -103,6 +103,41 @@ test.describe("The Zero-to-Hero Journey", () => {
     });
 
     // ==========================================
+    // PHASE 3.5: PAGE RENAMING
+    // ==========================================
+    await test.step("Rename Page Path", async () => {
+      // Go back to edit the page
+      await page.goto("/admin/pages/edit/test-sector%2Fe2e-dynamic-page");
+
+      const slugInput = page.getByLabel("Page Path (URL Slug)");
+      await expect(slugInput).toHaveValue("test-sector/e2e-dynamic-page");
+
+      // Change the slug
+      await slugInput.fill("test-sector/e2e-dynamic-page-renamed");
+
+      // Hit save, this should trigger a rename and a redirect
+      await page.getByRole("button", { name: "SAVE DRAFT" }).click();
+
+      // Wait for HTMX to redirect us to the new URL
+      await page.waitForURL(
+        /\/admin\/pages\/edit\/test-sector%2Fe2e-dynamic-page-renamed/,
+      );
+      await expect(page.locator(".toast-notification")).toContainText(
+        "RENAMED",
+      );
+
+      // Publish the new slug
+      await page.getByRole("button", { name: "PUBLISH LIVE" }).click();
+      await expect(page.locator(".toast-notification")).toContainText(
+        "PUBLISHED",
+      );
+
+      // Verify the old URL returns 404
+      await page.goto("/test-sector/e2e-dynamic-page");
+      await expect(page.locator("h1")).toContainText("404");
+    });
+
+    // ==========================================
     // PHASE 4: NAVIGATION & STRUCTURE
     // ==========================================
     await test.step("Update Site Navigation & Test Dynamic Tables", async () => {
@@ -117,7 +152,7 @@ test.describe("The Zero-to-Hero Journey", () => {
       await expect(labels).toHaveCount(initialCount + 1);
 
       await labels.last().fill("DYNAMIC_LINK");
-      await paths.last().fill("/test-sector/e2e-dynamic-page");
+      await paths.last().fill("/test-sector/e2e-dynamic-page-renamed");
 
       // Test 2: Add a temporary link for sorting and deletion
       await page.getByRole("button", { name: "+ ADD NAVBAR LINK" }).click();
@@ -226,7 +261,9 @@ test.describe("The Zero-to-Hero Journey", () => {
     // ==========================================
     await test.step("Verify SEO Injection", async () => {
       // Direct navigation to edit page for reliability
-      await page.goto("/admin/pages/edit/test-sector%2Fe2e-dynamic-page");
+      await page.goto(
+        "/admin/pages/edit/test-sector%2Fe2e-dynamic-page-renamed",
+      );
 
       // Verified label from src/routes/admin/pages/views.tsx: Description (SEO)
       await page
@@ -238,7 +275,7 @@ test.describe("The Zero-to-Hero Journey", () => {
       await page.getByRole("button", { name: "PUBLISH LIVE" }).click();
 
       // Check the public head
-      await page.goto("/test-sector/e2e-dynamic-page");
+      await page.goto("/test-sector/e2e-dynamic-page-renamed");
 
       const description = await page
         .locator('meta[name="description"]')

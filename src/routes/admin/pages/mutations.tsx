@@ -12,6 +12,7 @@ import {
   publishPage,
   unpublishPage,
   deletePage,
+  renamePage,
 } from "@core/kv";
 import { createDefaultPage } from "@core/factory";
 import { PROTECTED_SLUGS } from "@core/constants";
@@ -142,10 +143,44 @@ async function processPageMutation(c: any, slug: string): Promise<PageConfig> {
  * @returns A promise resolving to an HTMX success or error toast notification.
  */
 mutations.post("/save/:slug{.+}", async (c): Promise<Response> => {
-  const slug = c.req.param("slug");
+  const oldSlug = c.req.param("slug");
   try {
-    await processPageMutation(c, slug);
+    const isProtected = (PROTECTED_SLUGS as readonly string[]).includes(
+      oldSlug,
+    );
+    const body = await c.req.parseBody();
+    let rawNewSlug = body.slug as string | undefined;
+
+    let newSlug = oldSlug;
+    let didRename = false;
+
+    if (!isProtected && rawNewSlug) {
+      newSlug = rawNewSlug
+        .toLowerCase()
+        .replace(/[^\w\/-]+/g, "-")
+        .replace(/^\/+|\/+$/g, "");
+      if (newSlug !== oldSlug) {
+        const existingRaw = await Promise.race([
+          c.env.EZ_CONTENT.get(`page:draft:${newSlug}`),
+          c.env.EZ_CONTENT.get(`page:live:${newSlug}`),
+        ]);
+        if (existingRaw) {
+          throw new Error(`Page path "/${newSlug}" already exists.`);
+        }
+
+        await renamePage(c.env, oldSlug, newSlug);
+        didRename = true;
+      }
+    }
+
+    await processPageMutation(c, newSlug);
+
     const now = new Date().toLocaleString();
+    if (didRename) {
+      c.header("HX-Redirect", `/admin/pages/edit/${newSlug}`);
+      return toastResponse(c, "PAGE RENAMED", "success", now);
+    }
+
     return toastResponse(c, "PAGE SAVED", "success", now);
   } catch (e: any) {
     return toastResponse(c, `SAVE FAILED: ${e.message}`, "error", "Failed");
@@ -160,20 +195,49 @@ mutations.post("/save/:slug{.+}", async (c): Promise<Response> => {
  * @returns A promise resolving to a re-rendered PageRow or a toast notification.
  */
 mutations.post("/publish/:slug{.+}", async (c): Promise<Response> => {
-  const slug = c.req.param("slug");
+  const oldSlug = c.req.param("slug");
   try {
+    const isProtected = (PROTECTED_SLUGS as readonly string[]).includes(
+      oldSlug,
+    );
     const body = await c.req.parseBody();
+    let newSlug = oldSlug;
+    let didRename = false;
+
     if (body.title) {
-      await processPageMutation(c, slug);
+      let rawNewSlug = body.slug as string | undefined;
+      if (!isProtected && rawNewSlug) {
+        newSlug = rawNewSlug
+          .toLowerCase()
+          .replace(/[^\w\/-]+/g, "-")
+          .replace(/^\/+|\/+$/g, "");
+        if (newSlug !== oldSlug) {
+          const existingRaw = await Promise.race([
+            c.env.EZ_CONTENT.get(`page:draft:${newSlug}`),
+            c.env.EZ_CONTENT.get(`page:live:${newSlug}`),
+          ]);
+          if (existingRaw) {
+            throw new Error(`Page path "/${newSlug}" already exists.`);
+          }
+          await renamePage(c.env, oldSlug, newSlug);
+          didRename = true;
+        }
+      }
+      await processPageMutation(c, newSlug);
     }
 
-    const success = await publishPage(c.env, slug);
+    const success = await publishPage(c.env, newSlug);
     if (success) {
       if (c.req.header("HX-Target")?.startsWith("row-")) {
-        return c.html(<PageRow slug={slug} isLive={true} isDraft={false} />);
+        return c.html(<PageRow slug={newSlug} isLive={true} isDraft={false} />);
       }
       const now = new Date().toLocaleString();
       const extra = `${now}<span id="publish-time" hx-swap-oob="innerHTML" style="color: var(--color-success)">${now}</span>`;
+
+      if (didRename) {
+        c.header("HX-Redirect", `/admin/pages/edit/${newSlug}`);
+      }
+
       return toastResponse(c, "PAGE PUBLISHED", "success", extra);
     }
     throw new Error("Publication failed");

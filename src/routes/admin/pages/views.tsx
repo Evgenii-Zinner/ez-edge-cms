@@ -234,6 +234,30 @@ views.get("/edit/:slug{.+}", async (c): Promise<Response> => {
 
               <div class="flex flex-col gap-6">
                 <div>
+                  <label class="admin-label" htmlFor="inp-page-slug">
+                    Page Path (URL Slug)
+                  </label>
+                  <input
+                    type="text"
+                    id="inp-page-slug"
+                    name="slug"
+                    class={`admin-input ${isProtected ? "cursor-not-allowed opacity-70" : ""}`}
+                    value={page.slug}
+                    readonly={isProtected}
+                    required
+                  />
+                  {!isProtected && (
+                    <p class="admin-helper-text">
+                      Changing this will move the page to a new URL.
+                    </p>
+                  )}
+                  {isProtected && (
+                    <p class="admin-helper-text">
+                      This is a core system page. Its path cannot be changed.
+                    </p>
+                  )}
+                </div>
+                <div>
                   <label class="admin-label" htmlFor="inp-page-type">
                     Page Layout
                   </label>

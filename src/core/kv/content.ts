@@ -171,3 +171,61 @@ export const listPages = async (
   const key = KEYS.PAGE_LIST(mode);
   return (await env.EZ_CONTENT.get(key, { type: "json" })) || [];
 };
+
+/**
+ * Safely renames a page by duplicating its data and images to a new slug,
+ * updating the index lists, and deleting the old keys.
+ *
+ * @param env - Cloudflare Worker environment bindings.
+ * @param oldSlug - The current slug of the page.
+ * @param newSlug - The new slug to rename the page to.
+ * @returns A promise resolving when the migration is complete.
+ */
+export const renamePage = async (
+  env: Env,
+  oldSlug: string,
+  newSlug: string,
+): Promise<void> => {
+  const [draftPage, livePage] = await Promise.all([
+    getPage(env, oldSlug, "draft"),
+    getPage(env, oldSlug, "live"),
+  ]);
+
+  const savePromises: Promise<void>[] = [];
+  const deletePromises: Promise<void>[] = [];
+
+  // 1. Migrate Draft
+  if (draftPage) {
+    draftPage.slug = newSlug;
+    savePromises.push(savePage(env, draftPage, "draft"));
+    deletePromises.push(env.EZ_CONTENT.delete(KEYS.PAGE("draft", oldSlug)));
+    deletePromises.push(modifyPageList(env, oldSlug, "draft", "remove"));
+  }
+
+  // 2. Migrate Live
+  if (livePage) {
+    livePage.slug = newSlug;
+    savePromises.push(savePage(env, livePage, "live"));
+    deletePromises.push(env.EZ_CONTENT.delete(KEYS.PAGE("live", oldSlug)));
+    deletePromises.push(modifyPageList(env, oldSlug, "live", "remove"));
+  }
+
+  // 3. Migrate Images
+  const imageList = await env.EZ_CONTENT.list({ prefix: `img:${oldSlug}:` });
+  const imagePromises = imageList.keys.map(async (k) => {
+    const buffer = await env.EZ_CONTENT.get(k.name, { type: "arrayBuffer" });
+    if (buffer) {
+      const newKey = k.name.replace(`img:${oldSlug}:`, `img:${newSlug}:`);
+      // Retain metadata (like content-type) if it exists, though raw KV get/put might lose custom metadata.
+      // We will assume basic put is sufficient since Editor.js images are served directly.
+      await env.EZ_CONTENT.put(newKey, buffer);
+      await env.EZ_CONTENT.delete(k.name);
+    }
+  });
+
+  // Execute saves first
+  await Promise.all([...savePromises, ...imagePromises]);
+
+  // Then deletions
+  await Promise.all(deletePromises);
+};

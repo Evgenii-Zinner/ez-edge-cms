@@ -135,3 +135,7 @@
 ## [0.1.33] - 2026-05-25
 
 - fix(admin): restore dynamic table client-side logic and unify row UI
+
+## [0.1.34] - 2026-05-25
+
+- feat(admin): enable editing page paths with automatic KV data migration

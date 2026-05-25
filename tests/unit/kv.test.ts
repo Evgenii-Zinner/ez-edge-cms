@@ -237,6 +237,49 @@ describe("KV Core Data Utilities", () => {
       const other = await env.EZ_CONTENT.list({ prefix: `img:other:` });
       expect(other.keys.length).toBe(1);
     });
+
+    it("should correctly rename a page and migrate its images across environments", async () => {
+      const oldSlug = "old-path";
+      const newSlug = "new-path";
+
+      // Setup draft and live page
+      await savePage(env, createDefaultPage("Test", oldSlug), "draft");
+      await publishPage(env, oldSlug); // now it's live
+      // add a draft version as well
+      await savePage(env, createDefaultPage("Test Draft", oldSlug), "draft");
+
+      // Setup some images
+      const buffer = new Uint8Array([1, 2, 3]).buffer;
+      await env.EZ_CONTENT.put(`img:${oldSlug}:image.png`, buffer);
+
+      // Perform Rename
+      const { renamePage } = await import("@core/kv");
+      await renamePage(env, oldSlug, newSlug);
+
+      // Verify old keys are gone
+      expect(await getPage(env, oldSlug, "draft")).toBeNull();
+      expect(await getPage(env, oldSlug, "live")).toBeNull();
+      expect(await listPages(env, "draft")).not.toContain(oldSlug);
+      expect(await listPages(env, "live")).not.toContain(oldSlug);
+
+      // Verify new keys exist
+      expect(await getPage(env, newSlug, "draft")).not.toBeNull();
+      expect(await getPage(env, newSlug, "live")).not.toBeNull();
+      expect(await listPages(env, "draft")).toContain(newSlug);
+      expect(await listPages(env, "live")).toContain(newSlug);
+
+      // Verify image migrated
+      const oldImages = await env.EZ_CONTENT.list({
+        prefix: `img:${oldSlug}:`,
+      });
+      expect(oldImages.keys.length).toBe(0);
+
+      const newImages = await env.EZ_CONTENT.list({
+        prefix: `img:${newSlug}:`,
+      });
+      expect(newImages.keys.length).toBe(1);
+      expect(newImages.keys[0].name).toBe(`img:${newSlug}:image.png`);
+    });
   });
 
   describe("Backup, Restore & Migration", () => {
