@@ -143,3 +143,7 @@
 ## [0.1.35] - 2026-05-29
 
 - feat: implement archive pagination and optimize page list index schema
+
+## [0.1.36] - 2026-05-29
+
+- hotfix: allow GET requests on migrate-v2 endpoint

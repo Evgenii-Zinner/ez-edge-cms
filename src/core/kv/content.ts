@@ -11,6 +11,7 @@ import {
 } from "@core/schema";
 import { parsePage } from "@core/parser";
 import { KEYS, updateQueue, setUpdateQueue, cache } from "@core/kv/base";
+import { getFirstImage } from "@utils/editorjs-parser";
 
 /**
  * Fetches a single page configuration by its slug and environment mode.
@@ -79,7 +80,10 @@ const modifyPageList = async (
           slug: pageOrSlug.slug,
           title: pageOrSlug.title,
           description: pageOrSlug.description,
-          featuredImage: pageOrSlug.featuredImage,
+          featuredImage:
+            pageOrSlug.featuredImage ||
+            getFirstImage(pageOrSlug.content) ||
+            undefined,
           createdAt: pageOrSlug.metadata.createdAt,
           publishedAt: pageOrSlug.metadata.publishedAt,
         };

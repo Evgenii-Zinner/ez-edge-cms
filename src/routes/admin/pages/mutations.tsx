@@ -229,7 +229,16 @@ mutations.post("/publish/:slug{.+}", async (c): Promise<Response> => {
     const success = await publishPage(c.env, newSlug);
     if (success) {
       if (c.req.header("HX-Target")?.startsWith("row-")) {
-        return c.html(<PageRow slug={newSlug} isLive={true} isDraft={false} />);
+        const livePage = await getPage(c.env, newSlug, "live");
+        return c.html(
+          <PageRow
+            slug={newSlug}
+            title={livePage?.title || newSlug}
+            publishedAt={livePage?.metadata.publishedAt}
+            isLive={true}
+            isDraft={false}
+          />,
+        );
       }
       const now = new Date().toLocaleString();
       const extra = `${now}<span id="publish-time" hx-swap-oob="innerHTML" style="color: var(--color-success)">${now}</span>`;
@@ -257,7 +266,16 @@ mutations.post("/unpublish/:slug{.+}", async (c): Promise<Response> => {
   const slug = c.req.param("slug");
   const success = await unpublishPage(c.env, slug);
   if (success) {
-    return c.html(<PageRow slug={slug} isLive={false} isDraft={true} />);
+    const draftPage = await getPage(c.env, slug, "draft");
+    return c.html(
+      <PageRow
+        slug={slug}
+        title={draftPage?.title || slug}
+        publishedAt={draftPage?.metadata.publishedAt}
+        isLive={false}
+        isDraft={true}
+      />,
+    );
   }
   return c.text("Unpublish failed", 500);
 });
@@ -278,6 +296,37 @@ mutations.post("/delete/:slug{.+}", async (c): Promise<Response> => {
   await deletePage(c.env, slug);
   c.header("HX-Refresh", "true");
   return c.text("Page Deleted", 200);
+});
+
+/**
+ * ALL /admin/pages/migrate-v2
+ * One-off migration script to resave all pages and extract their cover images into the V2 index.
+ *
+ * @param c - Hono context.
+ * @returns A promise resolving to a success message.
+ */
+mutations.all("/migrate-v2", async (c): Promise<Response> => {
+  try {
+    const list = await c.env.EZ_CONTENT.list({ prefix: "page:" });
+    let count = 0;
+
+    for (const key of list.keys) {
+      const raw = await c.env.EZ_CONTENT.get(key.name, { type: "json" });
+      if (!raw) continue;
+
+      const page = raw as PageConfig;
+      const mode = key.name.startsWith("page:live:") ? "live" : "draft";
+
+      // savePage will trigger modifyPageList, which now extracts the first image
+      // and preserves the existing publishedAt/createdAt dates!
+      await savePage(c.env, page, mode);
+      count++;
+    }
+
+    return c.text(`Migration complete! Re-saved ${count} pages.`, 200);
+  } catch (e: any) {
+    return c.text(`Migration failed: ${e.message}`, 500);
+  }
 });
 
 export default mutations;
