@@ -4,7 +4,13 @@
  */
 
 import { KV_KEYS, KV_PREFIX } from "@core/constants";
-import { ThemeConfig, SiteConfig, NavConfig, FooterConfig } from "@core/schema";
+import {
+  ThemeConfig,
+  SiteConfig,
+  NavConfig,
+  FooterConfig,
+  PageListIndex,
+} from "@core/schema";
 
 /**
  * @description Standardized key mapping for Cloudflare KV access.
@@ -45,6 +51,8 @@ export const cache = {
   nav: null as NavConfig | null,
   site: null as SiteConfig | null,
   footer: null as FooterConfig | null,
+  pageListLive: null as PageListIndex | null,
+  pageListDraft: null as PageListIndex | null,
 };
 
 /**

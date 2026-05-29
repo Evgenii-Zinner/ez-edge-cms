@@ -29,11 +29,49 @@ const views = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
  */
 views.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
-  const [liveSlugs, draftSlugs] = await Promise.all([
+  const [livePages, draftPages] = await Promise.all([
     listPages(c.env, "live"),
     listPages(c.env, "draft"),
   ]);
-  const allSlugs = Array.from(new Set([...liveSlugs, ...draftSlugs])).sort();
+
+  // Merge the pages by slug
+  const pageMap = new Map<
+    string,
+    {
+      slug: string;
+      title: string;
+      publishedAt?: string;
+      isLive: boolean;
+      isDraft: boolean;
+    }
+  >();
+
+  livePages.forEach((p) => {
+    pageMap.set(p.slug, {
+      slug: p.slug,
+      title: p.title,
+      publishedAt: p.publishedAt,
+      isLive: true,
+      isDraft: false,
+    });
+  });
+
+  draftPages.forEach((p) => {
+    if (pageMap.has(p.slug)) {
+      pageMap.get(p.slug)!.isDraft = true;
+    } else {
+      pageMap.set(p.slug, {
+        slug: p.slug,
+        title: p.title,
+        isLive: false,
+        isDraft: true,
+      });
+    }
+  });
+
+  const allPages = Array.from(pageMap.values()).sort((a, b) =>
+    a.slug.localeCompare(b.slug),
+  );
 
   return c.html(
     <AdminLayout title="Pages" theme={theme} site={site} seo={seo}>
@@ -43,14 +81,15 @@ views.get("/", async (c): Promise<Response> => {
         <table class="w-full border-collapse font-nav">
           <thead>
             <tr class="border-b border-b-solid border-[var(--theme-accent-glow)] text-left color-[var(--theme-accent)]">
-              <th class="p-4">PAGE PATH</th>
+              <th class="p-4">PAGE DETAILS</th>
+              <th class="p-4 text-center">PUBLISHED</th>
               <th class="p-4 text-center">STATUS</th>
               <th class="p-4">ACTIONS</th>
             </tr>
           </thead>
           <tbody id="pages-table-body">
             <tr class="border-b border-b-solid border-[var(--theme-accent-glow)] bg-[rgba(0,255,255,0.03)]">
-              <td colSpan={3} class="p-0">
+              <td colSpan={4} class="p-0">
                 <button
                   class="admin-action-btn"
                   onclick="document.getElementById('create-modal').classList.add('open')"
@@ -59,11 +98,13 @@ views.get("/", async (c): Promise<Response> => {
                 </button>
               </td>
             </tr>
-            {allSlugs.map((slug) => (
+            {allPages.map((page) => (
               <PageRow
-                slug={slug}
-                isLive={liveSlugs.includes(slug)}
-                isDraft={draftSlugs.includes(slug)}
+                slug={page.slug}
+                title={page.title}
+                publishedAt={page.publishedAt}
+                isLive={page.isLive}
+                isDraft={page.isDraft}
               />
             ))}
           </tbody>

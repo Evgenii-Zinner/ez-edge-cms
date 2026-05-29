@@ -1,7 +1,8 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { Hono } from "hono";
 import pagesAdmin from "@routes/admin/pages";
 import { GlobalConfigVariables } from "@core/middleware";
+import { clearCache } from "@core/kv/config";
 import {
   createDefaultTheme,
   createDefaultSite,
@@ -12,6 +13,9 @@ import {
  * Tests for Administrative Page Management.
  */
 describe("Admin Pages Routes", () => {
+  beforeEach(() => {
+    clearCache();
+  });
   const setupApp = () => {
     const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
     app.use("*", async (c, next) => {

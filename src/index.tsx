@@ -16,11 +16,7 @@ import {
   getAdminUser,
   ensureSystemDefaults,
 } from "@core/kv";
-import {
-  renderEditorJs,
-  renderEditorJsToMarkdown,
-  getFirstImage,
-} from "@utils/editorjs-parser";
+import { renderEditorJs } from "@utils/editorjs-parser";
 import admin from "@routes/admin/index";
 import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { injectUnoCSS } from "@core/unocss-middleware";
@@ -79,14 +75,14 @@ app.get("/", async (c, next) => {
  * Sitemap.xml Generator.
  */
 app.get("/sitemap.xml", async (c) => {
-  const slugs = await listPages(c.env, "live");
+  const pages = await listPages(c.env, "live");
   const baseUrl = new URL(c.req.url).origin;
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${slugs
-    .map((slug) => {
-      const url = slug === "index" ? baseUrl : `${baseUrl}/${slug}`;
+  ${pages
+    .map((p) => {
+      const url = p.slug === "index" ? baseUrl : `${baseUrl}/${p.slug}`;
       return `<url><loc>${url}</loc></url>`;
     })
     .join("\n")}
@@ -125,22 +121,22 @@ app.get("/robots.txt", async (c) => {
  */
 app.get("/llms.txt", (c) => c.text(c.var.site.txtFiles?.llms || ""));
 app.get("/llms-full.txt", async (c) => {
-  // Generate it dynamically from all published pages.
-  const slugs = (await listPages(c.env, "live")).filter(
-    (s) => s !== "terms" && s !== "privacy",
+  // Generate a brief overview of the site directly from the index metadata
+  const livePages = await listPages(c.env, "live");
+  const pages = livePages.filter(
+    (p) => p.slug !== "terms" && p.slug !== "privacy",
   );
-  const pages = await Promise.all(slugs.map((s) => getPage(c.env, s, "live")));
 
-  let content = `# Full Site Content: ${c.var.site.title}\n`;
+  let content = `# Site Content Overview: ${c.var.site.title}\n`;
   if (c.var.site.tagline) content += `${c.var.site.tagline}\n`;
   content += `\n[Sitemap: ${c.var.site.baseUrl || new URL(c.req.url).origin}/sitemap.xml]\n\n`;
 
   for (const page of pages) {
-    if (!page) continue;
     content += `--- PAGE: ${page.title} ---\n`;
-    content += `Path: /${page.slug === "index" ? "" : page.slug}\n\n`;
-    content += renderEditorJsToMarkdown(page.content);
-    content += "\n\n";
+    content += `Path: /${page.slug === "index" ? "" : page.slug}\n`;
+    if (page.description) content += `Description: ${page.description}\n`;
+    if (page.publishedAt) content += `Published: ${page.publishedAt}\n`;
+    content += "\n";
   }
 
   return c.text(content.trim());
@@ -212,13 +208,29 @@ app.get("/*", async (c) => {
     (item) => item.path === path || item.path === `/${slug}`,
   );
 
-  const allLiveSlugs = await listPages(c.env, "live");
-  const subSlugs = allLiveSlugs.filter((s) => s.startsWith(slug + "/"));
+  const allLivePages = await listPages(c.env, "live");
+  const subPages = allLivePages.filter((p) => p.slug.startsWith(slug + "/"));
 
-  if (subSlugs.length > 0 || isNavPath) {
-    const subPages = (
-      await Promise.all(subSlugs.map((s) => getPage(c.env, s, "live")))
-    ).filter((p) => p !== null);
+  if (subPages.length > 0 || isNavPath) {
+    // Implement pagination and sorting from the index metadata
+    const ITEMS_PER_PAGE = 12;
+    const pageParam = c.req.query("page");
+    const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
+    const safePage = isNaN(currentPage) || currentPage < 1 ? 1 : currentPage;
+
+    // Sort newest first
+    subPages.sort((a, b) => {
+      const dateA = new Date(a.publishedAt || a.createdAt).getTime();
+      const dateB = new Date(b.publishedAt || b.createdAt).getTime();
+      return dateB - dateA;
+    });
+
+    const totalItems = subPages.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+    const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedPages = subPages.slice(startIndex, endIndex);
 
     return c.html(
       <BaseLayout
@@ -232,20 +244,21 @@ app.get("/*", async (c) => {
         <div class="mb-12 border-l-4 border-solid border-[var(--theme-accent)] pl-6">
           <h1 class="text-2.5rem mb-2">{slug.toUpperCase()}</h1>
           <p class="text-[var(--theme-text-dim)] m-0 italic opacity-80 font-nav text-0.85rem tracking-1px uppercase">
-            ARCHIVE EXPLORER // {subPages.length} ENTRIES FOUND IN THIS SECTOR
+            ARCHIVE EXPLORER // {totalItems} ENTRIES FOUND // PAGE {safePage} OF{" "}
+            {totalPages || 1}
           </p>
         </div>
 
-        {subPages.length > 0 ? (
-          <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8 my-12">
-            {subPages.map((p) => {
-              const thumbnail = p!.featuredImage || getFirstImage(p!.content);
-              return (
-                <a
-                  href={`/${p!.slug}`}
-                  class="bento-item group no-underline h-full overflow-hidden"
-                >
-                  <div class="flex flex-col h-full">
+        {paginatedPages.length > 0 ? (
+          <>
+            <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8 my-12">
+              {paginatedPages.map((p) => {
+                const thumbnail = p.featuredImage;
+                return (
+                  <a
+                    href={`/${p.slug}`}
+                    class="bento-item group no-underline h-full overflow-hidden flex flex-col"
+                  >
                     {thumbnail && (
                       <div
                         class="w-full h-180px mb-4 border border-solid border-[var(--theme-accent-glow)] overflow-hidden"
@@ -257,11 +270,11 @@ app.get("/*", async (c) => {
                       </div>
                     )}
                     <h3 class="font-header text-[var(--theme-accent)] m-0 mb-3 text-1.2rem group-hover:drop-shadow-[0_0_8px_var(--theme-accent-glow)] transition-all">
-                      {p!.title}
+                      {p.title}
                     </h3>
-                    {p!.description && (
+                    {p.description && (
                       <p class="text-0.85rem text-[var(--theme-text-dim)] line-clamp-3 m-0 flex-grow font-body leading-relaxed">
-                        {p!.description}
+                        {p.description}
                       </p>
                     )}
                     <div class="mt-6 flex items-center gap-2 text-0.75rem font-nav uppercase tracking-2px text-[var(--theme-accent)] opacity-60 group-hover:opacity-100 transition-all">
@@ -270,11 +283,35 @@ app.get("/*", async (c) => {
                         &rarr;
                       </span>
                     </div>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
+                  </a>
+                );
+              })}
+            </div>
+            {totalPages > 1 && (
+              <div class="flex justify-between items-center mt-12 border-t border-solid border-[var(--theme-accent-glow)] pt-6">
+                {safePage > 1 ? (
+                  <a
+                    href={`?page=${safePage - 1}`}
+                    class="btn-primary no-underline"
+                  >
+                    &larr; PREVIOUS SECTOR
+                  </a>
+                ) : (
+                  <div></div>
+                )}
+                {safePage < totalPages ? (
+                  <a
+                    href={`?page=${safePage + 1}`}
+                    class="btn-primary no-underline"
+                  >
+                    NEXT SECTOR &rarr;
+                  </a>
+                ) : (
+                  <div></div>
+                )}
+              </div>
+            )}
+          </>
         ) : (
           <div class="py-24 text-center border border-dashed border-[var(--theme-accent-glow)] opacity-50">
             <p class="font-nav uppercase tracking-2px">

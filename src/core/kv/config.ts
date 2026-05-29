@@ -233,12 +233,11 @@ export const ensureSystemDefaults = async (env: Env): Promise<void> => {
   await setInitializedStatus(env, true);
 };
 
-/**
- * Resets all isolate-level in-memory configuration caches.
- */
 export const clearCache = (): void => {
   cache.theme = null;
   cache.nav = null;
   cache.site = null;
   cache.footer = null;
+  cache.pageListLive = null;
+  cache.pageListDraft = null;
 };

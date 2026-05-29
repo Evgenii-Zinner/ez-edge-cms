@@ -12,6 +12,8 @@ import { PROTECTED_SLUGS } from "@core/constants";
  */
 export interface PageRowProps {
   slug: string;
+  title: string;
+  publishedAt?: string;
   isLive: boolean;
   isDraft: boolean;
 }
@@ -26,7 +28,7 @@ export interface PageRowProps {
  * @returns A JSX element representing a table row.
  */
 export const PageRow: FC<PageRowProps> = (props) => {
-  const { slug, isLive, isDraft } = props;
+  const { slug, title, publishedAt, isLive, isDraft } = props;
   const parts = slug.split("/");
   const displaySlug =
     parts.length > 1 ? (
@@ -39,13 +41,26 @@ export const PageRow: FC<PageRowProps> = (props) => {
     );
   const safeId = slug.replace(/[^\w]/g, "-");
   const isProtected = (PROTECTED_SLUGS as readonly string[]).includes(slug);
+  const dateStr = publishedAt
+    ? new Date(publishedAt).toLocaleDateString()
+    : "---";
 
   return (
     <tr
       id={`row-${safeId}`}
-      class="border-b border-b-solid border-[rgba(0,255,255,0.1)]"
+      class="border-b border-b-solid border-[rgba(0,255,255,0.1)] hover:bg-[rgba(0,255,255,0.02)] transition-colors"
     >
-      <td class="p-4">/{displaySlug}</td>
+      <td class="p-4">
+        <div class="font-bold text-[var(--theme-text-main)] text-1.1rem mb-1">
+          {title}
+        </div>
+        <div class="text-0.85rem text-[var(--theme-text-dim)]">
+          /{displaySlug}
+        </div>
+      </td>
+      <td class="p-4 text-center text-0.85rem text-[var(--theme-text-dim)]">
+        {dateStr}
+      </td>
       <td class="p-4 text-center">
         {isLive ? (
           <span style={{ color: "var(--color-success)" }} class="text-0.8rem">

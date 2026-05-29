@@ -139,3 +139,7 @@
 ## [0.1.34] - 2026-05-25
 
 - feat(admin): enable editing page paths with automatic KV data migration
+
+## [0.1.35] - 2026-05-29
+
+- feat: implement archive pagination and optimize page list index schema

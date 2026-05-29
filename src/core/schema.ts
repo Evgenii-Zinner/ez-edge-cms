@@ -22,6 +22,8 @@ export const VERSIONS = {
   SITE: "1.0.0",
   /** Footer configuration schema version. */
   FOOTER: "1.0.0",
+  /** Page list index schema version. */
+  PAGE_LIST: "2.0.0",
 } as const;
 
 /**
@@ -163,6 +165,27 @@ export const PageSchema = z.object({
     /** Registry of Block IDs used on this page for tracking. */
     usedBlocks: z.array(z.string()).default([]),
   }),
+});
+
+/**
+ * Zod schema for a page entry in the global page list index.
+ * Allows O(1) rendering of archive pages without N+1 KV reads.
+ */
+export const PageListEntrySchema = z.object({
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  featuredImage: z.string().optional(),
+  createdAt: z.string().datetime(),
+  publishedAt: z.string().datetime().optional(),
+});
+
+/**
+ * Zod schema for the global page list index.
+ */
+export const PageListIndexSchema = z.object({
+  schemaVersion: z.string().default(VERSIONS.PAGE_LIST),
+  items: z.array(PageListEntrySchema).default([]),
 });
 
 /**
@@ -319,3 +342,7 @@ export type FooterConfig = z.infer<typeof FooterSchema>;
 export type FooterLink = z.infer<typeof FooterLinkSchema>;
 /** Inferred type for administrative user credentials. */
 export type AdminUser = z.infer<typeof AdminUserSchema>;
+/** Inferred type for a single entry in the page list index. */
+export type PageListEntry = z.infer<typeof PageListEntrySchema>;
+/** Inferred type for the global page list index. */
+export type PageListIndex = z.infer<typeof PageListIndexSchema>;

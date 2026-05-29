@@ -3,9 +3,14 @@
  * @description Logical domain for page content management, indexing, and publication.
  */
 
-import { PageConfig } from "@core/schema";
+import {
+  PageConfig,
+  PageListEntry,
+  PageListIndex,
+  VERSIONS,
+} from "@core/schema";
 import { parsePage } from "@core/parser";
-import { KEYS, updateQueue, setUpdateQueue } from "@core/kv/base";
+import { KEYS, updateQueue, setUpdateQueue, cache } from "@core/kv/base";
 
 /**
  * Fetches a single page configuration by its slug and environment mode.
@@ -28,40 +33,80 @@ export const getPage = async (
 /**
  * Updates the persistent index list of page slugs for a specific environment mode.
  * Utilizes a sequential update queue to prevent race conditions during indexing.
+ * Handles the v1 (string array) to v2 (object array) schema migration on-the-fly.
  *
  * @param env - Cloudflare Worker environment bindings.
- * @param slug - The slug to ensure is present/absent in the index.
+ * @param pageOrSlug - The full page config (for add) or slug (for remove).
  * @param mode - The environment mode index to update.
- * @param action - Whether to 'add' or 'remove' the slug from the index.
+ * @param action - Whether to 'add' or 'remove' the page from the index.
  * @returns A promise resolving when the index has been updated.
  */
 const modifyPageList = async (
   env: Env,
-  slug: string,
+  pageOrSlug: PageConfig | string,
   mode: "draft" | "live",
   action: "add" | "remove",
 ): Promise<void> => {
-  const newQueue = updateQueue.then(async () => {
-    const key = KEYS.PAGE_LIST(mode);
-    const currentList: string[] =
-      (await env.EZ_CONTENT.get(key, { type: "json" })) || [];
+  const newQueue = updateQueue
+    .then(async () => {
+      const slug =
+        typeof pageOrSlug === "string" ? pageOrSlug : pageOrSlug.slug;
+      const key = KEYS.PAGE_LIST(mode);
+      const raw: any = await env.EZ_CONTENT.get(key, { type: "json" });
 
-    let newList = [...currentList];
-    const index = newList.indexOf(slug);
+      let indexObj: PageListIndex = {
+        schemaVersion: VERSIONS.PAGE_LIST,
+        items: [],
+      };
 
-    if (action === "add" && index === -1) {
-      newList.push(slug);
-    } else if (action === "remove" && index !== -1) {
-      newList.splice(index, 1);
-    } else {
-      return; // No change needed
-    }
+      // Handle V1 (string array) to V2 migration
+      if (Array.isArray(raw)) {
+        indexObj.items = raw.map((s) => ({
+          slug: s,
+          title: s, // Fallback title
+          createdAt: new Date().toISOString(),
+        }));
+      } else if (raw && raw.items) {
+        indexObj = raw;
+      }
 
-    await env.EZ_CONTENT.put(key, JSON.stringify(newList));
-  });
+      const existingIndex = indexObj.items.findIndex(
+        (item) => item.slug === slug,
+      );
 
-  setUpdateQueue(newQueue);
-  return newQueue;
+      if (action === "add" && typeof pageOrSlug !== "string") {
+        const entry: PageListEntry = {
+          slug: pageOrSlug.slug,
+          title: pageOrSlug.title,
+          description: pageOrSlug.description,
+          featuredImage: pageOrSlug.featuredImage,
+          createdAt: pageOrSlug.metadata.createdAt,
+          publishedAt: pageOrSlug.metadata.publishedAt,
+        };
+
+        if (existingIndex === -1) {
+          indexObj.items.push(entry);
+        } else {
+          indexObj.items[existingIndex] = entry; // Update existing entry
+        }
+      } else if (action === "remove" && existingIndex !== -1) {
+        indexObj.items.splice(existingIndex, 1);
+      } else {
+        return; // No change needed
+      }
+
+      await env.EZ_CONTENT.put(key, JSON.stringify(indexObj));
+
+      // Update isolate cache
+      if (mode === "live") cache.pageListLive = indexObj;
+      else cache.pageListDraft = indexObj;
+    })
+    .catch((err) => {
+      console.error("PageList Update Queue Error:", err);
+    });
+
+  setUpdateQueue(newQueue as Promise<void>);
+  return newQueue as Promise<void>;
 };
 
 /**
@@ -79,7 +124,7 @@ export const savePage = async (
 ): Promise<void> => {
   const key = KEYS.PAGE(mode, page.slug);
   await env.EZ_CONTENT.put(key, JSON.stringify(page));
-  await modifyPageList(env, page.slug, mode, "add");
+  await modifyPageList(env, page, mode, "add");
 };
 
 /**
@@ -158,18 +203,45 @@ export const deletePage = async (env: Env, slug: string): Promise<void> => {
 };
 
 /**
- * Retrieves the full list of page slugs indexed within a specific environment mode.
+ * Retrieves the full list of page entries indexed within a specific environment mode.
+ * Falls back to in-memory migration for v1 arrays if needed.
  *
  * @param env - Cloudflare Worker environment bindings.
  * @param mode - The environment mode to list ('draft' or 'live').
- * @returns A promise resolving to an array of slugs.
+ * @returns A promise resolving to an array of PageListEntry objects.
  */
 export const listPages = async (
   env: Env,
   mode: "draft" | "live" = "live",
-): Promise<string[]> => {
+): Promise<PageListEntry[]> => {
+  const cached = mode === "live" ? cache.pageListLive : cache.pageListDraft;
+  if (cached) return cached.items;
+
   const key = KEYS.PAGE_LIST(mode);
-  return (await env.EZ_CONTENT.get(key, { type: "json" })) || [];
+  const raw: any = await env.EZ_CONTENT.get(key, { type: "json" });
+
+  if (!raw) return [];
+
+  let indexObj: PageListIndex;
+
+  // Handle V1 fallback
+  if (Array.isArray(raw)) {
+    indexObj = {
+      schemaVersion: VERSIONS.PAGE_LIST,
+      items: raw.map((s) => ({
+        slug: s,
+        title: s,
+        createdAt: new Date().toISOString(),
+      })),
+    };
+  } else {
+    indexObj = raw as PageListIndex;
+  }
+
+  if (mode === "live") cache.pageListLive = indexObj;
+  else cache.pageListDraft = indexObj;
+
+  return indexObj.items;
 };
 
 /**
@@ -216,8 +288,6 @@ export const renamePage = async (
     const buffer = await env.EZ_CONTENT.get(k.name, { type: "arrayBuffer" });
     if (buffer) {
       const newKey = k.name.replace(`img:${oldSlug}:`, `img:${newSlug}:`);
-      // Retain metadata (like content-type) if it exists, though raw KV get/put might lose custom metadata.
-      // We will assume basic put is sufficient since Editor.js images are served directly.
       await env.EZ_CONTENT.put(newKey, buffer);
       await env.EZ_CONTENT.delete(k.name);
     }

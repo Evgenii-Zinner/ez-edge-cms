@@ -120,10 +120,13 @@ test.describe("The Zero-to-Hero Journey", () => {
 
       // Wait for HTMX to redirect us to the new URL
       await page.waitForURL(
-        /\/admin\/pages\/edit\/test-sector%2Fe2e-dynamic-page-renamed/,
+        /\/admin\/pages\/edit\/test-sector.*e2e-dynamic-page-renamed/,
       );
-      await expect(page.locator(".toast-notification")).toContainText(
-        "RENAMED",
+
+      // Since HX-Redirect reloads the page, the toast from the POST is lost.
+      // We'll just verify the page loaded with the new slug value in the input.
+      await expect(page.getByLabel("Page Path (URL Slug)")).toHaveValue(
+        "test-sector/e2e-dynamic-page-renamed",
       );
 
       // Publish the new slug

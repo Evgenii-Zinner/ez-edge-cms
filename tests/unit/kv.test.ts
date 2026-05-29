@@ -194,7 +194,9 @@ describe("KV Core Data Utilities", () => {
       const page = createDefaultPage("Unit Test", slug);
 
       await savePage(env, page, "draft");
-      expect(await listPages(env, "draft")).toContain(slug);
+      expect((await listPages(env, "draft")).map((p) => p.slug)).toContain(
+        slug,
+      );
 
       const success = await publishPage(env, slug);
       expect(success).toBe(true);
@@ -208,7 +210,9 @@ describe("KV Core Data Utilities", () => {
       expect(date.getFullYear()).toBeGreaterThanOrEqual(2024);
 
       // Draft should be cleaned up
-      expect(await listPages(env, "draft")).not.toContain(slug);
+      expect((await listPages(env, "draft")).map((p) => p.slug)).not.toContain(
+        slug,
+      );
     });
 
     it("should unpublish a live page, reverting it to draft state", async () => {
@@ -218,8 +222,12 @@ describe("KV Core Data Utilities", () => {
       const success = await unpublishPage(env, slug);
       expect(success).toBe(true);
 
-      expect(await listPages(env, "live")).not.toContain(slug);
-      expect(await listPages(env, "draft")).toContain(slug);
+      expect((await listPages(env, "live")).map((p) => p.slug)).not.toContain(
+        slug,
+      );
+      expect((await listPages(env, "draft")).map((p) => p.slug)).toContain(
+        slug,
+      );
       expect((await getPage(env, slug, "draft"))?.status).toBe("draft");
     });
 
@@ -259,14 +267,22 @@ describe("KV Core Data Utilities", () => {
       // Verify old keys are gone
       expect(await getPage(env, oldSlug, "draft")).toBeNull();
       expect(await getPage(env, oldSlug, "live")).toBeNull();
-      expect(await listPages(env, "draft")).not.toContain(oldSlug);
-      expect(await listPages(env, "live")).not.toContain(oldSlug);
+      expect((await listPages(env, "draft")).map((p) => p.slug)).not.toContain(
+        oldSlug,
+      );
+      expect((await listPages(env, "live")).map((p) => p.slug)).not.toContain(
+        oldSlug,
+      );
 
       // Verify new keys exist
       expect(await getPage(env, newSlug, "draft")).not.toBeNull();
       expect(await getPage(env, newSlug, "live")).not.toBeNull();
-      expect(await listPages(env, "draft")).toContain(newSlug);
-      expect(await listPages(env, "live")).toContain(newSlug);
+      expect((await listPages(env, "draft")).map((p) => p.slug)).toContain(
+        newSlug,
+      );
+      expect((await listPages(env, "live")).map((p) => p.slug)).toContain(
+        newSlug,
+      );
 
       // Verify image migrated
       const oldImages = await env.EZ_CONTENT.list({
@@ -385,6 +401,10 @@ describe("KV Core Data Utilities", () => {
     });
 
     it("listPages should return an empty array if no indexes exist", async () => {
+      // Clear the KV store explicitly since previous tests might have initialized it
+      env = createMockEnv();
+      clearCache();
+
       const pages = await listPages(env, "live");
       expect(pages).toBeInstanceOf(Array);
       expect(pages.length).toBe(0);
