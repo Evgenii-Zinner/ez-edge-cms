@@ -101,7 +101,7 @@ describe("Admin Pages Routes", () => {
       expect(res.status).toBe(200);
       const html = await res.text();
       expect(html).toContain("Edit Page: Test Page");
-      expect(html).toContain("editorjs-container");
+      expect(html).toContain("portabletext-editor-wrapper");
     });
 
     it("should return 404 for non-existent page", async () => {

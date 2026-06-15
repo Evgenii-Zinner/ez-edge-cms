@@ -12,6 +12,7 @@ import {
 import { parsePage } from "@core/parser";
 import { KEYS, updateQueue, setUpdateQueue, cache } from "@core/kv/base";
 import { getFirstImage } from "@utils/editorjs-parser";
+import { getFirstImageForPortableText } from "@utils/portabletext-parser";
 
 /**
  * Fetches a single page configuration by its slug and environment mode.
@@ -82,7 +83,9 @@ const modifyPageList = async (
           description: pageOrSlug.description,
           featuredImage:
             pageOrSlug.featuredImage ||
-            getFirstImage(pageOrSlug.content) ||
+            (Array.isArray(pageOrSlug.content)
+              ? getFirstImageForPortableText(pageOrSlug.content)
+              : getFirstImage(pageOrSlug.content as any)) ||
             undefined,
           createdAt: pageOrSlug.metadata.createdAt,
           publishedAt: pageOrSlug.metadata.publishedAt,

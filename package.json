@@ -18,6 +18,7 @@
     "release:major": "bun run scripts/release.ts major"
   },
   "dependencies": {
+    "@portabletext/to-html": "^5.0.2",
     "hono": "^4.0.0",
     "zod": "^3.22.4"
   },

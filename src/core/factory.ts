@@ -10,7 +10,6 @@ import { DEFAULT_AUTHOR } from "@core/constants";
 import {
   getTermsTemplate,
   getPrivacyTemplate,
-  generateId,
 } from "@core/templates";
 
 /**
@@ -157,24 +156,23 @@ export const createDefaultPage = (title: string, slug: string): PageConfig => {
     status: "draft",
     title: title,
     description: "",
-    content: {
-      time: new Date().getTime(),
-      blocks: [
-        {
-          id: generateId(),
-          type: "header",
-          data: { text: title, level: 1 },
-        },
-        {
-          id: generateId(),
-          type: "paragraph",
-          data: {
-            text: 'Welcome to your new page. This is a minimal, block-based Editor where you can add text, images, and rich layouts. Start customizing this page by visiting the <a href="/admin">admin panel</a>.',
+    content: [
+      {
+        _type: "block",
+        style: "h1",
+        children: [{ _type: "span", text: title }],
+      },
+      {
+        _type: "block",
+        style: "normal",
+        children: [
+          {
+            _type: "span",
+            text: "Welcome to your new page. This is a minimal, block-based Editor where you can add text, images, and rich layouts.",
           },
-        },
-      ],
-      version: "2.31.3",
-    },
+        ],
+      },
+    ],
     category: "General",
     tags: ["signal", "future"],
     seo: {
@@ -187,7 +185,7 @@ export const createDefaultPage = (title: string, slug: string): PageConfig => {
       author: DEFAULT_AUTHOR,
       createdAt: now,
       updatedAt: now,
-      usedBlocks: ["header", "paragraph"],
+      usedBlocks: ["block"],
     },
   };
 };

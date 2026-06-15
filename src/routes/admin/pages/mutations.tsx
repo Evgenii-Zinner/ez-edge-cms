@@ -98,9 +98,11 @@ async function processPageMutation(c: any, slug: string): Promise<PageConfig> {
 
   // Extract block types for analytics
   let usedBlocks: string[] = [];
-  if (parsedContent.blocks && Array.isArray(parsedContent.blocks)) {
+  if (Array.isArray(parsedContent)) {
+    usedBlocks = Array.from(new Set(parsedContent.map((b: any) => b._type)));
+  } else if (parsedContent && "blocks" in parsedContent && Array.isArray((parsedContent as any).blocks)) {
     usedBlocks = Array.from(
-      new Set(parsedContent.blocks.map((b: any) => b.type)),
+      new Set((parsedContent as any).blocks.map((b: any) => b.type)),
     );
   }
 
