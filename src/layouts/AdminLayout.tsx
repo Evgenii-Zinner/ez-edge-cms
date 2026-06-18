@@ -8,7 +8,7 @@
 
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
-import { ThemeConfig, SiteConfig } from "@core/schema";
+import { ThemeConfig, SiteConfig, PageConfig } from "@core/schema";
 import { Head } from "@components/Head";
 
 /**
@@ -27,6 +27,8 @@ export interface AdminLayoutProps {
   seo: SiteConfig["seo"];
   /** If true, injects Editor.js assets into the head. */
   isEditor?: boolean;
+  /** Optional page configuration for editor type resolution. */
+  page?: PageConfig;
   /** If true, renders without the sidebar (used for auth/onboarding). */
   hideSidebar?: boolean;
 }
@@ -49,6 +51,7 @@ export const AdminLayout: FC<AdminLayoutProps> = (props) => {
           site={props.site}
           isAdmin={true}
           isEditor={props.isEditor}
+          page={props.page}
         />
         <body class="admin-body">
           {/* Futuristic Background Overlays */}

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@portabletext/to-html": "^5.0.2",
+    "ez-portable-text": "github:Evgenii-Zinner/ez-portable-text",
     "hono": "^4.0.0",
     "zod": "^3.22.4"
   },

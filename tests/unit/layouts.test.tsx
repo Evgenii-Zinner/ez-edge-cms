@@ -193,7 +193,7 @@ describe("Layouts", () => {
       expect(html).toContain("DISCARD & LEAVE");
     });
 
-    it("should inject Editor.js assets only when isEditor is true", () => {
+    it("should inject ez-portable-text assets by default when isEditor is true", () => {
       const editorHtml = AdminLayout({
         title: "Edit",
         children: "Editor",
@@ -212,8 +212,37 @@ describe("Layouts", () => {
         isEditor: false,
       })!.toString();
 
+      expect(editorHtml).toContain("ez-portable-text");
+      expect(normalHtml).not.toContain("ez-portable-text");
+    });
+
+    it("should inject Editor.js assets when isEditor is true and page uses legacy Editor.js", () => {
+      const legacyPage = {
+        ...page,
+        content: {
+          time: 123456789,
+          blocks: [
+            {
+              id: "1",
+              type: "paragraph",
+              data: { text: "Hello legacy" },
+            },
+          ],
+          version: "2.29.0",
+        },
+      };
+
+      const editorHtml = AdminLayout({
+        title: "Edit",
+        children: "Editor",
+        site,
+        theme,
+        seo: site.seo,
+        isEditor: true,
+        page: legacyPage,
+      })!.toString();
+
       expect(editorHtml).toContain("editorjs");
-      expect(normalHtml).not.toContain("editorjs");
     });
   });
 });

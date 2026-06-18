@@ -106,13 +106,15 @@ export const EditorJsDataSchema = z.object({
  * Zod schema for an individual PortableText block.
  * Uses .passthrough() because PortableText blocks can have varying structures (like images, heroes, etc.)
  */
-export const PortableTextBlockSchema = z.object({
-  _key: z.string().optional(),
-  _type: z.string(),
-  children: z.array(z.any()).optional(),
-  markDefs: z.array(z.any()).optional(),
-  style: z.string().optional(),
-}).passthrough();
+export const PortableTextBlockSchema = z
+  .object({
+    _key: z.string().optional(),
+    _type: z.string(),
+    children: z.array(z.any()).optional(),
+    markDefs: z.array(z.any()).optional(),
+    style: z.string().optional(),
+  })
+  .passthrough();
 
 /**
  * Zod schema for the full PortableText output data structure.

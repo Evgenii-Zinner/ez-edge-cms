@@ -7,10 +7,7 @@ import {
   VERSIONS,
 } from "@core/schema";
 import { DEFAULT_AUTHOR } from "@core/constants";
-import {
-  getTermsTemplate,
-  getPrivacyTemplate,
-} from "@core/templates";
+import { getTermsTemplate, getPrivacyTemplate } from "@core/templates";
 
 /**
  * Factory for creating default content for root-level text files.

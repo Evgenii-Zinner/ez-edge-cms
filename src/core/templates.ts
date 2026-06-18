@@ -204,7 +204,9 @@ export const getPrivacyTemplate = (
   {
     _type: "block",
     style: "h2",
-    children: [{ _type: "span", text: "3. Security of Your Personal Information" }],
+    children: [
+      { _type: "span", text: "3. Security of Your Personal Information" },
+    ],
   },
   {
     _type: "block",

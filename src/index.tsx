@@ -188,9 +188,10 @@ app.get("/*", async (c) => {
 
   const page = await getPage(c.env, slug, "live");
   if (page) {
-    const contentHtml = (page.content && !Array.isArray(page.content) && "blocks" in page.content)
-      ? renderEditorJs(page.content)
-      : renderPortableText(Array.isArray(page.content) ? page.content : []);
+    const contentHtml =
+      page.content && !Array.isArray(page.content) && "blocks" in page.content
+        ? renderEditorJs(page.content)
+        : renderPortableText(Array.isArray(page.content) ? page.content : []);
     return c.html(
       <BaseLayout
         title={page.title}

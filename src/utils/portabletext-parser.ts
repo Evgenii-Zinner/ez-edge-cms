@@ -18,7 +18,7 @@ const portableTextComponents = {
         <div class="relative min-h-[500px] flex items-center justify-center text-center overflow-hidden my-12 border border-solid border-[var(--theme-accent-glow)]">
           <div 
             class="absolute top-0 left-0 w-full h-full z-0 bg-cover bg-center opacity-40 transition-transform duration-10000 hover:scale-110"
-            style="background-image: url('${value.url || ""}')"
+            style="background-image: url('${value.imageUrl || value.url || ""}')"
           ></div>
           <div class="relative z-10 px-8 max-w-4xl">
             <h1 class="text-3rem md:text-5rem font-header mb-4 text-white drop-shadow-[0_0_20px_rgba(0,0,0,0.8)] leading-tight">
@@ -31,24 +31,35 @@ const portableTextComponents = {
       `;
     },
     table: ({ value }: any) => {
-      const rows = value.content || [];
+      const rawRows = value.rows || value.content || [];
       const withHeadings = value.withHeadings || false;
       let tableHtml = `<div class="overflow-x-auto my-8"><table class="w-full border-collapse">`;
 
-      if (withHeadings && rows.length > 0) {
+      // Helper to extract cells from a row
+      const getCells = (row: any): string[] => {
+        return Array.isArray(row)
+          ? row
+          : row && Array.isArray(row.cells)
+            ? row.cells
+            : [];
+      };
+
+      if (withHeadings && rawRows.length > 0) {
         tableHtml += `<thead><tr class="border-b border-b-solid border-[var(--theme-accent-glow)]">`;
-        rows[0].forEach((cell: string) => {
-          tableHtml += `<th class="p-4 text-left font-header color-[var(--theme-accent)]">${cell}</th>`;
+        const firstRowCells = getCells(rawRows[0]);
+        firstRowCells.forEach((cell: string) => {
+          tableHtml += `<th class="p-4 text-left font-header color-[var(--theme-accent)]">${cell || ""}</th>`;
         });
         tableHtml += `</tr></thead>`;
       }
 
       tableHtml += `<tbody>`;
       const startRow = withHeadings ? 1 : 0;
-      for (let i = startRow; i < rows.length; i++) {
+      for (let i = startRow; i < rawRows.length; i++) {
         tableHtml += `<tr class="border-b border-b-solid border-[var(--theme-accent-glow)] last:border-0">`;
-        rows[i].forEach((cell: string) => {
-          tableHtml += `<td class="p-4 font-body color-[var(--theme-text-main)]">${cell}</td>`;
+        const cells = getCells(rawRows[i]);
+        cells.forEach((cell: string) => {
+          tableHtml += `<td class="p-4 font-body color-[var(--theme-text-main)]">${cell || ""}</td>`;
         });
         tableHtml += `</tr>`;
       }
@@ -65,6 +76,20 @@ const portableTextComponents = {
       return `
         <div class="admin-card font-mono text-0.9rem bg-[rgba(0,0,0,0.5)] border-solid my-8 p-6 overflow-x-auto">
           <pre><code>${escape(value.code || "")}</code></pre>
+        </div>
+      `;
+    },
+    codeBlock: ({ value }: any) => {
+      const escape = (str: string) =>
+        str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      return `
+        <div class="admin-card font-mono text-0.9rem bg-[rgba(0,0,0,0.5)] border-solid my-8 p-6 overflow-x-auto">
+          ${value.filename ? `<div class="text-xs text-[var(--theme-text-dim)] border-b border-solid border-[var(--theme-accent-glow)] pb-2 mb-2">${value.filename}</div>` : ""}
+          <pre><code class="${value.language || ""}">${escape(value.code || "")}</code></pre>
         </div>
       `;
     },
@@ -89,6 +114,37 @@ const portableTextComponents = {
             loading="lazy" 
           />
           ${value.caption ? `<div style="text-align: center; color: var(--theme-text-dim); font-size: 0.8rem; margin-top: 0.5rem;">${value.caption}</div>` : ""}
+        </div>
+      `;
+    },
+    video: ({ value }: any) => {
+      const url = value.url || "";
+      let embedUrl = "";
+      if (url.includes("youtube.com") || url.includes("youtu.be")) {
+        const regExp =
+          /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        if (match && match[2].length === 11) {
+          embedUrl = `https://www.youtube.com/embed/${match[2]}`;
+        }
+      } else if (url.includes("vimeo.com")) {
+        const regExp = /vimeo\.com\/([0-9]+)/;
+        const match = url.match(regExp);
+        if (match) {
+          embedUrl = `https://player.vimeo.com/video/${match[1]}`;
+        }
+      }
+
+      const mediaHtml = embedUrl
+        ? `<iframe src="${embedUrl}" width="100%" height="100%" frameborder="0" allowfullscreen loading="lazy"></iframe>`
+        : `<video src="${url}" controls width="100%" height="100%" preload="metadata"></video>`;
+
+      return `
+        <div class="my-8">
+          <div class="aspect-video w-full border border-solid border-[var(--theme-accent-glow)] bg-[rgba(0,0,0,0.2)]">
+            ${mediaHtml}
+          </div>
+          ${value.caption ? `<div class="text-center text-0.8rem color-[var(--theme-text-dim)] mt-2 italic">${value.caption}</div>` : ""}
         </div>
       `;
     },
@@ -132,5 +188,10 @@ export const getFirstImageForPortableText = (blocks: any[]): string | null => {
     (b) => b._type === "image" || b._type === "hero",
   );
   if (!firstImageBlock) return null;
-  return firstImageBlock.url || firstImageBlock.file?.url || null;
+  return (
+    firstImageBlock.imageUrl ||
+    firstImageBlock.url ||
+    firstImageBlock.file?.url ||
+    null
+  );
 };
