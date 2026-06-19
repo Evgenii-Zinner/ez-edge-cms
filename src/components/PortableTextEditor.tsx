@@ -121,11 +121,18 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                 },
               });
 
+              let isInitialized = false;
+
               // Sync changes back to hidden input
               editor.addEventListener("change", (e) => {
+                if (!isInitialized) return;
                 input.value = JSON.stringify(e.detail.value);
                 window.adminHasChanges = true;
               });
+
+              setTimeout(() => {
+                isInitialized = true;
+              }, 100);
 
               // Modal components
               const modal = document.getElementById("block-edit-modal");

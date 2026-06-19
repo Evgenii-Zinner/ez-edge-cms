@@ -23,6 +23,13 @@ test.describe("The Zero-to-Hero Journey", () => {
   }) => {
     test.setTimeout(120000);
 
+    page.on("console", (msg) => {
+      console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`);
+    });
+    page.on("pageerror", (err) => {
+      console.error(`[BROWSER ERROR] ${err.message}`);
+    });
+
     // ==========================================
     // PHASE 1: INITIAL SETUP (FIRST RUN)
     // ==========================================
@@ -273,6 +280,20 @@ test.describe("The Zero-to-Hero Journey", () => {
         .getByLabel("Description (SEO)")
         .fill("This is a custom SEO description for E2E testing.");
 
+      // Select Page Type "Article" (Schema.org)
+      await page
+        .locator(".custom-select-container", {
+          has: page.locator("#seo-page-type"),
+        })
+        .locator(".custom-select-toggle")
+        .click();
+      await page
+        .locator(".custom-select-container", {
+          has: page.locator("#seo-page-type"),
+        })
+        .locator('.custom-select-option[data-value="Article"]')
+        .click();
+
       // Verified from src/routes/admin/pages/views.tsx: SAVE DRAFT
       await page.getByRole("button", { name: "SAVE DRAFT" }).click();
       await page.getByRole("button", { name: "PUBLISH LIVE" }).click();
@@ -291,6 +312,22 @@ test.describe("The Zero-to-Hero Journey", () => {
         .locator('meta[property="og:title"]')
         .getAttribute("content");
       expect(ogTitle).toContain("E2E Dynamic Page");
+
+      const ogType = await page
+        .locator('meta[property="og:type"]')
+        .getAttribute("content");
+      expect(ogType).toBe("article");
+
+      // Verify JSON-LD Metadata Article schema exists and is populated
+      const jsonLdScript = page.locator('script[type="application/ld+json"]');
+      const jsonLdContent = await jsonLdScript.textContent();
+      const data = JSON.parse(jsonLdContent || "{}");
+
+      const article = data["@graph"].find(
+        (item: any) => item["@type"] === "Article",
+      );
+      expect(article).toBeDefined();
+      expect(article.headline).toBe("E2E Dynamic Page");
     });
 
     // ==========================================

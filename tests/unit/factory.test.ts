@@ -116,7 +116,7 @@ describe("Factory Utilities", () => {
       const contentStr = JSON.stringify(page.content);
       expect(contentStr).toContain("CoolSite");
       expect(contentStr).toContain("EntityX");
-      expect(page.metadata.usedBlocks).toContain("header");
+      expect(page.metadata.usedBlocks).toContain("block");
     });
 
     it("should create a privacy page from template with injected data", () => {

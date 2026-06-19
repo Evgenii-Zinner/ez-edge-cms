@@ -13,6 +13,7 @@ import {
   unpublishPage,
   deletePage,
   renamePage,
+  KEYS,
 } from "@core/kv";
 import { createDefaultPage } from "@core/factory";
 import { PROTECTED_SLUGS } from "@core/constants";
@@ -22,6 +23,7 @@ import { extractAndSaveImages } from "@utils/image-storage";
 import { PageRow } from "@routes/admin/pages/components";
 import { validateForm } from "@utils/validation";
 import { toastResponse } from "@utils/admin-responses";
+import { convertEditorJsToPortableText } from "@utils/editorjs-to-portabletext";
 
 /**
  * Hono sub-app for page mutations.
@@ -330,6 +332,51 @@ mutations.all("/migrate-v2", async (c): Promise<Response> => {
     }
 
     return c.text(`Migration complete! Re-saved ${count} pages.`, 200);
+  } catch (e: any) {
+    return c.text(`Migration failed: ${e.message}`, 500);
+  }
+});
+
+/**
+ * ALL /admin/pages/migrate-to-portabletext
+ * One-off migration script to migrate all pages from Editor.js to PortableText.
+ *
+ * @param c - Hono context.
+ * @returns A promise resolving to a success message.
+ */
+mutations.all("/migrate-to-portabletext", async (c): Promise<Response> => {
+  try {
+    const list = await c.env.EZ_CONTENT.list({ prefix: "page:" });
+    let count = 0;
+
+    for (const key of list.keys) {
+      const raw = await c.env.EZ_CONTENT.get(key.name, { type: "json" });
+      if (!raw) continue;
+
+      const page = raw as PageConfig;
+      const mode = key.name.startsWith("page:live:") ? "live" : "draft";
+
+      // Detect if legacy Editor.js data is present
+      const isEditorJs =
+        page.content &&
+        !Array.isArray(page.content) &&
+        "blocks" in (page.content as any);
+
+      if (isEditorJs) {
+        page.content = convertEditorJsToPortableText(page.content as any);
+        // Recalculate used blocks
+        page.metadata.usedBlocks = Array.from(
+          new Set((page.content as any[]).map((b: any) => b._type)),
+        );
+        await savePage(c.env, page, mode);
+        count++;
+      }
+    }
+
+    return c.text(
+      `Migration complete! Successfully converted ${count} pages from Editor.js to PortableText.`,
+      200,
+    );
   } catch (e: any) {
     return c.text(`Migration failed: ${e.message}`, 500);
   }

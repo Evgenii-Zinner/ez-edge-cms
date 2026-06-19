@@ -201,7 +201,7 @@ export const createTermsPage = (
   const page = createDefaultPage("Terms of Service", "terms");
   const now = new Date().toLocaleDateString();
   page.content = getTermsTemplate(siteName, authorName, now);
-  page.metadata.usedBlocks = ["header", "paragraph"];
+  page.metadata.usedBlocks = ["block"];
   return page;
 };
 
@@ -219,6 +219,6 @@ export const createPrivacyPage = (
   const page = createDefaultPage("Privacy Policy", "privacy");
   const now = new Date().toLocaleDateString();
   page.content = getPrivacyTemplate(siteName, authorName, now);
-  page.metadata.usedBlocks = ["header", "paragraph"];
+  page.metadata.usedBlocks = ["block"];
   return page;
 };
