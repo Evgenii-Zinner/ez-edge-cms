@@ -328,6 +328,15 @@ describe("KV Core Data Utilities", () => {
       expect(base64).toBe("SGVsbG8=");
     });
 
+    it("should handle large ArrayBuffers without throwing RangeError", () => {
+      const size = 100000;
+      const arr = new Uint8Array(size);
+      for (let i = 0; i < size; i++) {
+        arr[i] = i % 256;
+      }
+      expect(() => arrayBufferToBase64(arr.buffer)).not.toThrow();
+    });
+
     it("should export binary images as Base64 Data URIs", async () => {
       const buffer = new Uint8Array([72, 101, 108, 108, 111]).buffer; // "Hello"
       await env.EZ_CONTENT.put("img:test:pic.png", buffer, {
