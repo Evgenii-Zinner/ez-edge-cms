@@ -381,7 +381,12 @@ export const BackupRestoreCard: FC = () => (
         <p class="flex-1 m-0 text-sm color-[var(--theme-text-dim)]">
           Download full site database as JSON.
         </p>
-        <button type="button" class="btn-primary" onclick="handleBackup()">
+        <button
+          id="btn-start-backup"
+          type="button"
+          class="btn-primary"
+          onclick="handleBackup()"
+        >
           START BACKUP
         </button>
       </div>
@@ -408,6 +413,7 @@ export const BackupRestoreCard: FC = () => (
             CHOOSE
           </button>
           <button
+            id="btn-start-restore"
             type="button"
             class="btn-primary border-[var(--color-warning)] color-[var(--color-warning)] whitespace-nowrap"
             onclick="handleRestore()"
