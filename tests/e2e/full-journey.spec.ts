@@ -96,6 +96,28 @@ test.describe("The Zero-to-Hero Journey", () => {
         page.getByRole("button", { name: "CREATE PAGE" }).click(),
       ]);
 
+      // Interact with PortableText Editor
+      await test.step("Add PortableText Content", async () => {
+        const editorContent = page.locator(
+          'ez-portable-text [contenteditable="true"]',
+        );
+        await expect(editorContent).toBeVisible();
+        await editorContent.click();
+
+        // Change style to Heading 1
+        await page.locator("ez-portable-text .pe-dropdown-btn").first().click();
+        await page
+          .locator('ez-portable-text .pe-dropdown-item:has-text("Heading 1")')
+          .click();
+
+        await page.keyboard.type("E2E Dynamic Page");
+        await page.keyboard.press("Enter");
+
+        // Wait a tick and type paragraph
+        await page.waitForTimeout(100);
+        await page.keyboard.type("This is E2E PortableText Content");
+      });
+
       // Verified button text from src/routes/admin/pages/views.tsx: PUBLISH LIVE
       await page.getByRole("button", { name: "PUBLISH LIVE" }).click();
       await expect(page.locator(".toast-notification")).toContainText(
@@ -107,6 +129,9 @@ test.describe("The Zero-to-Hero Journey", () => {
       // Verify on Public Site
       await page.goto(`/${decodeURIComponent(slug)}`);
       await expect(page.locator("h1")).toContainText("E2E Dynamic Page");
+      await expect(page.locator("body")).toContainText(
+        "This is E2E PortableText Content",
+      );
     });
 
     // ==========================================
@@ -296,7 +321,12 @@ test.describe("The Zero-to-Hero Journey", () => {
 
       // Verified from src/routes/admin/pages/views.tsx: SAVE DRAFT
       await page.getByRole("button", { name: "SAVE DRAFT" }).click();
+      await expect(page.locator(".toast-notification")).toContainText("SAVED");
+
       await page.getByRole("button", { name: "PUBLISH LIVE" }).click();
+      await expect(page.locator(".toast-notification")).toContainText(
+        "PUBLISHED",
+      );
 
       // Check the public head
       await page.goto("/test-sector/e2e-dynamic-page-renamed");
