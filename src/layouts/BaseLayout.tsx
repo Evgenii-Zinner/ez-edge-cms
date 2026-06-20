@@ -153,10 +153,10 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
                     __html: site.copyright
                       ? site.copyright
                           .replace(
-                            "{year}",
+                            /\{year\}/g,
                             new Date().getFullYear().toString(),
                           )
-                          .replace("{author}", site.author || "")
+                          .replace(/\{author\}/g, site.author || "")
                       : "",
                   }}
                 ></div>

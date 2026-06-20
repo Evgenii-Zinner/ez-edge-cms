@@ -134,6 +134,30 @@ describe("Validation Utility (validateForm)", () => {
 
       expect(result.slug).toBe("title-with-spaces");
     });
+
+    it("should reject and block prototype pollution keys (__proto__, constructor, prototype) in path expansion", async () => {
+      const schema = z
+        .object({
+          username: z.string(),
+        })
+        .passthrough();
+
+      const body = {
+        username: "admin",
+        "__proto__.polluted": "yes",
+        "constructor.prototype.polluted": "yes",
+        "seo.__proto__.polluted": "yes",
+      };
+
+      const result = await validateForm(mockReq(body), schema, {
+        partial: true,
+      });
+
+      expect(result.username).toBe("admin");
+      expect((Object.prototype as any).polluted).toBeUndefined();
+      expect((result as any).polluted).toBeUndefined();
+      expect(result.seo).toBeUndefined();
+    });
   });
 
   describe("Zip-Mapping (Dynamic Lists)", () => {
