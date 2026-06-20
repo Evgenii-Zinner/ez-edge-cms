@@ -29,7 +29,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
       <ez-portable-text
         id="portable-text-editor"
         class="admin-card p-4 min-h-[500px] bg-[rgba(0,0,0,0.3)] border-solid block"
-      ></ez-portable-text>
+      >
+        {contentJson}
+      </ez-portable-text>
 
       {/* Dynamic Cyberpunk Block Edit Modal */}
       <div
@@ -82,8 +84,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
 
               if (!editor || !input) return;
 
-              // Prevent double initialization
-              if (window.currentPortableTextEditor) return;
+              // Prevent double initialization on the same element
+              if (editor.dataset.initialized) return;
+              editor.dataset.initialized = "true";
 
               // Prevent any buttons inside the editor from submitting the parent form
               editor.addEventListener("click", (e) => {
@@ -100,9 +103,12 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                 }
               });
 
-              // Set initial value
+              // Set initial value if not already set by connectedCallback
               try {
-                if (input.value) {
+                if (
+                  input.value &&
+                  (!editor.value || editor.value.length === 0)
+                ) {
                   editor.value = JSON.parse(input.value);
                 }
               } catch (e) {
