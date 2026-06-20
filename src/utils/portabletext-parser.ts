@@ -120,14 +120,34 @@ const portableTextComponents = {
     video: ({ value }: any) => {
       const url = value.url || "";
       let embedUrl = "";
-      if (url.includes("youtube.com") || url.includes("youtu.be")) {
+
+      let hostname = "";
+      try {
+        const parsed = new URL(url);
+        hostname = parsed.hostname.toLowerCase();
+      } catch (_) {
+        // Not a valid absolute URL, ignore hostname checks
+      }
+
+      const isYoutube =
+        hostname === "youtube.com" ||
+        hostname === "www.youtube.com" ||
+        hostname === "youtu.be" ||
+        hostname.endsWith(".youtube.com");
+
+      const isVimeo =
+        hostname === "vimeo.com" ||
+        hostname === "player.vimeo.com" ||
+        hostname.endsWith(".vimeo.com");
+
+      if (isYoutube) {
         const regExp =
           /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
         if (match && match[2].length === 11) {
           embedUrl = `https://www.youtube.com/embed/${match[2]}`;
         }
-      } else if (url.includes("vimeo.com")) {
+      } else if (isVimeo) {
         const regExp = /vimeo\.com\/([0-9]+)/;
         const match = url.match(regExp);
         if (match) {

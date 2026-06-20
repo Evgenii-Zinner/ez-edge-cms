@@ -22,11 +22,11 @@ const generateKey = (): string => Math.random().toString(36).substring(2, 12);
 const decodeHtmlEntities = (str: string): string => {
   return str
     .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'");
+    .replace(/&#039;/g, "'")
+    .replace(/&amp;/g, "&");
 };
 
 /**
@@ -46,9 +46,39 @@ export const parseHtmlToSpansAndMarkDefs = (
     return { children, markDefs };
   }
 
-  // Regex to split by HTML tags
-  const tagRegex = /(<\/?[a-z1-6]+(?:\s+[^>]+)?\/?>)/gi;
-  const parts = html.split(tagRegex);
+  // Split HTML string into an array of tags and text parts safely without regex
+  const parts: string[] = [];
+  let current = "";
+  let idx = 0;
+  while (idx < html.length) {
+    if (
+      html[idx] === "<" &&
+      idx + 1 < html.length &&
+      (html[idx + 1] === "/" || /[a-zA-Z]/.test(html[idx + 1]))
+    ) {
+      if (current) {
+        parts.push(current);
+        current = "";
+      }
+      let tag = "<";
+      idx++;
+      while (idx < html.length && idx !== -1 && html[idx] !== ">") {
+        tag += html[idx];
+        idx++;
+      }
+      if (idx < html.length) {
+        tag += ">";
+        idx++;
+      }
+      parts.push(tag);
+    } else {
+      current += html[idx];
+      idx++;
+    }
+  }
+  if (current) {
+    parts.push(current);
+  }
 
   const activeMarks: string[] = [];
 
