@@ -151,3 +151,7 @@
 ## [0.2.0] - 2026-06-19
 
 - Migration to PortableText and backup UI fixes
+
+## [0.2.1] - 2026-06-20
+
+- Resolve CodeQL alerts for prototype pollution, incomplete sanitization, and workflow permissions

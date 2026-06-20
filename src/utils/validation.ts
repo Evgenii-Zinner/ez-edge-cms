@@ -73,6 +73,13 @@ export async function validateForm<T extends z.ZodTypeAny>(
    */
   const setPath = (obj: any, path: string, value: any) => {
     const keys = path.split(".");
+    if (
+      keys.includes("__proto__") ||
+      keys.includes("constructor") ||
+      keys.includes("prototype")
+    ) {
+      return;
+    }
     let current = obj;
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
