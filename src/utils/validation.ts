@@ -83,12 +83,23 @@ export async function validateForm<T extends z.ZodTypeAny>(
     let current = obj;
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
-      if (!current[key] || typeof current[key] !== "object") {
+      if (
+        !Object.prototype.hasOwnProperty.call(current, key) ||
+        current[key] === null ||
+        typeof current[key] !== "object"
+      ) {
         current[key] = {};
       }
       current = current[key];
     }
-    current[keys[keys.length - 1]] = value;
+    const lastKey = keys[keys.length - 1];
+    if (
+      lastKey !== "__proto__" &&
+      lastKey !== "constructor" &&
+      lastKey !== "prototype"
+    ) {
+      current[lastKey] = value;
+    }
   };
 
   /**
