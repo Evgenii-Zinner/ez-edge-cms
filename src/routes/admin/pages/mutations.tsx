@@ -13,7 +13,6 @@ import {
   unpublishPage,
   deletePage,
   renamePage,
-  KEYS,
 } from "@core/kv";
 import { createDefaultPage } from "@core/factory";
 import { PROTECTED_SLUGS } from "@core/constants";

@@ -493,6 +493,28 @@ describe("Admin Site Routes", () => {
       expect(res.status).toBe(500);
       expect(await res.text()).toContain("RESTORE FAILED");
     });
+
+    it("POST /restore should fail if backup is not a JSON object", async () => {
+      const app = setupApp();
+      const blob = new Blob(["null"], { type: "application/json" });
+      const file = new File([blob], "backup.json");
+      const formData = new FormData();
+      formData.append("backup", file);
+
+      const res = await app.request(
+        "http://localhost/admin/site/restore",
+        {
+          method: "POST",
+          body: formData,
+        },
+        mockEnv(),
+      );
+
+      expect(res.status).toBe(500);
+      expect(await res.text()).toContain(
+        "RESTORE FAILED: Invalid backup format: Expected a JSON object",
+      );
+    });
   });
 
   describe("Specific Component Scenarios", () => {

@@ -184,4 +184,64 @@ describe("Editor.js to PortableText Converter", () => {
     expect(pt[4].embed).toBe("https://youtube.com/embed/123");
     expect(pt[4].caption).toBe("Video caption");
   });
+
+  it("should parse formatting HTML tags (bold, italic, underline, code, links) in paragraphs", () => {
+    const input: EditorJsData = {
+      blocks: [
+        {
+          type: "paragraph",
+          data: {
+            text: 'Hello <b>bold</b>, <i>italic</i>, <u>underline</u>, <code>code</code> and <a href="https://google.com">link</a>.',
+          },
+        },
+        {
+          type: "paragraph",
+          data: {
+            text: "<b></b>", // Empty bold tag
+          },
+        },
+        {
+          type: "paragraph",
+          data: {
+            text: "", // Empty string
+          },
+        },
+      ],
+    };
+
+    const pt = convertEditorJsToPortableText(input);
+    expect(pt).toHaveLength(3);
+
+    // First block: verifies normal markup tags
+    const spans = pt[0].children;
+    expect(spans.find((s: any) => s.text === "bold").marks).toContain("strong");
+    expect(spans.find((s: any) => s.text === "italic").marks).toContain("em");
+    expect(spans.find((s: any) => s.text === "underline").marks).toContain(
+      "underline",
+    );
+    expect(spans.find((s: any) => s.text === "code").marks).toContain("code");
+
+    const linkSpan = spans.find((s: any) => s.text === "link");
+    expect(linkSpan.marks[0]).toStartWith("link_");
+    expect(pt[0].markDefs[0].href).toBe("https://google.com");
+
+    // Second block: verifies fallback for empty tag text content
+    expect(pt[1].children[0].text).toBe("");
+
+    // Third block: verifies empty string handling (returns empty children array)
+    expect(pt[2].children).toHaveLength(0);
+  });
+
+  it("should handle unsupported block types gracefully with console.warn", () => {
+    const input: EditorJsData = {
+      blocks: [
+        {
+          type: "unsupported_type",
+          data: {},
+        },
+      ],
+    };
+    const pt = convertEditorJsToPortableText(input);
+    expect(pt).toEqual([]);
+  });
 });

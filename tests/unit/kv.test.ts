@@ -12,6 +12,7 @@ import {
   publishPage,
   unpublishPage,
   deletePage,
+  renamePage,
   listPages,
   getInitializedStatus,
   getGlobalConfig,
@@ -417,6 +418,107 @@ describe("KV Core Data Utilities", () => {
       const pages = await listPages(env, "live");
       expect(pages).toBeInstanceOf(Array);
       expect(pages.length).toBe(0);
+    });
+
+    it("listPages should return cached items on subsequent calls", async () => {
+      env = createMockEnv();
+      clearCache();
+
+      const page = createDefaultPage("Cached Page", "cached");
+      await savePage(env, page, "live");
+
+      // First call (fetches from KV and caches)
+      const list1 = await listPages(env, "live");
+      expect(list1.length).toBe(1);
+
+      // Mutate KV list page entry directly to verify cache bypasses KV
+      await env.EZ_CONTENT.delete(KEYS.PAGE_LIST("live"));
+
+      // Second call (should return cached items)
+      const list2 = await listPages(env, "live");
+      expect(list2.length).toBe(1);
+    });
+
+    it("publishPage should return false if draft page does not exist", async () => {
+      const success = await publishPage(env, "non-existent-draft");
+      expect(success).toBe(false);
+    });
+
+    it("unpublishPage should return false if live page does not exist", async () => {
+      const success = await unpublishPage(env, "non-existent-live");
+      expect(success).toBe(false);
+    });
+
+    it("renamePage should skip migration if image buffer is missing", async () => {
+      const oldSlug = "old-rename-ghost";
+      const newSlug = "new-rename-ghost";
+
+      await savePage(env, createDefaultPage("Test", oldSlug), "draft");
+
+      // Register an image in KV list index prefix query result but put no value
+      await env.EZ_CONTENT.put(`img:${oldSlug}:ghost.png`, "");
+      // Delete the actual image value to simulate missing buffer
+      await env.EZ_CONTENT.delete(`img:${oldSlug}:ghost.png`);
+
+      await renamePage(env, oldSlug, newSlug);
+
+      // Page itself should be successfully renamed
+      expect(await getPage(env, newSlug, "draft")).not.toBeNull();
+      // Old image list query should return nothing
+      const oldImages = await env.EZ_CONTENT.list({
+        prefix: `img:${oldSlug}:`,
+      });
+      expect(oldImages.keys.length).toBe(0);
+    });
+
+    it("modifyPageList should handle KV failures in the update queue", async () => {
+      const page = createDefaultPage("Failure Page", "failure-slug");
+      const badEnv = {
+        EZ_CONTENT: {
+          get: async () => {
+            throw new Error("KV Read Error");
+          },
+          put: async () => {},
+        },
+      } as any;
+
+      // This will trigger modifyPageList internally, which catches the rejection in the queue catch block
+      const result = await savePage(badEnv, page, "draft");
+      expect(result).toBeUndefined(); // Completed cleanly despite the internal catch
+    });
+
+    it("modifyPageList should migrate V1 page index lists to V2 items array and update existing entry", async () => {
+      env = createMockEnv();
+      clearCache();
+
+      // Seed KV with V1 array (strings only)
+      await env.EZ_CONTENT.put(KEYS.PAGE_LIST("draft"), ["existing-slug"]);
+
+      const page = createDefaultPage("Updated Page Title", "existing-slug");
+      // Save page will call modifyPageList which finds "existing-slug" (existingIndex !== -1) and updates the title and fields!
+      await savePage(env, page, "draft");
+
+      const draftList = await listPages(env, "draft");
+      expect(draftList.length).toBe(1);
+      expect(draftList[0].slug).toBe("existing-slug");
+      expect(draftList[0].title).toBe("Updated Page Title");
+    });
+
+    it("listPages should migrate V1 lists to V2 items and populate draft/live isolate caches", async () => {
+      env = createMockEnv();
+      clearCache();
+
+      // Seed KV with V1 array for both draft and live
+      await env.EZ_CONTENT.put(KEYS.PAGE_LIST("draft"), ["draft-v1"]);
+      await env.EZ_CONTENT.put(KEYS.PAGE_LIST("live"), ["live-v1"]);
+
+      const draftList = await listPages(env, "draft");
+      const liveList = await listPages(env, "live");
+
+      expect(draftList.length).toBe(1);
+      expect(draftList[0].slug).toBe("draft-v1");
+      expect(liveList.length).toBe(1);
+      expect(liveList[0].slug).toBe("live-v1");
     });
   });
 });
