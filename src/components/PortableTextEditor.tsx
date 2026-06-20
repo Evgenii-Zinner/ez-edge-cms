@@ -25,14 +25,10 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
         id="portabletext-content-input"
         value={contentJson}
       />
-
       <ez-portable-text
         id="portable-text-editor"
         class="admin-card p-4 min-h-[500px] bg-[rgba(0,0,0,0.3)] border-solid block"
-      >
-        {contentJson}
-      </ez-portable-text>
-
+      ></ez-portable-text>
       {/* Dynamic Cyberpunk Block Edit Modal */}
       <div
         id="block-edit-modal"
@@ -71,8 +67,7 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
             </button>
           </div>
         </div>
-      </div>
-
+      </div>{" "}
       {html`
         <script>
           (function () {
@@ -84,11 +79,15 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
 
               if (!editor || !input) return;
 
-              // Prevent double initialization on the same element
+              /**
+               * Prevent double initialization of the editor.
+               */
               if (editor.dataset.initialized) return;
               editor.dataset.initialized = "true";
 
-              // Prevent any buttons inside the editor from submitting the parent form
+              /**
+               * Prevent editor buttons from triggering form submissions.
+               */
               editor.addEventListener("click", (e) => {
                 const button = e.target.closest("button");
                 if (button) {
@@ -96,26 +95,36 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                 }
               });
 
-              // Stop 'Enter' from submitting the parent form while editing blocks
+              /**
+               * Prevent Enter key from submitting the form during content editing.
+               */
               editor.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
                   e.stopPropagation();
                 }
               });
 
-              // Set initial value if not already set by connectedCallback
-              try {
-                if (
-                  input.value &&
-                  (!editor.value || editor.value.length === 0)
-                ) {
-                  editor.value = JSON.parse(input.value);
+              /**
+               * Initialize the editor value once the internal Preact reference is ready.
+               */
+              const setInitialValue = () => {
+                if (editor._editorRef) {
+                  try {
+                    if (input.value) {
+                      editor.value = JSON.parse(input.value);
+                    }
+                  } catch (e) {
+                    console.error("Failed to parse initial PortableText", e);
+                  }
+                } else {
+                  requestAnimationFrame(setInitialValue);
                 }
-              } catch (e) {
-                console.error("Failed to parse initial PortableText", e);
-              }
+              };
+              setInitialValue();
 
-              // Register custom blocks
+              /**
+               * Register custom block schemas.
+               */
               editor.registerBlockType({
                 name: "hero",
                 title: "Hero",
@@ -129,7 +138,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
 
               let isInitialized = false;
 
-              // Sync changes back to hidden input
+              /**
+               * Synchronize editor changes back to the hidden form input.
+               */
               editor.addEventListener("change", (e) => {
                 if (!isInitialized) return;
                 input.value = JSON.stringify(e.detail.value);
@@ -140,7 +151,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                 isInitialized = true;
               }, 100);
 
-              // Modal components
+              /**
+               * Bind modal UI controls and handlers.
+               */
               const modal = document.getElementById("block-edit-modal");
               const modalTitle = document.getElementById("modal-block-title");
               const modalFields = document.getElementById("modal-block-fields");
@@ -159,7 +172,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
               closeBtn.onclick = closeModal;
               cancelBtn.onclick = closeModal;
 
-              // Image resizing helper
+              /**
+               * Resize and convert images to WebP format.
+               */
               const resizeImage = (file, maxWidth, quality = 0.8) => {
                 return new Promise((resolve) => {
                   const reader = new FileReader();
@@ -187,7 +202,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                 });
               };
 
-              // Listen for block edits
+              /**
+               * Listen for block edit events and render the editing fields dynamically.
+               */
               editor.addEventListener("edit-block", (e) => {
                 const { value, update } = e.detail;
                 const blockType = value._type;
@@ -195,7 +212,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                 modalTitle.textContent = \`EDIT BLOCK: \${blockType.toUpperCase()}\`;
                 modalFields.innerHTML = "";
 
-                // Helper to create normal input fields
+                /**
+                 * Helper function to generate field inputs dynamically inside the modal.
+                 */
                 const createField = (
                   label,
                   name,

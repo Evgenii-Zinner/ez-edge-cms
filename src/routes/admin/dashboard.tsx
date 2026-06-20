@@ -117,7 +117,9 @@ admin.get("/check-update", async (c): Promise<Response> => {
     const tags = (await response.json()) as { name: string }[];
     if (!tags || tags.length === 0) return c.html("");
 
-    // The first tag in the list is the most recent
+    /**
+     * The first tag in the list is the most recent.
+     */
     const latestVersion = tags[0].name.replace(/^v/, "");
 
     if (latestVersion !== APP_VERSION) {

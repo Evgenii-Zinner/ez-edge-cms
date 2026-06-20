@@ -520,5 +520,20 @@ describe("KV Core Data Utilities", () => {
       expect(liveList.length).toBe(1);
       expect(liveList[0].slug).toBe("live-v1");
     });
+
+    it("listPages should return an empty array if the index object lacks the items field", async () => {
+      env = createMockEnv();
+      clearCache();
+
+      // Seed KV with an index object that lacks the items array
+      await env.EZ_CONTENT.put(
+        KEYS.PAGE_LIST("live"),
+        JSON.stringify({ schemaVersion: 2 }),
+      );
+
+      const pages = await listPages(env, "live");
+      expect(pages).toBeInstanceOf(Array);
+      expect(pages.length).toBe(0);
+    });
   });
 });

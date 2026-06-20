@@ -61,11 +61,13 @@ const modifyPageList = async (
         items: [],
       };
 
-      // Handle V1 (string array) to V2 migration
+      /**
+       * Handle v1 (string array) to v2 schema migration.
+       */
       if (Array.isArray(raw)) {
         indexObj.items = raw.map((s) => ({
           slug: s,
-          title: s, // Fallback title
+          title: s,
           createdAt: new Date().toISOString(),
         }));
       } else if (raw && raw.items) {
@@ -94,17 +96,19 @@ const modifyPageList = async (
         if (existingIndex === -1) {
           indexObj.items.push(entry);
         } else {
-          indexObj.items[existingIndex] = entry; // Update existing entry
+          indexObj.items[existingIndex] = entry;
         }
       } else if (action === "remove" && existingIndex !== -1) {
         indexObj.items.splice(existingIndex, 1);
       } else {
-        return; // No change needed
+        return;
       }
 
       await env.EZ_CONTENT.put(key, JSON.stringify(indexObj));
 
-      // Update isolate cache
+      /**
+       * Update the isolate-level cache with the new index.
+       */
       if (mode === "live") cache.pageListLive = indexObj;
       else cache.pageListDraft = indexObj;
     })
@@ -222,7 +226,7 @@ export const listPages = async (
   mode: "draft" | "live" = "live",
 ): Promise<PageListEntry[]> => {
   const cached = mode === "live" ? cache.pageListLive : cache.pageListDraft;
-  if (cached) return cached.items;
+  if (cached && Array.isArray(cached.items)) return cached.items;
 
   const key = KEYS.PAGE_LIST(mode);
   const raw: any = await env.EZ_CONTENT.get(key, { type: "json" });
@@ -243,6 +247,10 @@ export const listPages = async (
     };
   } else {
     indexObj = raw as PageListIndex;
+  }
+
+  if (!indexObj.items || !Array.isArray(indexObj.items)) {
+    indexObj.items = [];
   }
 
   if (mode === "live") cache.pageListLive = indexObj;
@@ -273,7 +281,9 @@ export const renamePage = async (
   const savePromises: Promise<void>[] = [];
   const deletePromises: Promise<void>[] = [];
 
-  // 1. Migrate Draft
+  /**
+   * Migrate the draft version of the page.
+   */
   if (draftPage) {
     draftPage.slug = newSlug;
     savePromises.push(savePage(env, draftPage, "draft"));
@@ -281,7 +291,9 @@ export const renamePage = async (
     deletePromises.push(modifyPageList(env, oldSlug, "draft", "remove"));
   }
 
-  // 2. Migrate Live
+  /**
+   * Migrate the live version of the page.
+   */
   if (livePage) {
     livePage.slug = newSlug;
     savePromises.push(savePage(env, livePage, "live"));
@@ -289,7 +301,9 @@ export const renamePage = async (
     deletePromises.push(modifyPageList(env, oldSlug, "live", "remove"));
   }
 
-  // 3. Migrate Images
+  /**
+   * Migrate any associated images to the new slug.
+   */
   const imageList = await env.EZ_CONTENT.list({ prefix: `img:${oldSlug}:` });
   const imagePromises = imageList.keys.map(async (k) => {
     const buffer = await env.EZ_CONTENT.get(k.name, { type: "arrayBuffer" });
@@ -300,9 +314,9 @@ export const renamePage = async (
     }
   });
 
-  // Execute saves first
+  /**
+   * Execute saves and copy images, followed by deletions of the old keys.
+   */
   await Promise.all([...savePromises, ...imagePromises]);
-
-  // Then deletions
   await Promise.all(deletePromises);
 };

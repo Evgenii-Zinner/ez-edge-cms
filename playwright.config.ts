@@ -1,4 +1,37 @@
 import { defineConfig, devices } from "@playwright/test";
+import fs from "fs";
+import path from "path";
+
+// Clean up any stale temp KV directories from previous runs
+try {
+  const rootFiles = fs.readdirSync(path.resolve("."));
+  for (const file of rootFiles) {
+    if (file.startsWith("temp-kv-state-")) {
+      try {
+        fs.rmSync(path.resolve(file), { recursive: true, force: true });
+      } catch (e) {
+        // Ignore if locked by another active process
+      }
+    }
+  }
+} catch (e) {
+  // Ignore filesystem access errors
+}
+
+// Generate a unique directory name for this specific test run
+const randomId = Math.random().toString(36).substring(2, 10);
+const tempKvPath = path.resolve(`temp-kv-state-${randomId}`);
+
+// Attempt cleanup on process exit
+process.on("exit", () => {
+  try {
+    if (fs.existsSync(tempKvPath)) {
+      fs.rmSync(tempKvPath, { recursive: true, force: true });
+    }
+  } catch (e) {
+    // Ignore if cleanup fails on immediate exit
+  }
+});
 
 const PORT = process.env.PORT || "8788";
 
@@ -23,9 +56,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "bun run dev:test",
+    command: `wrangler dev --local --persist-to ${tempKvPath} --port ${PORT}`,
     url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120 * 1000,
   },
 });

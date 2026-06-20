@@ -1,14 +1,18 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { Hono } from "hono";
 import dashboard from "@routes/admin/dashboard";
 import { GlobalConfigVariables } from "@core/middleware";
 import { createDefaultTheme, createDefaultSite } from "@core/factory";
 import { cache } from "@core/kv/base";
+import { clearCache } from "@core/kv";
 
 /**
  * Tests for the Administrative Dashboard.
  */
 describe("Admin Dashboard Routes", () => {
+  beforeEach(() => {
+    clearCache();
+  });
   const setupApp = () => {
     const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
     app.use("*", async (c, next) => {
@@ -51,6 +55,27 @@ describe("Admin Dashboard Routes", () => {
     expect(html).toContain("DASHBOARD");
     expect(html).toContain("Live Pages: 2");
     expect(html).toContain("Drafts: 3");
+  });
+
+  it("GET / should handle empty or missing index data without crashing", async () => {
+    const app = setupApp();
+    const res = await app.request(
+      "http://localhost/admin",
+      { method: "GET" },
+      mockEnv({
+        get: async (key: string) => {
+          if (key === "list:pages:live") return { schemaVersion: 2 };
+          if (key === "list:pages:draft") return null;
+          return null;
+        },
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain("DASHBOARD");
+    expect(html).toContain("Live Pages: 0");
+    expect(html).toContain("Drafts: 0");
   });
 
   it("POST /clear-cache should purge isolate-level cache and return success", async () => {
