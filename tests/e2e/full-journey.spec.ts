@@ -23,6 +23,13 @@ test.describe("The Zero-to-Hero Journey", () => {
   }) => {
     test.setTimeout(120000);
 
+    page.on("console", (msg) => {
+      console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`);
+    });
+    page.on("pageerror", (err) => {
+      console.error(`[BROWSER ERROR] ${err.message}`);
+    });
+
     // ==========================================
     // PHASE 1: INITIAL SETUP (FIRST RUN)
     // ==========================================
@@ -89,6 +96,28 @@ test.describe("The Zero-to-Hero Journey", () => {
         page.getByRole("button", { name: "CREATE PAGE" }).click(),
       ]);
 
+      // Interact with PortableText Editor
+      await test.step("Add PortableText Content", async () => {
+        const editorContent = page.locator(
+          'ez-portable-text [contenteditable="true"]',
+        );
+        await expect(editorContent).toBeVisible();
+        await editorContent.click();
+
+        // Change style to Heading 1
+        await page.locator("ez-portable-text .pe-dropdown-btn").first().click();
+        await page
+          .locator('ez-portable-text .pe-dropdown-item:has-text("Heading 1")')
+          .click();
+
+        await page.keyboard.type("E2E Dynamic Page");
+        await page.keyboard.press("Enter");
+
+        // Wait a tick and type paragraph
+        await page.waitForTimeout(100);
+        await page.keyboard.type("This is E2E PortableText Content");
+      });
+
       // Verified button text from src/routes/admin/pages/views.tsx: PUBLISH LIVE
       await page.getByRole("button", { name: "PUBLISH LIVE" }).click();
       await expect(page.locator(".toast-notification")).toContainText(
@@ -100,6 +129,9 @@ test.describe("The Zero-to-Hero Journey", () => {
       // Verify on Public Site
       await page.goto(`/${decodeURIComponent(slug)}`);
       await expect(page.locator("h1")).toContainText("E2E Dynamic Page");
+      await expect(page.locator("body")).toContainText(
+        "This is E2E PortableText Content",
+      );
     });
 
     // ==========================================
@@ -273,9 +305,28 @@ test.describe("The Zero-to-Hero Journey", () => {
         .getByLabel("Description (SEO)")
         .fill("This is a custom SEO description for E2E testing.");
 
+      // Select Page Type "Article" (Schema.org)
+      await page
+        .locator(".custom-select-container", {
+          has: page.locator("#seo-page-type"),
+        })
+        .locator(".custom-select-toggle")
+        .click();
+      await page
+        .locator(".custom-select-container", {
+          has: page.locator("#seo-page-type"),
+        })
+        .locator('.custom-select-option[data-value="Article"]')
+        .click();
+
       // Verified from src/routes/admin/pages/views.tsx: SAVE DRAFT
       await page.getByRole("button", { name: "SAVE DRAFT" }).click();
+      await expect(page.locator(".toast-notification")).toContainText("SAVED");
+
       await page.getByRole("button", { name: "PUBLISH LIVE" }).click();
+      await expect(page.locator(".toast-notification")).toContainText(
+        "PUBLISHED",
+      );
 
       // Check the public head
       await page.goto("/test-sector/e2e-dynamic-page-renamed");
@@ -291,6 +342,22 @@ test.describe("The Zero-to-Hero Journey", () => {
         .locator('meta[property="og:title"]')
         .getAttribute("content");
       expect(ogTitle).toContain("E2E Dynamic Page");
+
+      const ogType = await page
+        .locator('meta[property="og:type"]')
+        .getAttribute("content");
+      expect(ogType).toBe("article");
+
+      // Verify JSON-LD Metadata Article schema exists and is populated
+      const jsonLdScript = page.locator('script[type="application/ld+json"]');
+      const jsonLdContent = await jsonLdScript.textContent();
+      const data = JSON.parse(jsonLdContent || "{}");
+
+      const article = data["@graph"].find(
+        (item: any) => item["@type"] === "Article",
+      );
+      expect(article).toBeDefined();
+      expect(article.headline).toBe("E2E Dynamic Page");
     });
 
     // ==========================================

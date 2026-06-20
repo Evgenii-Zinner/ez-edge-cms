@@ -17,6 +17,7 @@ import {
   ensureSystemDefaults,
 } from "@core/kv";
 import { renderEditorJs } from "@utils/editorjs-parser";
+import { renderPortableText } from "@utils/portabletext-parser";
 import admin from "@routes/admin/index";
 import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { injectUnoCSS } from "@core/unocss-middleware";
@@ -187,7 +188,10 @@ app.get("/*", async (c) => {
 
   const page = await getPage(c.env, slug, "live");
   if (page) {
-    const contentHtml = renderEditorJs(page.content);
+    const contentHtml =
+      page.content && !Array.isArray(page.content) && "blocks" in page.content
+        ? renderEditorJs(page.content)
+        : renderPortableText(Array.isArray(page.content) ? page.content : []);
     return c.html(
       <BaseLayout
         title={page.title}

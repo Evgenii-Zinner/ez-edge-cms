@@ -103,6 +103,25 @@ export const EditorJsDataSchema = z.object({
 });
 
 /**
+ * Zod schema for an individual PortableText block.
+ * Uses .passthrough() because PortableText blocks can have varying structures (like images, heroes, etc.)
+ */
+export const PortableTextBlockSchema = z
+  .object({
+    _key: z.string().optional(),
+    _type: z.string(),
+    children: z.array(z.any()).optional(),
+    markDefs: z.array(z.any()).optional(),
+    style: z.string().optional(),
+  })
+  .passthrough();
+
+/**
+ * Zod schema for the full PortableText output data structure.
+ */
+export const PortableTextDataSchema = z.array(PortableTextBlockSchema);
+
+/**
  * Zod schema for page-level content, metadata, SEO overrides, and layout settings.
  */
 export const PageSchema = z.object({
@@ -116,8 +135,8 @@ export const PageSchema = z.object({
   title: z.string().min(1),
   /** Brief description for previews and lists. */
   description: z.string().optional(),
-  /** Structured content in Editor.js format. */
-  content: EditorJsDataSchema.default({ blocks: [] }),
+  /** Structured content in either Editor.js format (legacy) or PortableText format. */
+  content: z.union([PortableTextDataSchema, EditorJsDataSchema]).default([]),
   /** Primary hero image URL for the page. */
   featuredImage: z.string().url().or(z.literal("")).optional(),
   /** Primary content category for listing logic. */

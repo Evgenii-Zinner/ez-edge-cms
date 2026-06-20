@@ -13,11 +13,29 @@ else newVersion = `${major}.${minor}.${patch + 1}`;
 console.log(`🚀 Bumping version: ${pkg.version} -> ${newVersion}`);
 console.log(`📝 Message: ${customMessage}`);
 
-// 1. Update package.json
+/**
+ * Run verification checks. The script will throw and abort if any check fails.
+ */
+console.log("🔍 Verifying TypeScript compilation...");
+await $`bunx tsc --noEmit`;
+
+console.log("🧪 Running unit tests...");
+await $`bun test`;
+
+console.log("🎭 Running E2E tests...");
+await $`bun run test:e2e`;
+
+console.log("✨ All checks passed! Proceeding with release.");
+
+/**
+ * 1. Update package.json
+ */
 const newPkg = { ...pkg, version: newVersion };
 await Bun.write("package.json", JSON.stringify(newPkg, null, 2) + "\n");
 
-// 2. Append to CHANGELOG.md
+/**
+ * 2. Append to CHANGELOG.md
+ */
 const date = new Date().toISOString().split("T")[0];
 const entry = `\n## [${newVersion}] - ${date}\n- ${customMessage}\n`;
 const changelogFile = Bun.file("CHANGELOG.md");
@@ -26,11 +44,15 @@ const existing = (await changelogFile.exists())
   : "# Changelog\n";
 await Bun.write("CHANGELOG.md", existing + entry);
 
-// 3. Prettify
+/**
+ * 3. Prettify all files.
+ */
 console.log("🧹 Running Prettier...");
 await $`bunx prettier --write .`;
 
-// 4. Git operations
+/**
+ * 4. Git operations: stage, commit, and create release tag.
+ */
 console.log("📦 Committing and tagging...");
 const commitMsg = `chore(release): ${newVersion} - ${customMessage}`;
 await $`git add .`;

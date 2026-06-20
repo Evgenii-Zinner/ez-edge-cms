@@ -19,6 +19,10 @@ import files from "@routes/admin/files/index";
 import navigation from "@routes/admin/navigation";
 import auth from "@routes/admin/auth";
 import onboarding from "@routes/admin/onboarding";
+import {
+  EZ_PORTABLE_TEXT_JS,
+  EZ_PORTABLE_TEXT_CSS,
+} from "@/assets/ez-portable-text-bundle";
 
 /**
  * @description The primary Administrative HUD router.
@@ -74,6 +78,19 @@ admin.use("*", async (c, next) => {
 
 // Mount the authentication sub-app (handles /admin/login, /admin/setup, etc.)
 admin.route("/", auth);
+
+// Serve ez-portable-text compiled assets
+admin.get("/assets/ez-portable-text.js", (c) => {
+  return c.body(EZ_PORTABLE_TEXT_JS, 200, {
+    "Content-Type": "application/javascript; charset=utf-8",
+  });
+});
+
+admin.get("/assets/ez-portable-text.css", (c) => {
+  return c.body(EZ_PORTABLE_TEXT_CSS, 200, {
+    "Content-Type": "text/css; charset=utf-8",
+  });
+});
 
 /**
  * Middleware: Admin Security & Lifecycle

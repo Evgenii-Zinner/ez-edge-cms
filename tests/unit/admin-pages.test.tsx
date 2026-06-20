@@ -56,7 +56,10 @@ describe("Admin Pages Routes", () => {
           if (overrides.delete) await overrides.delete(key);
           store.delete(key);
         },
-        list: async () => ({ keys: [], list_complete: true }),
+        list: async (options?: any) => {
+          if (overrides.list) return overrides.list(options);
+          return { keys: [], list_complete: true };
+        },
       },
     } as any;
   };
@@ -70,7 +73,7 @@ describe("Admin Pages Routes", () => {
         mockEnv({
           initialData: {
             "list:pages:live": ["index", "nested/slug"],
-            "list:pages:draft": ["draft-page"],
+            "list:pages:draft": ["index", "draft-page"],
           },
         }),
       );
@@ -101,7 +104,7 @@ describe("Admin Pages Routes", () => {
       expect(res.status).toBe(200);
       const html = await res.text();
       expect(html).toContain("Edit Page: Test Page");
-      expect(html).toContain("editorjs-container");
+      expect(html).toContain("portabletext-editor-wrapper");
     });
 
     it("should return 404 for non-existent page", async () => {
@@ -132,7 +135,9 @@ describe("Admin Pages Routes", () => {
       const app = setupApp();
       const page = createDefaultPage("Test Page", "test");
       const updatedAt = "2024-04-20T10:00:00.000Z";
+      const publishedAt = "2024-04-20T11:00:00.000Z";
       page.metadata.updatedAt = updatedAt;
+      page.metadata.publishedAt = publishedAt;
 
       const res = await app.request(
         "http://localhost/admin/pages/edit/test",
@@ -145,6 +150,7 @@ describe("Admin Pages Routes", () => {
       expect(res.status).toBe(200);
       const html = await res.text();
       expect(html).toContain("SAVED:");
+      expect(html).toContain("PUBLISHED:");
       // Simple verify: date constructor turns 2024-04-20 into localized string containing year
       expect(html).toContain("2024");
     });
@@ -296,7 +302,7 @@ describe("Admin Pages Routes", () => {
         "content",
         JSON.stringify({
           time: 123,
-          blocks: [],
+          blocks: [{ type: "paragraph", data: { text: "Hello" } }],
           version: "2.31.3",
         }),
       );
@@ -461,6 +467,262 @@ describe("Admin Pages Routes", () => {
 
       expect(res.status).toBe(200);
       expect(deleted).toBe(true);
+    });
+  });
+
+  describe("Save Rename, Publish Rename, PageRow & Migrations", () => {
+    it("POST /save/:slug - should successfully rename page if slug changes", async () => {
+      const app = setupApp();
+      const page = createDefaultPage("Test Page", "old-slug");
+      const formData = new FormData();
+      formData.append("slug", "new-slug");
+      formData.append("title", "Test Page Renamed");
+
+      let renamed = false;
+      const res = await app.request(
+        "http://localhost/admin/pages/save/old-slug",
+        {
+          method: "POST",
+          body: formData,
+        },
+        mockEnv({
+          initialData: {
+            "page:draft:old-slug": page,
+          },
+          put: async (key: string) => {
+            if (key === "page:draft:new-slug") renamed = true;
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("HX-Redirect")).toBe("/admin/pages/edit/new-slug");
+      expect(await res.text()).toContain("PAGE RENAMED");
+      expect(renamed).toBe(true);
+    });
+
+    it("POST /save/:slug - should fail to rename if target slug already exists", async () => {
+      const app = setupApp();
+      const page = createDefaultPage("Test Page", "old-slug");
+      const formData = new FormData();
+      formData.append("slug", "existing-slug");
+
+      const res = await app.request(
+        "http://localhost/admin/pages/save/old-slug",
+        {
+          method: "POST",
+          body: formData,
+        },
+        mockEnv({
+          initialData: {
+            "page:draft:old-slug": page,
+            "page:draft:existing-slug": createDefaultPage(
+              "Existing",
+              "existing-slug",
+            ),
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain(
+        'SAVE FAILED: Page path "/existing-slug" already exists.',
+      );
+    });
+
+    it("POST /publish/:slug - should successfully rename page on publish", async () => {
+      const app = setupApp();
+      const page = createDefaultPage("Test Page", "old-slug");
+      const formData = new FormData();
+      formData.append("slug", "new-slug");
+      formData.append("title", "Test Page Renamed");
+
+      const res = await app.request(
+        "http://localhost/admin/pages/publish/old-slug",
+        {
+          method: "POST",
+          body: formData,
+        },
+        mockEnv({
+          initialData: {
+            "page:draft:old-slug": page,
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("HX-Redirect")).toBe("/admin/pages/edit/new-slug");
+    });
+
+    it("POST /publish/:slug - should fail to rename on publish if target slug already exists", async () => {
+      const app = setupApp();
+      const page = createDefaultPage("Test Page", "old-slug");
+      const formData = new FormData();
+      formData.append("slug", "existing-slug");
+      formData.append("title", "Test Page Renamed");
+
+      const res = await app.request(
+        "http://localhost/admin/pages/publish/old-slug",
+        {
+          method: "POST",
+          body: formData,
+        },
+        mockEnv({
+          initialData: {
+            "page:draft:old-slug": page,
+            "page:draft:existing-slug": createDefaultPage(
+              "Existing",
+              "existing-slug",
+            ),
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain(
+        'PUBLISH FAILED: Page path "/existing-slug" already exists.',
+      );
+    });
+
+    it("POST /publish/:slug - should return PageRow HTML if target is row-*", async () => {
+      const app = setupApp();
+      const page = createDefaultPage("Publish Me", "test");
+
+      const res = await app.request(
+        "http://localhost/admin/pages/publish/test",
+        {
+          method: "POST",
+          headers: {
+            "HX-Target": "row-test",
+          },
+        },
+        mockEnv({
+          initialData: {
+            "page:draft:test": page,
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      const html = await res.text();
+      expect(html).toContain('id="row-test"');
+      expect(html).toContain("Publish Me");
+    });
+
+    it("ALL /migrate-v2 - should re-save all pages and return success message", async () => {
+      const app = setupApp();
+      const page = createDefaultPage("Page Title", "test-slug");
+
+      const res = await app.request(
+        "http://localhost/admin/pages/migrate-v2",
+        {
+          method: "POST",
+        },
+        mockEnv({
+          initialData: {
+            "page:draft:test-slug": page,
+          },
+          list: async () => {
+            return {
+              keys: [{ name: "page:draft:test-slug" }],
+              list_complete: true,
+            };
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain(
+        "Migration complete! Re-saved 1 pages.",
+      );
+    });
+
+    it("ALL /migrate-to-portabletext - should convert Editor.js pages and return success", async () => {
+      const app = setupApp();
+      const legacyPage = createDefaultPage(
+        "Legacy Editor.js Page",
+        "legacy-slug",
+      );
+      legacyPage.content = {
+        time: 12345,
+        blocks: [
+          {
+            type: "paragraph",
+            data: {
+              text: "Hello Editor.js",
+            },
+          },
+        ],
+      } as any;
+
+      let savedPage: any = null;
+      const res = await app.request(
+        "http://localhost/admin/pages/migrate-to-portabletext",
+        {
+          method: "POST",
+        },
+        mockEnv({
+          initialData: {
+            "page:draft:legacy-slug": legacyPage,
+          },
+          list: async () => {
+            return {
+              keys: [{ name: "page:draft:legacy-slug" }],
+              list_complete: true,
+            };
+          },
+          put: async (key: string, val: any) => {
+            if (key === "page:draft:legacy-slug") {
+              savedPage = typeof val === "string" ? JSON.parse(val) : val;
+            }
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain(
+        "Successfully converted 1 pages from Editor.js to PortableText.",
+      );
+      expect(savedPage).toBeDefined();
+      expect(Array.isArray(savedPage.content)).toBe(true);
+      expect(savedPage.content[0]._type).toBe("block");
+      expect(savedPage.content[0].children[0].text).toBe("Hello Editor.js");
+    });
+
+    it("ALL /migrate-v2 - should handle errors gracefully and return 500", async () => {
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/pages/migrate-v2",
+        {
+          method: "POST",
+        },
+        mockEnv({
+          list: async () => {
+            throw new Error("KV Failure");
+          },
+        }),
+      );
+
+      expect(res.status).toBe(500);
+      expect(await res.text()).toContain("Migration failed: KV Failure");
+    });
+
+    it("ALL /migrate-to-portabletext - should handle errors gracefully and return 500", async () => {
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/pages/migrate-to-portabletext",
+        {
+          method: "POST",
+        },
+        mockEnv({
+          list: async () => {
+            throw new Error("KV Failure");
+          },
+        }),
+      );
+
+      expect(res.status).toBe(500);
+      expect(await res.text()).toContain("Migration failed: KV Failure");
     });
   });
 });

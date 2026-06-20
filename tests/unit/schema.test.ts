@@ -108,7 +108,7 @@ describe("Core Zod Schemas", () => {
       if (result.success) {
         expect(result.data.status).toBe("draft");
         expect(result.data.category).toBe("General");
-        expect(result.data.content.blocks).toEqual([]);
+        expect(result.data.content).toEqual([]);
       }
     });
 

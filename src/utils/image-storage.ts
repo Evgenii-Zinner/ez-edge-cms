@@ -49,7 +49,7 @@ export async function extractAndSaveImages(
   slug: string,
   content: any,
 ): Promise<any> {
-  if (!content || !content.blocks) return content;
+  if (!content) return content;
 
   const currentImageKeys: string[] = [];
 
@@ -93,22 +93,41 @@ export async function extractAndSaveImages(
     return url;
   };
 
-  for (const block of content.blocks) {
-    const blockId = block.id || Math.random().toString(36).substring(2, 12);
+  // 1. Handle PortableText (Array of blocks)
+  if (Array.isArray(content)) {
+    for (const block of content) {
+      const blockId = block._key || Math.random().toString(36).substring(2, 12);
 
-    // 1. Standard Image Blocks
-    if (block.type === "image" && block.data?.file) {
-      block.data.file.url = await processUrl(block.data.file.url, blockId);
+      // Standard Image Blocks
+      if (block._type === "image" && block.url) {
+        block.url = await processUrl(block.url, blockId);
+      }
 
-      // Cleanup: Remove any legacy urlMobile from the data
-      if (block.data.file.urlMobile) {
-        delete block.data.file.urlMobile;
+      // Custom Hero Blocks
+      if (block._type === "hero" && block.imageUrl) {
+        block.imageUrl = await processUrl(block.imageUrl, blockId, "hero");
       }
     }
+  }
+  // 2. Handle Editor.js (Object with blocks array)
+  else if (content && content.blocks && Array.isArray(content.blocks)) {
+    for (const block of content.blocks) {
+      const blockId = block.id || Math.random().toString(36).substring(2, 12);
 
-    // 2. Custom Hero Blocks
-    if (block.type === "hero" && block.data?.url) {
-      block.data.url = await processUrl(block.data.url, blockId, "hero");
+      // Standard Image Blocks
+      if (block.type === "image" && block.data?.file) {
+        block.data.file.url = await processUrl(block.data.file.url, blockId);
+
+        // Cleanup: Remove any legacy urlMobile from the data
+        if (block.data.file.urlMobile) {
+          delete block.data.file.urlMobile;
+        }
+      }
+
+      // Custom Hero Blocks
+      if (block.type === "hero" && block.data?.url) {
+        block.data.url = await processUrl(block.data.url, blockId, "hero");
+      }
     }
   }
 

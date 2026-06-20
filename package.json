@@ -1,6 +1,6 @@
 {
   "name": "ez-edge-cms",
-  "version": "0.1.36",
+  "version": "0.2.0",
   "description": "A KV-backed, no-code CMS for Cloudflare Workers.",
   "author": "Evgenii Zinner",
   "type": "module",
@@ -12,12 +12,15 @@
     "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types",
     "docs": "typedoc",
+    "verify": "bunx tsc --noEmit && bun test && bun run test:e2e",
     "release": "bun run scripts/release.ts",
     "release:minor": "bun run scripts/release.ts minor",
     "release:patch": "bun run scripts/release.ts patch",
     "release:major": "bun run scripts/release.ts major"
   },
   "dependencies": {
+    "@portabletext/to-html": "^5.0.2",
+    "ez-portable-text": "github:Evgenii-Zinner/ez-portable-text",
     "hono": "^4.0.0",
     "zod": "^3.22.4"
   },

@@ -10,6 +10,7 @@ build/
 .wrangler/
 .tmp/
 .gemini/
+.antigravitycli/
 .agents/
 test-results/
 playwright-report/

@@ -39,7 +39,14 @@ export const listAllProjectKeys = async (env: Env): Promise<string[]> => {
  * @returns The resulting Base64 string.
  */
 export const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const len = bytes.byteLength;
+  const chunkSize = 8192;
+  for (let i = 0; i < len; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 };
 
 /**

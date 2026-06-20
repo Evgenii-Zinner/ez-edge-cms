@@ -53,6 +53,37 @@ describe("ImageStorage Utilities", () => {
       expect(result).toEqual(content);
     });
 
+    it("should process images and hero blocks in PortableText content array", async () => {
+      const base64Image =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+      const content = [
+        {
+          _key: "block1",
+          _type: "image",
+          url: base64Image,
+        },
+        {
+          _key: "block2",
+          _type: "hero",
+          imageUrl: base64Image,
+        },
+        {
+          _type: "image",
+          url: base64Image,
+        },
+      ];
+
+      const result = await extractAndSaveImages(env, "pt-page", content);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].url).toBe("/images/pt-page/block1.png");
+      expect(result[1].imageUrl).toBe("/images/pt-page/hero-block2.png");
+      expect(result[2].url).toMatch(/\/images\/pt-page\/[a-z0-9]+\.png/);
+
+      const list = await env.EZ_CONTENT.list({ prefix: "img:pt-page:" });
+      expect(list.keys).toHaveLength(3);
+    });
+
     it("should handle null or undefined content gracefully", async () => {
       expect(await extractAndSaveImages(env, "test", null)).toBeNull();
       expect(

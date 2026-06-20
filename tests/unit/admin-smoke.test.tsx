@@ -379,4 +379,85 @@ describe("Admin Router Smoke Tests", () => {
     expect(res.status).toBe(200);
     expect(await res.text()).toContain("CACHE PURGED");
   });
+
+  describe("PortableText Static Assets & Auth Bypass", () => {
+    it("GET /admin/assets/ez-portable-text.js should return JavaScript bundle", async () => {
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/assets/ez-portable-text.js",
+      );
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe(
+        "application/javascript; charset=utf-8",
+      );
+      expect(await res.text()).toBeDefined();
+    });
+
+    it("GET /admin/assets/ez-portable-text.css should return CSS stylesheet", async () => {
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/assets/ez-portable-text.css",
+      );
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("text/css; charset=utf-8");
+      expect(await res.text()).toBeDefined();
+    });
+
+    it("GET /admin/login should bypass session token check and go next", async () => {
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/login",
+        { method: "GET" },
+        {
+          EZ_CONTENT: {
+            get: async (key: string) => {
+              if (key === "system:admin_user") return { username: "admin" };
+              return null;
+            },
+          },
+        } as any,
+      );
+      // It should load the login page (200), not redirect to setup or login itself
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain("ADMIN LOGIN");
+    });
+
+    it("GET /admin/logout should bypass session token check and go next", async () => {
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/logout",
+        { method: "GET" },
+        {
+          EZ_CONTENT: {
+            get: async (key: string) => {
+              if (key === "system:admin_user") return { username: "admin" };
+              return null;
+            },
+          },
+        } as any,
+      );
+      expect(res.status).toBe(302);
+      expect(res.headers.get("Location")).toBe("/admin/login");
+    });
+
+    it("PUT /admin/login should fall through auth router and hit the middleware bypass", async () => {
+      const app = setupApp();
+      const res = await app.request(
+        "http://localhost/admin/login",
+        {
+          method: "PUT",
+          headers: {
+            Origin: "http://localhost",
+          },
+        },
+        {
+          EZ_CONTENT: {
+            get: async () => null,
+          },
+        } as any,
+      );
+      // It should bypass auth checks and return 404 since PUT is not handled, instead of a 302 session redirect
+      expect(res.status).toBe(404);
+    });
+  });
 });
