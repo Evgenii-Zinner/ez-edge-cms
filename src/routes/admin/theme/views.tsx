@@ -22,6 +22,7 @@ import {
   ThemeFontPreloader,
 } from "@routes/admin/theme/components";
 import { AdminRange, AdminHeader } from "@components/AdminUI";
+import { themeRegistry } from "@core/theme";
 
 /**
  * Hono sub-app for theme views.
@@ -102,6 +103,17 @@ views.get("/", async (c): Promise<Response> => {
                     unit="%"
                     value={parseInt(theme.values.primary_light)}
                   />
+                  <div class="mt-4">
+                    <label class="admin-label">Styling System Engine</label>
+                    <CustomSelect
+                      name="styling_system"
+                      selectedValue={theme.values.styling_system || "ruri"}
+                      options={themeRegistry.list().map((c) => ({
+                        value: c.id,
+                        label: c.name,
+                      }))}
+                    />
+                  </div>
                 </div>
               </details>
 

@@ -6,6 +6,7 @@
 
 import type { FC } from "hono/jsx";
 import { html } from "hono/html";
+import { Panel, Button } from "ruri-ui";
 
 /**
  * Component: ThemePreview
@@ -59,39 +60,31 @@ export const ThemePreview: FC = () => {
             </p>
 
             <div class="my-8 flex gap-4">
-              <button class="btn-primary">PRIMARY ACTION</button>
-              <button class="btn-primary bg-transparent text-[var(--theme-text-dim)] border-[var(--theme-text-dim)]">
-                SECONDARY
-              </button>
+              <Button shape="cyber" variant="default">PRIMARY ACTION</Button>
+              <Button shape="notch" variant="neutral">SECONDARY</Button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-              <a href="#" class="bento-item animate-hologram min-h-250px">
-                <div>
-                  <div class="flex items-center flex-wrap gap-3 mb-4">
-                    <div class="i-carbon-development text-1.8rem color-[var(--theme-accent)] flex-shrink-0"></div>
-                    <h3 class="text-1.2rem m-0">Visual Feedback</h3>
-                  </div>
-                  <p class="text-0.85rem m-0 leading-relaxed color-[var(--theme-text-dim)]">
-                    Notice the hover state and hologram animation driven by boot
-                    speed. The design system dynamically adjusts these effects
-                    based on your chosen accent color and transparency levels.
-                  </p>
+              <Panel shape="sci-fi" glow={true} title="Visual Feedback" status="ACTIVE">
+                <div class="flex items-center flex-wrap gap-3 mb-4">
+                  <div class="i-carbon-development text-1.8rem color-[var(--ruri-primary)] flex-shrink-0"></div>
                 </div>
-              </a>
-              <a href="#" class="bento-item min-h-250px">
-                <div>
-                  <div class="flex items-center flex-wrap gap-3 mb-4">
-                    <div class="i-carbon-color-palette text-1.8rem color-[var(--theme-accent)] flex-shrink-0"></div>
-                    <h3 class="text-1.2rem m-0">Surface Testing</h3>
-                  </div>
-                  <p class="text-0.85rem m-0 leading-relaxed color-[var(--theme-text-dim)]">
-                    Evaluate surface opacity against the deep background color.
-                    This card tests how your choices for surface color and
-                    primary text contrast interact in a real-world layout.
-                  </p>
+                <p class="text-0.85rem m-0 leading-relaxed opacity-80">
+                  Notice the hover state and hologram animation driven by boot
+                  speed. The design system dynamically adjusts these effects
+                  based on your chosen accent color and transparency levels.
+                </p>
+              </Panel>
+              <Panel shape="rectangle" title="Surface Testing" status="ONLINE">
+                <div class="flex items-center flex-wrap gap-3 mb-4">
+                  <div class="i-carbon-color-palette text-1.8rem color-[var(--ruri-primary)] flex-shrink-0"></div>
                 </div>
-              </a>
+                <p class="text-0.85rem m-0 leading-relaxed opacity-80">
+                  Evaluate surface opacity against the deep background color.
+                  This card tests how your choices for surface color and
+                  primary text contrast interact in a real-world layout.
+                </p>
+              </Panel>
             </div>
           </div>
         </main>

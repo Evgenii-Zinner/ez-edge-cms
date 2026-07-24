@@ -11,6 +11,7 @@ import { raw } from "hono/html";
 import { ThemeConfig, SiteConfig, PageConfig } from "@core/schema";
 import { generateCssVariables, generateAdminCssVariables } from "@utils/styles";
 import { generateMetaTags, generateJsonLd } from "@utils/seo";
+import { ADMIN_CSS } from "../styles/admin";
 
 /**
  * Props for the Head component.
@@ -193,6 +194,9 @@ export const Head: FC<HeadProps> = (props) => {
 
       {/* Dynamic CSS Theme Variables Injection */}
       <style id="dynamic-theme">{raw(cssVariables)}</style>
+
+      {/* Standalone Admin HUD Styles Injection */}
+      {isAdmin && <style id="admin-styles">{raw(ADMIN_CSS)}</style>}
 
       {/* UnoCSS Insertion Point */}
       {raw("<!-- CSS_INJECTION_POINT -->")}
