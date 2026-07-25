@@ -109,27 +109,6 @@ export async function extractAndSaveImages(
       }
     }
   }
-  // 2. Handle Editor.js (Object with blocks array)
-  else if (content && content.blocks && Array.isArray(content.blocks)) {
-    for (const block of content.blocks) {
-      const blockId = block.id || Math.random().toString(36).substring(2, 12);
-
-      // Standard Image Blocks
-      if (block.type === "image" && block.data?.file) {
-        block.data.file.url = await processUrl(block.data.file.url, blockId);
-
-        // Cleanup: Remove any legacy urlMobile from the data
-        if (block.data.file.urlMobile) {
-          delete block.data.file.urlMobile;
-        }
-      }
-
-      // Custom Hero Blocks
-      if (block.type === "hero" && block.data?.url) {
-        block.data.url = await processUrl(block.data.url, blockId, "hero");
-      }
-    }
-  }
 
   // Garbage Collection: Delete images in KV that are no longer in the content
   try {
@@ -165,7 +144,7 @@ export async function saveSiteImage(
     return base64Data;
   }
 
-  const filename = `${key}.webp`;
+  const filename = key.includes(".") ? key : `${key}.webp`;
   const imageKey = `img:site:${filename}`;
 
   // Garbage Collection: Delete any old versions of this specific site image (e.g. different extensions)

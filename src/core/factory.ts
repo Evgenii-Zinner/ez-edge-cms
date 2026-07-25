@@ -132,6 +132,7 @@ export const createDefaultTheme = (
       font_nav: "Chakra Petch",
       font_body: "Roboto",
       font_mono: "Fira Code",
+      styling_system: "ruri",
       ...overrides,
     },
   };

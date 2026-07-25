@@ -9,7 +9,6 @@ import { Hono } from "hono";
 import { AdminLayout } from "@layouts/AdminLayout";
 import { listPages, getPage } from "@core/kv";
 import { PROTECTED_SLUGS } from "@core/constants";
-import { BlockEditor } from "@components/BlockEditor";
 import { PortableTextEditor } from "@components/PortableTextEditor";
 import { GlobalConfigVariables } from "@core/middleware";
 import { CustomSelect } from "@components/CustomSelect";
@@ -319,15 +318,9 @@ views.get("/edit/:slug{.+}", async (c): Promise<Response> => {
           </div>
 
           <div class="mt-8">
-            {page.content &&
-            !Array.isArray(page.content) &&
-            "blocks" in page.content ? (
-              <BlockEditor content={page.content} />
-            ) : (
-              <PortableTextEditor
-                content={Array.isArray(page.content) ? page.content : []}
-              />
-            )}
+            <PortableTextEditor
+              content={Array.isArray(page.content) ? page.content : []}
+            />
           </div>
 
           <div class="admin-card mt-8">

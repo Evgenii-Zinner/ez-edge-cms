@@ -6,7 +6,7 @@
 
 import type { FC } from "hono/jsx";
 import { html } from "hono/html";
-import { Panel, Button } from "ruri-ui";
+import { themeRegistry } from "@core/theme";
 
 /**
  * Component: ThemePreview
@@ -15,6 +15,8 @@ import { Panel, Button } from "ruri-ui";
  * @returns A JSX element containing the site preview.
  */
 export const ThemePreview: FC = () => {
+  const RuriUI = themeRegistry.get("ruri").components;
+
   return (
     <div class="relative border border-solid border-[var(--theme-accent-glow)] rounded-lg overflow-hidden">
       <style id="preview-theme-styles"></style>
@@ -60,12 +62,12 @@ export const ThemePreview: FC = () => {
             </p>
 
             <div class="my-8 flex gap-4">
-              <Button shape="cyber" variant="default">PRIMARY ACTION</Button>
-              <Button shape="notch" variant="neutral">SECONDARY</Button>
+              <RuriUI.Button shape="cyber" variant="default">PRIMARY ACTION</RuriUI.Button>
+              <RuriUI.Button shape="notch" variant="neutral">SECONDARY</RuriUI.Button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-              <Panel shape="sci-fi" glow={true} title="Visual Feedback" status="ACTIVE">
+              <RuriUI.Card shape="sci-fi" glow={true} title="Visual Feedback" status="ACTIVE">
                 <div class="flex items-center flex-wrap gap-3 mb-4">
                   <div class="i-carbon-development text-1.8rem color-[var(--ruri-primary)] flex-shrink-0"></div>
                 </div>
@@ -74,8 +76,8 @@ export const ThemePreview: FC = () => {
                   speed. The design system dynamically adjusts these effects
                   based on your chosen accent color and transparency levels.
                 </p>
-              </Panel>
-              <Panel shape="rectangle" title="Surface Testing" status="ONLINE">
+              </RuriUI.Card>
+              <RuriUI.Card shape="rectangle" title="Surface Testing" status="ONLINE">
                 <div class="flex items-center flex-wrap gap-3 mb-4">
                   <div class="i-carbon-color-palette text-1.8rem color-[var(--ruri-primary)] flex-shrink-0"></div>
                 </div>
@@ -84,7 +86,7 @@ export const ThemePreview: FC = () => {
                   This card tests how your choices for surface color and
                   primary text contrast interact in a real-world layout.
                 </p>
-              </Panel>
+              </RuriUI.Card>
             </div>
           </div>
         </main>

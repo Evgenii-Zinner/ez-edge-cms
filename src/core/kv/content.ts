@@ -11,7 +11,6 @@ import {
 } from "@core/schema";
 import { parsePage } from "@core/parser";
 import { KEYS, updateQueue, setUpdateQueue, cache } from "@core/kv/base";
-import { getFirstImage } from "@utils/editorjs-parser";
 import { getFirstImageForPortableText } from "@utils/portabletext-parser";
 
 /**
@@ -86,9 +85,8 @@ const modifyPageList = async (
           featuredImage:
             pageOrSlug.featuredImage ||
             (Array.isArray(pageOrSlug.content)
-              ? getFirstImageForPortableText(pageOrSlug.content)
-              : getFirstImage(pageOrSlug.content as any)) ||
-            undefined,
+              ? getFirstImageForPortableText(pageOrSlug.content) || undefined
+              : undefined),
           createdAt: pageOrSlug.metadata.createdAt,
           publishedAt: pageOrSlug.metadata.publishedAt,
         };

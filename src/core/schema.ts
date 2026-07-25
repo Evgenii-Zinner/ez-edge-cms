@@ -75,31 +75,9 @@ export const ThemeSchema = z.object({
     font_body: z.string().default("Roboto"),
     /** Font family for monospaced elements. */
     font_mono: z.string().default("Fira Code"),
+    /** Pluggable styling system identifier (e.g., 'ruri', 'default'). */
+    styling_system: z.string().default("ruri"),
   }),
-});
-
-/**
- * Zod schema for an individual Editor.js block.
- */
-export const EditorJsBlockSchema = z.object({
-  /** Unique block identifier. */
-  id: z.string().optional(),
-  /** The type of block (e.g., 'header', 'paragraph', 'image'). */
-  type: z.string(),
-  /** The specific payload for the block type. */
-  data: z.any(),
-});
-
-/**
- * Zod schema for the full Editor.js output data structure.
- */
-export const EditorJsDataSchema = z.object({
-  /** Timestamp of the last editor save. */
-  time: z.number().optional(),
-  /** Array of content blocks. */
-  blocks: z.array(EditorJsBlockSchema).default([]),
-  /** Editor.js version. */
-  version: z.string().optional(),
 });
 
 /**
@@ -135,8 +113,8 @@ export const PageSchema = z.object({
   title: z.string().min(1),
   /** Brief description for previews and lists. */
   description: z.string().optional(),
-  /** Structured content in either Editor.js format (legacy) or PortableText format. */
-  content: z.union([PortableTextDataSchema, EditorJsDataSchema]).default([]),
+  /** Structured content in PortableText format. */
+  content: PortableTextDataSchema.default([]),
   /** Primary hero image URL for the page. */
   featuredImage: z.string().url().or(z.literal("")).optional(),
   /** Primary content category for listing logic. */

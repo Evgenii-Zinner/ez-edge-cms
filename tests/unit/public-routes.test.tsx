@@ -497,37 +497,6 @@ describe("Public Routes & Archive Explorer", () => {
   });
 
   describe("Universal Page Content Resolution", () => {
-    it("should render page using Editor.js renderer", async () => {
-      const page = {
-        ...createDefaultPage("EditorJS Page", "editorjs"),
-        content: {
-          time: 1234,
-          blocks: [
-            {
-              type: "paragraph",
-              data: { text: "EditorJS paragraph" },
-            },
-          ],
-        },
-      };
-
-      const res = await app.request(
-        "http://localhost/editorjs",
-        { method: "GET" },
-        mockEnv({
-          initialData: {
-            "system:admin_user": { username: "admin" },
-            "system:onboarding_complete": true,
-            "page:live:editorjs": page,
-          },
-        }),
-      );
-
-      expect(res.status).toBe(200);
-      const html = await res.text();
-      expect(html).toContain("EditorJS Page");
-      expect(html).toContain("EditorJS paragraph");
-    });
 
     it("should render page using PortableText renderer", async () => {
       const page = {

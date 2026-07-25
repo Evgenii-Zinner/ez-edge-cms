@@ -16,11 +16,11 @@ import {
   getAdminUser,
   ensureSystemDefaults,
 } from "@core/kv";
-import { renderEditorJs } from "@utils/editorjs-parser";
 import { renderPortableText } from "@utils/portabletext-parser";
 import admin from "@routes/admin/index";
 import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { injectUnoCSS } from "@core/unocss-middleware";
+import { themeRegistry } from "@core/theme";
 
 const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
 // Global Middleware: Inject site-wide configurations and the UnoCSS engine into the context.
@@ -187,11 +187,14 @@ app.get("/*", async (c) => {
   const detectedUrl = new URL(c.req.url).origin;
 
   const page = await getPage(c.env, slug, "live");
+  const stylingSystem = theme.values.styling_system || "ruri";
+  const ThemeUI = themeRegistry.get(stylingSystem).components;
+
   if (page) {
-    const contentHtml =
-      page.content && !Array.isArray(page.content) && "blocks" in page.content
-        ? renderEditorJs(page.content)
-        : renderPortableText(Array.isArray(page.content) ? page.content : []);
+    const contentHtml = renderPortableText(
+      Array.isArray(page.content) ? page.content : [],
+      stylingSystem,
+    );
     return c.html(
       <BaseLayout
         title={page.title}
@@ -261,32 +264,31 @@ app.get("/*", async (c) => {
                 return (
                   <a
                     href={`/${p.slug}`}
-                    class="bento-item group no-underline h-full overflow-hidden flex flex-col"
+                    class="no-underline h-full flex flex-col group"
                   >
-                    {thumbnail && (
-                      <div
-                        class="w-full h-180px mb-4 border border-solid border-[var(--theme-accent-glow)] overflow-hidden"
-                        style={{
-                          background: `url(${thumbnail}) center/cover no-repeat`,
-                        }}
-                      >
-                        <div class="w-full h-full bg-[rgba(0,0,0,0.3)] group-hover:bg-transparent transition-all duration-500"></div>
+                    <ThemeUI.Card title={p.title} glow={true} class="h-full">
+                      {thumbnail && (
+                        <div
+                          class="w-full h-180px mb-4 border border-solid border-[var(--ruri-border-outline)] overflow-hidden relative"
+                          style={{
+                            background: `url(${thumbnail}) center/cover no-repeat`,
+                          }}
+                        >
+                          <div class="w-full h-full bg-[rgba(0,0,0,0.3)] group-hover:bg-transparent transition-all duration-500"></div>
+                        </div>
+                      )}
+                      {p.description && (
+                        <p class="text-0.85rem line-clamp-3 m-0 flex-grow font-body leading-relaxed opacity-80">
+                          {p.description}
+                        </p>
+                      )}
+                      <div class="mt-6 flex items-center gap-2 text-0.75rem font-mono uppercase tracking-2px text-[var(--ruri-primary)] opacity-70 group-hover:opacity-100 transition-all">
+                        ACCESS DATA{" "}
+                        <span class="group-hover:translate-x-1 transition-transform">
+                          &rarr;
+                        </span>
                       </div>
-                    )}
-                    <h3 class="font-header text-[var(--theme-accent)] m-0 mb-3 text-1.2rem group-hover:drop-shadow-[0_0_8px_var(--theme-accent-glow)] transition-all">
-                      {p.title}
-                    </h3>
-                    {p.description && (
-                      <p class="text-0.85rem text-[var(--theme-text-dim)] line-clamp-3 m-0 flex-grow font-body leading-relaxed">
-                        {p.description}
-                      </p>
-                    )}
-                    <div class="mt-6 flex items-center gap-2 text-0.75rem font-nav uppercase tracking-2px text-[var(--theme-accent)] opacity-60 group-hover:opacity-100 transition-all">
-                      ACCESS DATA{" "}
-                      <span class="group-hover:translate-x-1 transition-transform">
-                        &rarr;
-                      </span>
-                    </div>
+                    </ThemeUI.Card>
                   </a>
                 );
               })}

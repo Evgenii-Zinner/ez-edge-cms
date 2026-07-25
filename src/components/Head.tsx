@@ -135,59 +135,13 @@ export const Head: FC<HeadProps> = (props) => {
         defer
       />
 
-      {/* Administrative Assets (Deferred) */}
-      {isAdmin &&
-        isEditor &&
-        (!page || Array.isArray(page.content) || !("blocks" in page.content) ? (
-          <>
-            <link rel="stylesheet" href="/admin/assets/ez-portable-text.css" />
-            <script src="/admin/assets/ez-portable-text.js" defer />
-          </>
-        ) : (
-          <>
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.9.3"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.2"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.6.0"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.4.3"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.6"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/code@2.9.3"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/editorjs-drag-drop@1.1.18"
-              defer
-            />
-            <script src="https://cdn.jsdelivr.net/npm/editorjs-undo" defer />
-          </>
-        ))}
+      {/* Administrative PortableText Assets (Deferred) */}
+      {isAdmin && isEditor && (
+        <>
+          <link rel="stylesheet" href="/admin/assets/ez-portable-text.css" />
+          <script src="/admin/assets/ez-portable-text.js" defer />
+        </>
+      )}
 
       {/* Global Custom Head Scripts (Permanent, for Analytics) */}
       {site.customHeadScripts && raw(site.customHeadScripts)}

@@ -2,8 +2,8 @@
 /**
  * @module BaseLayout
  * @description The primary layout wrapper for all public-facing pages.
- * Handles the site's main structure, including the futuristic header,
- * responsive navigation, dynamic content area, and SEO-optimized footer.
+ * Composes layout regions (Header, Nav, Main, Footer, Overlays) directly from
+ * the active ThemeConnector specified by the theme settings.
  */
 
 import type { FC } from "hono/jsx";
@@ -16,7 +16,7 @@ import {
   PageConfig,
 } from "@core/schema";
 import { Head } from "@components/Head";
-import { normalizePath } from "@utils/seo";
+import { themeRegistry } from "@core/theme";
 
 /**
  * Props for the BaseLayout component.
@@ -41,16 +41,17 @@ export interface BaseLayoutProps {
   /** The base URL detected from the request context. */
   detectedUrl?: string;
 }
+
 /**
  * Component: BaseLayout
- * Provides the foundational HTML structure for the public site.
- * Includes interactive UI overlays (scanlines, dots) and handles
- * responsive navigation logic via client-side scripts.
+ * Provides the foundational HTML structure for the public site by delegating layout
+ * composition to the active ThemeConnector (e.g. Default or Ruri UI).
  */
 export const BaseLayout: FC<BaseLayoutProps> = (props) => {
-  const { site, title, theme, page, detectedUrl, nav, children, footer } =
-    props;
-  const siteTitle = site.title;
+  const { site, title, theme, page, detectedUrl, nav, children, footer } = props;
+
+  const stylingSystem = theme?.values?.styling_system || "ruri";
+  const ThemeUI = themeRegistry.get(stylingSystem).components;
 
   return (
     <>
@@ -64,128 +65,29 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
           detectedUrl={detectedUrl}
         />
         <body hx-boost="true">
-          {/* Futuristic visual overlays */}
-          <div class="ui-overlay scanlines"></div>
-          <div class="ui-overlay dots"></div>
-          <div class="ui-overlay dots-interactive"></div>
+          {/* Theme-defined Visual Overlays */}
+          <ThemeUI.Overlays />
 
-          {/* Mobile Navigation Drawer (Moved outside header for reliable fixed positioning) */}
-          <nav class="main-nav lg:hidden" id="main-nav">
-            {nav.items.map((item) => (
-              <a href={normalizePath(item.path)} class="nav-link">
-                {item.label}
-              </a>
-            ))}
-          </nav>
+          {/* Mobile Navigation Drawer */}
+          <ThemeUI.Nav nav={nav} />
 
           {/* Site Header */}
-          <header class="main-header">
-            <div class="header-content">
-              <a href="/" class="logo flex items-center gap-2">
-                {site.logoSvg && (
-                  <img
-                    src={`data:image/svg+xml,${encodeURIComponent(site.logoSvg)}`}
-                    alt="Logo"
-                    style={{
-                      width: "32px",
-                      height: "32px",
-                      objectFit: "contain",
-                      filter: "drop-shadow(0 0 5px var(--theme-accent))",
-                    }}
-                  />
-                )}
-                <div>{siteTitle}</div>
-              </a>
+          <ThemeUI.Header site={site} nav={nav} title={title} />
 
-              <button class="menu-toggle" id="mobile-menu-toggle">
-                MENU
-              </button>
-
-              {/* Desktop Navigation (Hidden on mobile) */}
-              <div class="max-lg:hidden flex gap-6 items-center">
-                {nav.items.map((item) => (
-                  <a href={normalizePath(item.path)} class="nav-link">
-                    {item.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </header>
-
-          {/* Main Content Area */}
-          <main id="main-content">{children}</main>
+          {ThemeUI.Main ? (
+            <ThemeUI.Main>{children}</ThemeUI.Main>
+          ) : (
+            <main id="main-content">{children}</main>
+          )}
 
           {/* Site Footer */}
-          <footer class="main-footer">
-            <div class="footer-content px-8 flex flex-col gap-8">
-              {/* Row 1: Logo & Links */}
-              <div class="flex flex-wrap items-center justify-between gap-8">
-                <a href="/" class="logo flex items-center gap-2 text-1.2rem">
-                  {site.logoSvg && (
-                    <img
-                      src={`data:image/svg+xml,${encodeURIComponent(site.logoSvg)}`}
-                      alt="Logo"
-                      style={{
-                        width: "24px",
-                        height: "24px",
-                        objectFit: "contain",
-                        filter: "drop-shadow(0 0 3px var(--theme-accent))",
-                      }}
-                    />
-                  )}
-                  <div>{siteTitle}</div>
-                </a>
-
-                <div class="footer-links flex gap-6">
-                  {footer.links.map((link) => (
-                    <a href={normalizePath(link.path)} class="footer-link">
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              {/* Row 2: Copyright & Status */}
-              <div class="footer-bottom">
-                <div
-                  class="footer-copyright"
-                  dangerouslySetInnerHTML={{
-                    __html: site.copyright
-                      ? site.copyright
-                          .replace(
-                            /\{year\}/g,
-                            new Date().getFullYear().toString(),
-                          )
-                          .replace(/\{author\}/g, site.author || "")
-                      : "",
-                  }}
-                ></div>
-
-                {site.showStatus && (
-                  <div class="branding-wrapper">
-                    <a
-                      href="https://ez-edge-cms.ezinner.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="branding-link group"
-                      style={{ border: "none", background: "none", padding: 0 }}
-                    >
-                      <span class="font-nav text-0.75rem tracking-2px text-[var(--theme-text-dim)] group-hover:text-[var(--theme-accent)] transition-colors uppercase">
-                        POWERED BY EZ EDGE CMS
-                      </span>
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          </footer>
+          <ThemeUI.Footer site={site} footer={footer} />
 
           {/* Client-side Navigation Logic */}
           <script
             dangerouslySetInnerHTML={{
               __html: `
           (function() {
-            // Global click listener added only once
             if (!window.navListenerAdded) {
               document.addEventListener('click', (e) => {
                 const nav = document.getElementById('main-nav');
@@ -221,11 +123,9 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
               }
             };
 
-            // Run on load and after HTMX swaps
             initNav();
             document.addEventListener('htmx:afterSwap', initNav);
 
-            // Interactive mouse tracking for dot overlay
             if (!window.mouseListenerAdded) {
               document.addEventListener('mousemove', (e) => {
                 document.body.style.setProperty('--mouse-x', e.clientX + 'px');
@@ -238,30 +138,7 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
             }}
           />
 
-          {/* SVG Glow Filters */}
-          <svg
-            style={{ position: "absolute", width: 0, height: 0 }}
-            aria-hidden="true"
-            focusable="false"
-          >
-            <defs>
-              <filter
-                id="neon-glow"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
-              >
-                <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-          </svg>
-
-          {/* Page-Specific Custom Script Injections (Re-executed on HTMX navigation) */}
+          {/* Page-Specific Custom Script Injections */}
           {page?.seo?.customHeadScripts && raw(page.seo.customHeadScripts)}
         </body>
       </html>

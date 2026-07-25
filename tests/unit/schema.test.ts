@@ -5,7 +5,6 @@ import {
   SiteSchema,
   NavSchema,
   FooterSchema,
-  EditorJsBlockSchema,
   VERSIONS,
 } from "../../src/core/schema";
 
@@ -234,23 +233,6 @@ describe("Core Zod Schemas", () => {
         expect(result.data.schemaVersion).toBe(VERSIONS.FOOTER);
         expect(result.data.links[0].label).toBe("Help");
       }
-    });
-  });
-
-  describe("EditorJsBlockSchema", () => {
-    it("should allow arbitrary data payloads for diverse block types", () => {
-      const block = {
-        id: "123",
-        type: "header",
-        data: { text: "Hello", level: 1 },
-      };
-      const result = EditorJsBlockSchema.safeParse(block);
-      expect(result.success).toBe(true);
-    });
-
-    it("should handle blocks with optional IDs", () => {
-      const block = { type: "paragraph", data: { text: "No ID" } };
-      expect(EditorJsBlockSchema.safeParse(block).success).toBe(true);
     });
   });
 });

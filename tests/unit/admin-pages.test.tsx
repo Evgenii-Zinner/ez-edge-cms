@@ -300,11 +300,7 @@ describe("Admin Pages Routes", () => {
       formData.append("title", "Updated Title");
       formData.append(
         "content",
-        JSON.stringify({
-          time: 123,
-          blocks: [{ type: "paragraph", data: { text: "Hello" } }],
-          version: "2.31.3",
-        }),
+        JSON.stringify([{ _type: "block", children: [{ text: "Hello" }] }]),
       );
 
       let savedData: any = null;
@@ -637,80 +633,10 @@ describe("Admin Pages Routes", () => {
       );
     });
 
-    it("ALL /migrate-to-portabletext - should convert Editor.js pages and return success", async () => {
-      const app = setupApp();
-      const legacyPage = createDefaultPage(
-        "Legacy Editor.js Page",
-        "legacy-slug",
-      );
-      legacyPage.content = {
-        time: 12345,
-        blocks: [
-          {
-            type: "paragraph",
-            data: {
-              text: "Hello Editor.js",
-            },
-          },
-        ],
-      } as any;
-
-      let savedPage: any = null;
-      const res = await app.request(
-        "http://localhost/admin/pages/migrate-to-portabletext",
-        {
-          method: "POST",
-        },
-        mockEnv({
-          initialData: {
-            "page:draft:legacy-slug": legacyPage,
-          },
-          list: async () => {
-            return {
-              keys: [{ name: "page:draft:legacy-slug" }],
-              list_complete: true,
-            };
-          },
-          put: async (key: string, val: any) => {
-            if (key === "page:draft:legacy-slug") {
-              savedPage = typeof val === "string" ? JSON.parse(val) : val;
-            }
-          },
-        }),
-      );
-
-      expect(res.status).toBe(200);
-      expect(await res.text()).toContain(
-        "Successfully converted 1 pages from Editor.js to PortableText.",
-      );
-      expect(savedPage).toBeDefined();
-      expect(Array.isArray(savedPage.content)).toBe(true);
-      expect(savedPage.content[0]._type).toBe("block");
-      expect(savedPage.content[0].children[0].text).toBe("Hello Editor.js");
-    });
-
     it("ALL /migrate-v2 - should handle errors gracefully and return 500", async () => {
       const app = setupApp();
       const res = await app.request(
         "http://localhost/admin/pages/migrate-v2",
-        {
-          method: "POST",
-        },
-        mockEnv({
-          list: async () => {
-            throw new Error("KV Failure");
-          },
-        }),
-      );
-
-      expect(res.status).toBe(500);
-      expect(await res.text()).toContain("Migration failed: KV Failure");
-    });
-
-    it("ALL /migrate-to-portabletext - should handle errors gracefully and return 500", async () => {
-      const app = setupApp();
-      const res = await app.request(
-        "http://localhost/admin/pages/migrate-to-portabletext",
         {
           method: "POST",
         },

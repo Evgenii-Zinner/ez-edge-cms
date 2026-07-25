@@ -203,21 +203,6 @@ describe("Middlewares", () => {
       expect(html).not.toContain("<html>");
     });
 
-    it("should inject editor-specific classes if isEditor flag is set", async () => {
-      const app = new Hono();
-      app.use("*", injectUnoCSS());
-      app.get("/editor", (c) => {
-        (c as any).set("isEditor" as any, true);
-        return c.html(`<div class="editor-shell">Editor</div>`);
-      });
-
-      const res = await app.request("/editor");
-      const html = await res.text();
-
-      // Verification logic: renderWithUno handles the isEditor flag
-      expect(html).toContain('<style id="ez-unocss">');
-    });
-
     it("should preserve original response headers except Content-Length", async () => {
       const app = new Hono();
       app.use("*", injectUnoCSS());

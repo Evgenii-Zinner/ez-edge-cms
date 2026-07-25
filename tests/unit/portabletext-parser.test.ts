@@ -33,7 +33,7 @@ describe("PortableText Parser Utility", () => {
         },
       ];
       const html = renderPortableText(blocks);
-      expect(html).toContain("background-image: url('/img/hero.webp')");
+      expect(html).toContain("/img/hero.webp");
       expect(html).toContain("My Title");
       expect(html).toContain("My Subtitle");
     });
@@ -108,12 +108,16 @@ describe("PortableText Parser Utility", () => {
           withBackground: true,
         },
       ];
-      const html = renderPortableText(blocks);
-      expect(html).toContain('src="/img/pic.png"');
-      expect(html).toContain("Beautiful Image");
-      expect(html).toContain("image-stretched");
-      expect(html).toContain("image-with-border");
-      expect(html).toContain("image-with-background");
+      const defaultHtml = renderPortableText(blocks, "default");
+      expect(defaultHtml).toContain('src="/img/pic.png"');
+      expect(defaultHtml).toContain("Beautiful Image");
+      expect(defaultHtml).toContain("image-stretched");
+      expect(defaultHtml).toContain("image-with-border");
+      expect(defaultHtml).toContain("image-with-background");
+
+      const ruriHtml = renderPortableText(blocks, "ruri");
+      expect(ruriHtml).toContain("/img/pic.png");
+      expect(ruriHtml).toContain("Beautiful Image");
     });
 
     it("should render an image block from file object", () => {
@@ -123,7 +127,7 @@ describe("PortableText Parser Utility", () => {
           file: { url: "/img/file.png" },
         },
       ];
-      const html = renderPortableText(blocks);
+      const html = renderPortableText(blocks, "default");
       expect(html).toContain('src="/img/file.png"');
     });
 
