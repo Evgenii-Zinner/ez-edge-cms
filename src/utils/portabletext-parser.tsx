@@ -106,6 +106,7 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
               stretched={value.stretched}
               withBorder={value.withBorder}
               withBackground={value.withBackground}
+              class=""
             />
           );
         }
@@ -172,7 +173,7 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
           : `<video src="${url}" controls width="100%" height="100%" preload="metadata"></video>`;
 
         return `
-          <div class="my-8">
+          <div>
             <div class="aspect-video w-full border border-solid border-[var(--ruri-border-outline)] bg-[rgba(0,0,0,0.2)]">
               ${mediaHtml}
             </div>
@@ -183,7 +184,7 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
 
       embed: ({ value }: any) => {
         return `
-          <div class="my-8">
+          <div>
             <div class="aspect-video w-full border border-solid border-[var(--ruri-border-outline)] bg-[rgba(0,0,0,0.2)]">
               <iframe 
                 src="${value.embed}" 
@@ -201,7 +202,7 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
       },
 
       delimiter: () => {
-        return `<hr class="my-12 border-t border-solid border-[var(--ruri-border-outline)] opacity-30" />`;
+        return `<hr class="border-t border-solid border-[var(--ruri-border-outline)] opacity-30 w-full" />`;
       },
     },
   };
@@ -213,7 +214,18 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
 export const renderPortableText = (blocks: any[], stylingSystem = "ruri"): string => {
   if (!blocks || !Array.isArray(blocks)) return "";
   const components = createPortableTextComponents(stylingSystem);
-  return toHTML(blocks, { components });
+  const htmlContent = toHTML(blocks, { components });
+  
+  const themeComponents = themeRegistry.get(stylingSystem).components;
+  if (themeComponents.Grid) {
+    return renderJsxToString(
+      <themeComponents.Grid cols={1} gap={8} class="w-full">
+        <div dangerouslySetInnerHTML={{ __html: htmlContent }} class="contents" />
+      </themeComponents.Grid>
+    );
+  }
+  
+  return htmlContent;
 };
 
 /**

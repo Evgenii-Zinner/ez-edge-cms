@@ -50,7 +50,7 @@ describe("PortableText Parser Utility", () => {
         },
       ];
       const html = renderPortableText(blocks);
-      expect(html).toContain("<thead>");
+      expect(html).toMatch(/<thead[^>]*>/);
       expect(html).toContain("Col 1");
       expect(html).toContain("Val 1");
     });
@@ -64,7 +64,7 @@ describe("PortableText Parser Utility", () => {
         },
       ];
       const html = renderPortableText(blocks);
-      expect(html).not.toContain("<thead>");
+      expect(html).not.toMatch(/<thead[^>]*>/);
       expect(html).toContain("A1");
       expect(html).toContain("B2");
     });
@@ -93,7 +93,7 @@ describe("PortableText Parser Utility", () => {
       ];
       const html = renderPortableText(blocks);
       expect(html).toContain("index.js");
-      expect(html).toContain('class="javascript"');
+      expect(html).toContain('javascript"');
       expect(html).toContain("console.log(&quot;hello&quot;);");
     });
 

@@ -14,11 +14,14 @@ import {
   Panel,
   Button,
   Hero,
-  Bento,
+  Grid,
   Container,
   Header,
   Footer,
   HoneycombImage,
+  Table,
+  CodeBlock,
+  Callout,
   RURI_CORE_CSS_TOKENS,
 } from "ruri-ui";
 import { normalizePath } from "@utils/seo";
@@ -68,26 +71,34 @@ export class RuriThemeConnector implements ThemeConnector {
       </Button>
     ),
 
-    Grid: (props) => (
-      <Bento
-        cols={(props.cols as any) || 3}
-        gap={(props.gap as any) || "md"}
+    Grid: (props) => {
+      console.log("RURI GRID PROPS", props);
+      return (
+      <Grid
+        cols={(props.cols as any) || { sm: 1, md: 3 }}
+        gap={(props.gap as any) || 6}
         class={props.class || ""}
       >
         {props.children}
-      </Bento>
-    ),
+      </Grid>
+    )},
 
-    Hero: (props) => (
-      <Hero
-        title={props.title || ""}
-        subtitle={props.subtitle}
-        imageUrl={props.imageUrl}
-        shape={(props.shape as any) || "sci-fi"}
-        glow={props.glow !== false}
-        class={props.class || ""}
-      />
-    ),
+    Hero: (props) => {
+      const cleanTitle = typeof props.title === "string"
+        ? props.title.replace(/<br\s*\/?>/gi, " ")
+        : props.title;
+
+      return (
+        <Hero
+          title={cleanTitle || ""}
+          subtitle={props.subtitle}
+          imageUrl={props.imageUrl}
+          shape={(props.shape as any) || "sci-fi"}
+          glow={props.glow !== false}
+          class={props.class || ""}
+        />
+      );
+    },
 
     Image: (props) => (
       <HoneycombImage
@@ -99,13 +110,14 @@ export class RuriThemeConnector implements ThemeConnector {
     ),
 
     CodeBlock: (props) => (
-      <Panel shape="rectangle" class="my-6 font-mono text-0.85rem">
-        {props.filename && (
-          <div class="text-xs text-[var(--ruri-text-muted)] border-b border-ruriOutline pb-2 mb-3 tracking-widest uppercase">
-            // FILE: {props.filename}
-          </div>
-        )}
-        <pre class="m-0 overflow-x-auto"><code class={props.language || ""}>{props.code}</code></pre>
+      <Panel
+        shape="rectangle"
+        title={props.filename ? `// FILE: ${props.filename}` : undefined}
+        class="my-6"
+      >
+        <CodeBlock class={props.language || ""}>
+          {props.code}
+        </CodeBlock>
       </Panel>
     ),
 
@@ -113,41 +125,27 @@ export class RuriThemeConnector implements ThemeConnector {
       const rows = props.rows || [];
       const withHeadings = props.withHeadings || false;
       const getCells = (r: any) => (Array.isArray(r) ? r : Array.isArray(r?.cells) ? r.cells : []);
+      const headers = withHeadings && rows.length > 0 ? getCells(rows[0]) : undefined;
+      const dataRows = (withHeadings ? rows.slice(1) : rows).map(getCells);
+
       return (
-        <Panel shape="rectangle" class="my-6 overflow-x-auto p-0">
-          <table class="w-full border-collapse">
-            {withHeadings && rows.length > 0 && (
-              <thead>
-                <tr class="border-b border-ruriOutline bg-ruriSurfaceVariant/50">
-                  {getCells(rows[0]).map((cell: any) => (
-                    <th class="p-3 text-left font-mono text-xs uppercase tracking-wider color-[var(--ruri-primary)]">{cell || ""}</th>
-                  ))}
-                </tr>
-              </thead>
-            )}
-            <tbody>
-              {rows.slice(withHeadings ? 1 : 0).map((r: any) => (
-                <tr class="border-b border-ruriOutline/40 last:border-0 hover:bg-ruriSurfaceVariant/30 transition-colors">
-                  {getCells(r).map((cell: any) => (
-                    <td class="p-3 font-body text-sm color-[var(--ruri-text-main)]">{cell || ""}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Panel>
+        <Table
+          headers={headers}
+          rows={dataRows}
+          gridLines={true}
+          striped={true}
+        />
       );
     },
 
     Quote: (props) => (
-      <Panel shape="sci-fi" class="my-6 italic">
-        <p class="m-0 text-1rem leading-relaxed">"{props.text}"</p>
-        {props.caption && (
-          <div class="text-right text-xs font-mono text-[var(--ruri-text-muted)] mt-2 uppercase tracking-widest">
-            — {props.caption}
-          </div>
-        )}
-      </Panel>
+      <Callout
+        variant="primary"
+        title={props.caption ? `— ${props.caption}` : undefined}
+        class="my-6"
+      >
+        "{props.text}"
+      </Callout>
     ),
 
     Overlays: () => (
@@ -195,7 +193,7 @@ export class RuriThemeConnector implements ThemeConnector {
 
     Main: (props) => (
       <main id="main-content" class={props.class || ""}>
-        <Container size="xl" class="py-8 min-h-[60vh]">
+        <Container size="lg" class="py-8 min-h-[60vh]">
           {props.children}
         </Container>
       </main>
@@ -224,8 +222,8 @@ export class RuriThemeConnector implements ThemeConnector {
         copyright={
           props.site.copyright
             ? props.site.copyright
-                .replace(/\{year\}/g, new Date().getFullYear().toString())
-                .replace(/\{author\}/g, props.site.author || "")
+              .replace(/\{year\}/g, new Date().getFullYear().toString())
+              .replace(/\{author\}/g, props.site.author || "")
             : undefined
         }
         poweredBy={props.site.showStatus}
@@ -250,7 +248,7 @@ export class RuriThemeConnector implements ThemeConnector {
         --ruri-glow-blur: ${glowSpread};
 
         --font-header: "${fontHeader}", sans-serif;
-        --font-nav: "${fontNav}", sans-serif;
+        --font-nav: "${fontNav}", "${fontHeader}", sans-serif;
         --font-body: "${fontBody}", sans-serif;
         --font-mono: "${fontMono}", "Consolas", "Monaco", monospace;
       }

@@ -42,31 +42,36 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
           #main-content {
             position: relative;
             z-index: 2;
-            max-width: 1200px;
-            margin: clamp(1.5rem, 5vw, 3rem) auto;
-            padding: 0 clamp(1rem, 5vw, 2.5rem);
             flex: 1 0 auto;
             width: 100%;
           }
 
-          #main-content h1, #main-content h2, #main-content h3, #main-content h4, #main-content h5, #main-content h6 {
+          #main-content h1, #main-content h2, #main-content h3 {
             font-family: ${tokens.fontHeader};
             font-weight: 700;
-            color: ${tokens.text};
-            letter-spacing: -0.02em;
+            color: ${tokens.primary};
+            letter-spacing: 0.04em;
             line-height: 1.25;
-            margin: clamp(1.2rem, 4vw, 2.2rem) 0 clamp(0.6rem, 2vw, 1.2rem);
+            margin: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(0.8rem, 2vw, 1.4rem);
           }
           #main-content h1 { font-size: clamp(2rem, 5vw, 3.2rem); }
           #main-content h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); }
           #main-content h3 { font-size: clamp(1.3rem, 3vw, 1.8rem); }
+
+          #main-content h4, #main-content h5, #main-content h6 {
+            font-family: ${tokens.fontHeader};
+            font-weight: 600;
+            color: ${tokens.text};
+            letter-spacing: 0.02em;
+            margin: clamp(1.2rem, 3vw, 1.8rem) 0 clamp(0.5rem, 1.5vw, 1rem);
+          }
           #main-content h4 { font-size: clamp(1.1rem, 2.5vw, 1.4rem); }
 
           #main-content p {
             font-family: ${tokens.fontBody};
-            line-height: 1.65;
+            line-height: 1.7;
             color: ${tokens.textMuted};
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
             font-size: 1.05rem;
           }
 
@@ -81,20 +86,53 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             text-decoration: underline;
           }
 
-          #main-content ul, #main-content ol {
-            padding-left: 1.5rem;
-            margin: 1.25rem 0;
+          #main-content ul {
+            position: relative;
+            list-style: none;
+            margin: 1.5rem 0;
+            padding-left: 1.75rem;
+          }
+          #main-content ul::before {
+            content: '';
+            position: absolute;
+            top: 0.6rem;
+            bottom: 0.6rem;
+            left: 6px;
+            width: 1px;
+            background: linear-gradient(to bottom, rgba(var(--ruri-primary-rgb, 0, 195, 255), 0.8) 0%, rgba(var(--ruri-primary-rgb, 0, 195, 255), 0.3) 100%);
+            pointer-events: none;
+          }
+          #main-content ul > li {
+            position: relative;
+            margin-bottom: 0.75rem;
+            line-height: 1.65;
             color: ${tokens.textMuted};
           }
-          #main-content li {
+          #main-content ul > li::before {
+            content: '';
+            position: absolute;
+            left: -1.75rem;
+            top: 0.45rem;
+            width: 12px;
+            height: 10px;
+            background-color: ${tokens.primary};
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+          }
+
+          #main-content ol {
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            color: ${tokens.textMuted};
+          }
+          #main-content ol > li {
             margin-bottom: 0.5rem;
-            line-height: 1.6;
+            line-height: 1.65;
           }
 
           #main-content code {
             background: ${tokens.surfaceVariant};
             border: 1px solid ${tokens.border};
-            border-radius: 6px;
+            border-radius: 4px;
             color: ${tokens.primary};
             padding: 0.2rem 0.45rem;
             font-family: ${tokens.fontMono};
