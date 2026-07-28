@@ -153,7 +153,7 @@ describe("PortableText Parser Utility", () => {
       ];
 
       expect(renderPortableText(youtubeBlock)).toContain(
-        "youtube.com/embed/dQw4w9WgXcQ",
+        "youtube-nocookie.com/embed/dQw4w9WgXcQ",
       );
       expect(renderPortableText(youtubeBlock)).toContain("Rickroll");
       expect(renderPortableText(vimeoBlock)).toContain(
