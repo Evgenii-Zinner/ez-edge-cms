@@ -114,7 +114,7 @@ export class RuriThemeConnector implements ThemeConnector {
         src={props.src}
         alt={props.alt || ""}
         header={props.header}
-        footer={props.footer}
+        footer={props.footer || props.caption}
         withPanel={props.withPanel !== false}
         class={props.class || "my-6"}
       />
@@ -201,32 +201,34 @@ export class RuriThemeConnector implements ThemeConnector {
 
 
     Header: (props) => (
-      <Nav
-        brand={
-          <div class="flex items-center gap-2">
-            {props.site.logoSvg ? (
-              <img
-                src={`data:image/svg+xml,${encodeURIComponent(props.site.logoSvg)}`}
-                alt="Logo"
-                style={{
-                  width: "24px",
-                  height: "24px",
-                  objectFit: "contain",
-                  filter: "drop-shadow(0 0 5px var(--ruri-primary))",
-                }}
-              />
-            ) : null}
-            <span class="font-bold tracking-widest text-sm font-mono uppercase">
-              {props.site.title}
-            </span>
-          </div>
-        }
-        links={props.nav.items.map((item) => ({
-          href: normalizePath(item.path),
-          label: item.label,
-        }))}
-        currentPath={props.currentPath}
-      />
+      <header>
+        <Nav
+          brand={
+            <div class="flex items-center gap-2">
+              {props.site.logoSvg ? (
+                <img
+                  src={`data:image/svg+xml,${encodeURIComponent(props.site.logoSvg)}`}
+                  alt="Logo"
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    objectFit: "contain",
+                    filter: "drop-shadow(0 0 5px var(--ruri-primary))",
+                  }}
+                />
+              ) : null}
+              <span class="font-bold tracking-widest text-sm font-mono uppercase">
+                {props.site.title}
+              </span>
+            </div>
+          }
+          links={props.nav.items.map((item) => ({
+            href: normalizePath(item.path),
+            label: item.label,
+          }))}
+          currentPath={props.currentPath}
+        />
+      </header>
     ),
 
     Main: (props) => (

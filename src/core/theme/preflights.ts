@@ -149,6 +149,32 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             color: ${tokens.text};
           }
           #main-content blockquote p { margin: 0; }
+
+          #main-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.75rem 0;
+            font-family: ${tokens.fontBody};
+            font-size: 0.95rem;
+          }
+          #main-content th, #main-content td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid ${tokens.border};
+          }
+          #main-content th {
+            font-family: ${tokens.fontHeader};
+            font-weight: 600;
+            color: ${tokens.primary};
+            background: rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.05);
+            border-bottom: 2px solid ${tokens.primary};
+          }
+          #main-content td {
+            color: ${tokens.textMuted};
+          }
+          #main-content tbody tr:hover {
+            background: rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.04);
+          }
         `,
       },
     ],

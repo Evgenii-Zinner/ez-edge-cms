@@ -164,13 +164,17 @@ describe("Layouts", () => {
     });
 
     it("should render mobile navigation drawer separately from header", () => {
+      const defaultTheme = {
+        ...theme,
+        values: { ...theme.values, styling_system: "default" },
+      };
       const html = BaseLayout({
         title: "Nav Test",
         children: "Content",
         site,
         nav,
         footer,
-        theme,
+        theme: defaultTheme,
       })!.toString();
       expect(html).toContain('id="main-nav"');
     });
