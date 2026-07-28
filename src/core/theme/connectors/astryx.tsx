@@ -6,7 +6,7 @@
  */
 
 import { ThemeConfig } from "@core/schema";
-import { ThemeConnector, ThemeComponents } from "../connector";
+import { ThemeConnector, ThemeComponents, ImageProps, VideoProps, EmbedProps } from "../connector";
 import { ThemeTokenMap } from "../tokens";
 import { createContentPreflights } from "../preflights";
 import { normalizePath } from "@utils/seo";
@@ -23,6 +23,7 @@ export class AstryxThemeConnector implements ThemeConnector {
   readonly tokens: ThemeTokenMap = {
     primary: "var(--astryx-primary, #1877f2)",
     primaryHover: "var(--astryx-primary-hover, #166fe5)",
+    primaryRgb: "24, 119, 242",
     surface: "var(--astryx-surface, #ffffff)",
     surfaceVariant: "var(--astryx-surface-variant, #f8fafc)",
     text: "var(--astryx-text, #0f172a)",
@@ -132,6 +133,59 @@ export class AstryxThemeConnector implements ThemeConnector {
 
     Overlays: () => null,
 
+    Image: (props: ImageProps) => {
+      const wrapperClasses = [
+        "my-8 overflow-hidden border border-solid border-[var(--astryx-border,#e2e8f0)] rounded-xl bg-[var(--astryx-surface,#ffffff)] p-2 shadow-sm",
+        props.stretched ? "important-w-[calc(100%+4rem)] important-ml--8 important-mr--8 important-max-w-none important-rounded-none" : "",
+        props.withBorder ? "important-border-2 important-border-solid important-border-[var(--astryx-primary,#1877f2)]" : "",
+        props.withBackground ? "bg-[var(--astryx-surface-variant,#f8fafc)] important-p-12 flex flex-col justify-center items-center rounded-xl" : "",
+        props.class || "",
+      ].filter(Boolean).join(" ");
+      return (
+        <div class={wrapperClasses}>
+          <img src={props.src} alt={props.alt || ""} class="max-w-full h-auto block mx-auto rounded-lg" loading="lazy" />
+          {props.header && (
+            <div style={{ textAlign: "center", color: "var(--astryx-text-muted,#475569)", fontSize: "0.8rem", marginTop: "0.5rem" }}>
+              {props.header}
+            </div>
+          )}
+        </div>
+      );
+    },
+
+    Video: (props: VideoProps) => {
+      const mediaHtml = props.embedUrl
+        ? `<iframe src="${props.embedUrl}" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`
+        : `<video src="${props.url}" controls width="100%" height="100%" preload="metadata"></video>`;
+      return `
+        <div class="my-6 rounded-xl overflow-hidden border border-solid border-[var(--astryx-border,#e2e8f0)] shadow-sm">
+          <div class="aspect-video w-full bg-[var(--astryx-surface-variant,#f8fafc)]">
+            ${mediaHtml}
+          </div>
+          ${props.caption ? `<div class="text-center text-0.8rem text-[var(--astryx-text-muted,#475569)] mt-2 italic px-4 pb-3">${props.caption}</div>` : ""}
+        </div>
+      `;
+    },
+
+    Embed: (props: EmbedProps) => `
+      <div class="my-6 rounded-xl overflow-hidden border border-solid border-[var(--astryx-border,#e2e8f0)] shadow-sm">
+        <div class="aspect-video w-full bg-[var(--astryx-surface-variant,#f8fafc)]">
+          <iframe
+            src="${props.embed}"
+            width="100%"
+            height="100%"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+        ${props.caption ? `<div class="text-center text-0.8rem text-[var(--astryx-text-muted,#475569)] mt-2 italic px-4 pb-3">${props.caption}</div>` : ""}
+      </div>
+    `,
+
+    Delimiter: () => `<hr class="border-t border-solid border-[var(--astryx-border,#e2e8f0)] w-full my-8" />`,
+
     Nav: (props) => (
       <nav class="flex gap-6 items-center max-lg:fixed max-lg:top-0 max-lg:right-0 max-lg:h-[100dvh] max-lg:w-280px max-lg:bg-[var(--astryx-surface,#ffffff)] max-lg:flex-col max-lg:items-start max-lg:pt-100px max-lg:p-8 max-lg:gap-6 max-lg:border-l max-lg:border-l-solid max-lg:border-l-[var(--astryx-border,#e2e8f0)] max-lg:translate-x-full max-lg:invisible max-lg:transition-all max-lg:duration-300 max-lg:ease-in-out max-lg:z-1000 max-lg:overflow-y-auto lg:hidden" id="main-nav">
         {props.nav.items.map((item) => (
@@ -218,8 +272,8 @@ export class AstryxThemeConnector implements ThemeConnector {
               dangerouslySetInnerHTML={{
                 __html: props.site.copyright
                   ? props.site.copyright
-                      .replace(/\{year\}/g, new Date().getFullYear().toString())
-                      .replace(/\{author\}/g, props.site.author || "")
+                    .replace(/\{year\}/g, new Date().getFullYear().toString())
+                    .replace(/\{author\}/g, props.site.author || "")
                   : "",
               }}
             ></div>

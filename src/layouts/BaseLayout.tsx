@@ -40,6 +40,8 @@ export interface BaseLayoutProps {
   description?: string;
   /** The base URL detected from the request context. */
   detectedUrl?: string;
+  /** The current request path for active nav link highlighting (e.g. '/about'). */
+  currentPath?: string;
 }
 
 /**
@@ -48,10 +50,11 @@ export interface BaseLayoutProps {
  * composition to the active ThemeConnector (e.g. Default or Ruri UI).
  */
 export const BaseLayout: FC<BaseLayoutProps> = (props) => {
-  const { site, title, theme, page, detectedUrl, nav, children, footer } = props;
+  const { site, title, theme, page, detectedUrl, currentPath, nav, children, footer } = props;
 
   const stylingSystem = theme?.values?.styling_system || "ruri";
-  const ThemeUI = themeRegistry.get(stylingSystem).components;
+  const connector = themeRegistry.get(stylingSystem);
+  const ThemeUI = connector.components;
 
   return (
     <>
@@ -68,11 +71,11 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
           {/* Theme-defined Visual Overlays */}
           <ThemeUI.Overlays />
 
-          {/* Mobile Navigation Drawer */}
-          <ThemeUI.Nav nav={nav} />
+          {/* Standalone Mobile Nav Drawer (only for connectors that use a separate Nav) */}
+          {ThemeUI.Nav && <ThemeUI.Nav nav={nav} />}
 
           {/* Site Header */}
-          <ThemeUI.Header site={site} nav={nav} title={title} />
+          <ThemeUI.Header site={site} nav={nav} title={title} currentPath={currentPath} />
 
           {ThemeUI.Main ? (
             <ThemeUI.Main>{children}</ThemeUI.Main>
@@ -83,10 +86,15 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
           {/* Site Footer */}
           <ThemeUI.Footer site={site} footer={footer} />
 
-          {/* Client-side Navigation Logic */}
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
+          {/*
+           * Mobile nav toggle JS — only injected for connectors that use a
+           * separate #main-nav drawer (selfContainedNav = false/undefined).
+           * Connectors like Ruri handle mobile nav entirely in their Header.
+           */}
+          {!connector.selfContainedNav && (
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
           (function() {
             if (!window.navListenerAdded) {
               document.addEventListener('click', (e) => {
@@ -104,7 +112,7 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
             const initNav = () => {
               const toggle = document.getElementById('mobile-menu-toggle');
               const nav = document.getElementById('main-nav');
-              
+
               if (toggle && nav) {
                 toggle.onclick = (e) => {
                   e.stopPropagation();
@@ -113,7 +121,7 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
                   document.body.style.overflow = isOpen ? 'hidden' : '';
                 };
 
-                nav.querySelectorAll('.nav-link').forEach(link => {
+                nav.querySelectorAll('a').forEach(link => {
                   link.onclick = () => {
                     nav.classList.remove('open');
                     toggle.innerText = 'MENU';
@@ -125,15 +133,23 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
 
             initNav();
             document.addEventListener('htmx:afterSwap', initNav);
-
-            if (!window.mouseListenerAdded) {
-              document.addEventListener('mousemove', (e) => {
-                document.body.style.setProperty('--mouse-x', e.clientX + 'px');
-                document.body.style.setProperty('--mouse-y', e.clientY + 'px');
-              });
-              window.mouseListenerAdded = true;
-            }
           })();
+        `,
+              }}
+            />
+          )}
+
+          {/* Mouse tracking for interactive overlays */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+          if (!window.mouseListenerAdded) {
+            document.addEventListener('mousemove', (e) => {
+              document.body.style.setProperty('--mouse-x', e.clientX + 'px');
+              document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+            });
+            window.mouseListenerAdded = true;
+          }
         `,
             }}
           />

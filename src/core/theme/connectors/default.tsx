@@ -5,7 +5,7 @@
  */
 
 import { ThemeConfig } from "@core/schema";
-import { ThemeConnector, ThemeComponents } from "../connector";
+import { ThemeConnector, ThemeComponents, VideoProps, EmbedProps } from "../connector";
 import { ThemeTokenMap } from "../tokens";
 import { createContentPreflights } from "../preflights";
 import { normalizePath } from "@utils/seo";
@@ -22,6 +22,7 @@ export class DefaultThemeConnector implements ThemeConnector {
   readonly tokens: ThemeTokenMap = {
     primary: "var(--theme-accent, #00ffff)",
     primaryHover: "var(--theme-accent, #00ffff)",
+    primaryRgb: "0, 255, 255",
     surface: "var(--theme-bg, #050a0a)",
     surfaceVariant: "var(--theme-surface, rgba(10,26,26,0.7))",
     text: "var(--theme-text-main, #e0f2f2)",
@@ -113,6 +114,39 @@ export class DefaultThemeConnector implements ThemeConnector {
       </>
     ),
 
+    Video: (props: VideoProps) => {
+      const mediaHtml = props.embedUrl
+        ? `<iframe src="${props.embedUrl}" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`
+        : `<video src="${props.url}" controls width="100%" height="100%" preload="metadata"></video>`;
+      return `
+        <div class="my-6">
+          <div class="aspect-video w-full border border-solid border-[var(--theme-accent-glow,rgba(0,255,255,0.2))] bg-[rgba(0,0,0,0.2)]">
+            ${mediaHtml}
+          </div>
+          ${props.caption ? `<div class="text-center text-0.8rem color-[var(--theme-text-dim,#a0baba)] mt-2 italic">${props.caption}</div>` : ""}
+        </div>
+      `;
+    },
+
+    Embed: (props: EmbedProps) => `
+      <div class="my-6">
+        <div class="aspect-video w-full border border-solid border-[var(--theme-accent-glow,rgba(0,255,255,0.2))] bg-[rgba(0,0,0,0.2)]">
+          <iframe
+            src="${props.embed}"
+            width="100%"
+            height="100%"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+        ${props.caption ? `<div class="text-center text-0.8rem color-[var(--theme-text-dim,#a0baba)] mt-2 italic">${props.caption}</div>` : ""}
+      </div>
+    `,
+
+    Delimiter: () => `<hr class="border-t border-solid border-[var(--theme-accent-glow,rgba(0,255,255,0.2))] opacity-30 w-full my-8" />`,
+
     Nav: (props) => (
       <nav class="main-nav lg:hidden" id="main-nav">
         {props.nav.items.map((item) => (
@@ -180,9 +214,9 @@ export class DefaultThemeConnector implements ThemeConnector {
       return (
         <div class={wrapperClasses}>
           <img src={props.src} alt={props.alt || ""} class="content-img" loading="lazy" />
-          {props.caption && (
+          {props.header && (
             <div style={{ textAlign: "center", color: "var(--theme-text-dim)", fontSize: "0.8rem", marginTop: "0.5rem" }}>
-              {props.caption}
+              {props.header}
             </div>
           )}
         </div>
@@ -224,8 +258,8 @@ export class DefaultThemeConnector implements ThemeConnector {
               dangerouslySetInnerHTML={{
                 __html: props.site.copyright
                   ? props.site.copyright
-                      .replace(/\{year\}/g, new Date().getFullYear().toString())
-                      .replace(/\{author\}/g, props.site.author || "")
+                    .replace(/\{year\}/g, new Date().getFullYear().toString())
+                    .replace(/\{author\}/g, props.site.author || "")
                   : "",
               }}
             ></div>

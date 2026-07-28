@@ -50,10 +50,12 @@ export interface HeroProps {
 export interface ImageProps {
   src: string;
   alt?: string;
-  caption?: string;
+  header?: string;
+  footer?: string;
   stretched?: boolean;
   withBorder?: boolean;
   withBackground?: boolean;
+  withPanel?: boolean;
   class?: string;
 }
 
@@ -70,6 +72,26 @@ export interface TableProps {
 
 export interface QuoteProps {
   text: string;
+  caption?: string;
+}
+
+export interface VideoProps {
+  /** The raw source URL (YouTube, Vimeo, or a direct video file) */
+  url: string;
+  /**
+   * Pre-resolved embed URL (e.g., a YouTube or Vimeo embed URL).
+   * The parser performs URL detection and passes the result here so
+   * connectors only need to handle rendering, not URL parsing.
+   */
+  embedUrl?: string;
+  /** Optional caption text */
+  caption?: string;
+}
+
+export interface EmbedProps {
+  /** The URL or src string for the iframe embed */
+  embed: string;
+  /** Optional caption text */
   caption?: string;
 }
 
@@ -103,8 +125,22 @@ export interface ThemeComponents {
   CodeBlock: (props: CodeBlockProps) => any;
   Table: (props: TableProps) => any;
   Quote: (props: QuoteProps) => any;
+  /**
+   * Renders a video block. The parser resolves YouTube/Vimeo URLs into embed
+   * URLs before calling this — connectors only need to render the result.
+   */
+  Video: (props: VideoProps) => any;
+  /** Renders an arbitrary iframe embed block. */
+  Embed: (props: EmbedProps) => any;
+  /** Renders a thematic section break (e.g. a styled <hr>). */
+  Delimiter: () => any;
   Overlays: () => any;
-  Nav: (props: NavProps) => any;
+  /**
+   * Optional standalone mobile nav drawer.
+   * Connectors that self-manage nav inside their Header component
+   * (selfContainedNav = true) should omit this or return null.
+   */
+  Nav?: (props: NavProps) => any;
   Header: (props: HeaderProps) => any;
   Main?: (props: MainProps) => any;
   Footer: (props: FooterProps) => any;
@@ -115,6 +151,12 @@ export interface ThemeConnector {
   readonly id: string;
   /** Human-readable display name for the admin interface */
   readonly name: string;
+  /**
+   * When true, the connector's Header component manages its own mobile nav
+   * (toggle button, drawer, JS) internally. BaseLayout will skip injecting its
+   * own #mobile-menu-toggle script to avoid conflicts.
+   */
+  readonly selfContainedNav?: boolean;
   /** Declarative token map for automated preflights & theme introspection */
   readonly tokens?: ThemeTokenMap;
   /** Component implementations for this styling system */

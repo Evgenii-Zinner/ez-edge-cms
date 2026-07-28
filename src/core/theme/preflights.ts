@@ -99,7 +99,7 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             bottom: 0.6rem;
             left: 6px;
             width: 1px;
-            background: linear-gradient(to bottom, rgba(var(--ruri-primary-rgb, 0, 195, 255), 0.8) 0%, rgba(var(--ruri-primary-rgb, 0, 195, 255), 0.3) 100%);
+            background: linear-gradient(to bottom, rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.8) 0%, rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.3) 100%);
             pointer-events: none;
           }
           #main-content ul > li {

@@ -15,6 +15,10 @@ export const BASE_SAFELIST = [
   "font-bold",
   "underline",
   "open", // Used for mobile menu toggle
+  // Category listing responsive grid
+  "grid-cols-1",
+  "sm:grid-cols-2",
+  "lg:grid-cols-3",
 ];
 
 export default defineConfig({

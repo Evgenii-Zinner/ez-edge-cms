@@ -8,7 +8,7 @@
         "@portabletext/to-html": "^5.0.2",
         "ez-portable-text": "github:Evgenii-Zinner/ez-portable-text",
         "hono": "^4.0.0",
-        "ruri-ui": "file:../../ruri",
+        "ruri-ui": "file:../ruri",
         "zod": "^3.22.4",
       },
       "devDependencies": {
@@ -646,7 +646,7 @@
 
     "run-parallel": ["run-parallel@1.2.0", "", { "dependencies": { "queue-microtask": "^1.2.2" } }, "sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA=="],
 
-    "ruri-ui": ["ruri-ui@file:../../ruri", { "dependencies": { "hono": "^4.12.31", "htmx.org": "^1.9.10", "uplot": "^1.6.32" }, "devDependencies": { "@hono/vite-dev-server": "^0.12.1", "@iconify-json/lucide": "^1.1.200", "@playwright/test": "^1.61.1", "@unocss/preset-icons": "^0.61.3", "@unocss/preset-uno": "^0.61.3", "@unocss/vite": "^0.61.3", "prettier": "^3.9.6", "ts-morph": "^28.0.0", "typescript": "^5.5.2", "unocss": "^0.61.3", "vite": "^5.3.1" } }],
+    "ruri-ui": ["ruri-ui@file:../ruri", { "dependencies": { "hono": "^4.12.31", "htmx.org": "^1.9.10", "uplot": "^1.6.32" }, "devDependencies": { "@hono/vite-dev-server": "^0.12.1", "@iconify-json/lucide": "^1.1.200", "@playwright/test": "^1.61.1", "@unocss/preset-icons": "^0.61.3", "@unocss/preset-uno": "^0.61.3", "@unocss/vite": "^0.61.3", "prettier": "^3.9.6", "ts-morph": "^28.0.0", "typescript": "^5.5.2", "unocss": "^0.61.3", "vite": "^5.3.1" } }],
 
     "scroll-into-view-if-needed": ["scroll-into-view-if-needed@3.1.0", "", { "dependencies": { "compute-scroll-into-view": "^3.0.2" } }, "sha512-49oNpRjWRvnU8NyGVmUaYG4jtTkNonFZI86MmGRDqBphEK2EXT9gdEUoQPZhuBM8yWHxCWbobltqYO5M4XrUvQ=="],
 

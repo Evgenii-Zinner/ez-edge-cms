@@ -10,6 +10,12 @@ export interface ThemeTokenMap {
   primary: string;
   /** Primary hover accent color variable name or expression */
   primaryHover?: string;
+  /**
+   * RGB triplet string for the primary color (e.g. "0, 195, 255").
+   * Used in rgba() gradient expressions inside shared preflights.
+   * Connectors should provide a static triplet; not a var() reference.
+   */
+  primaryRgb?: string;
   /** Primary surface background color variable */
   surface: string;
   /** Secondary/variant surface background color variable */

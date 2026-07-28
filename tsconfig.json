@@ -6,24 +6,45 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@core/*": ["src/core/*"],
-      "@utils/*": ["src/utils/*"],
-      "@layouts/*": ["src/layouts/*"],
-      "@routes/*": ["src/routes/*"],
-      "@components/*": ["src/components/*"],
-      "ruri-ui": ["../../ruri/src/index.ts"],
-      "ruri-ui/*": ["../../ruri/src/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@core/*": [
+        "src/core/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@layouts/*": [
+        "src/layouts/*"
+      ],
+      "@routes/*": [
+        "src/routes/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "ruri-ui": [
+        "../ruri/src/index.ts"
+      ],
+      "ruri-ui/*": [
+        "../ruri/src/*"
+      ]
     },
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "types": ["bun-types"]
+    "types": [
+      "bun-types"
+    ]
   },
   "exclude": [
     "unocss-docs",

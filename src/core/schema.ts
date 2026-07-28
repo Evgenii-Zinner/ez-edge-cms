@@ -114,7 +114,7 @@ export const PageSchema = z.object({
   /** Brief description for previews and lists. */
   description: z.string().optional(),
   /** Structured content in PortableText format. */
-  content: PortableTextDataSchema.default([]),
+  content: PortableTextDataSchema.default([]).catch([]),
   /** Primary hero image URL for the page. */
   featuredImage: z.string().url().or(z.literal("")).optional(),
   /** Primary content category for listing logic. */

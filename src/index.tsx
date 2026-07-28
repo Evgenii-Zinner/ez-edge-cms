@@ -18,12 +18,11 @@ import {
 } from "@core/kv";
 import { renderPortableText } from "@utils/portabletext-parser";
 import admin from "@routes/admin/index";
-import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { injectUnoCSS } from "@core/unocss-middleware";
+import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { themeRegistry } from "@core/theme";
-
 const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
-// Global Middleware: Inject site-wide configurations and the UnoCSS engine into the context.
+// Global Middleware: Inject site-wide configurations into the context.
 app.use("*", injectGlobalConfig());
 app.use("*", injectUnoCSS());
 
@@ -82,11 +81,11 @@ app.get("/sitemap.xml", async (c) => {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${pages
-    .map((p) => {
-      const url = p.slug === "index" ? baseUrl : `${baseUrl}/${p.slug}`;
-      return `<url><loc>${url}</loc></url>`;
-    })
-    .join("\n")}
+      .map((p) => {
+        const url = p.slug === "index" ? baseUrl : `${baseUrl}/${p.slug}`;
+        return `<url><loc>${url}</loc></url>`;
+      })
+      .join("\n")}
 </urlset>`;
 
   c.header("Content-Type", "application/xml");
@@ -147,13 +146,13 @@ app.get("/ads.txt", (c) => c.text(c.var.site.txtFiles?.ads || ""));
 app.get("/security.txt", (c) =>
   c.text(
     c.var.site.txtFiles?.security ||
-      `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
+    `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
   ),
 );
 app.get("/.well-known/security.txt", (c) =>
   c.text(
     c.var.site.txtFiles?.security ||
-      `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
+    `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
   ),
 );
 app.get("/.well-known/mta-sts.txt", (c) =>
@@ -188,7 +187,9 @@ app.get("/*", async (c) => {
 
   const page = await getPage(c.env, slug, "live");
   const stylingSystem = theme.values.styling_system || "ruri";
-  const ThemeUI = themeRegistry.get(stylingSystem).components;
+  const connector = themeRegistry.get(stylingSystem);
+  const ThemeUI = connector.components;
+  const tokens = connector.tokens!;
 
   if (page) {
     const contentHtml = renderPortableText(
@@ -205,6 +206,7 @@ app.get("/*", async (c) => {
         page={page}
         description={page.description}
         detectedUrl={detectedUrl}
+        currentPath={new URL(c.req.url).pathname}
       >
         <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
       </BaseLayout>,
@@ -247,10 +249,11 @@ app.get("/*", async (c) => {
         site={site}
         footer={footer}
         detectedUrl={detectedUrl}
+        currentPath={new URL(c.req.url).pathname}
       >
-        <div class="mb-12 border-l-4 border-solid border-[var(--theme-accent)] pl-6">
+        <div class={`mb-12 border-l-4 border-solid pl-6`} style={{ borderColor: tokens.primary }}>
           <h1 class="text-2.5rem mb-2">{slug.toUpperCase()}</h1>
-          <p class="text-[var(--theme-text-dim)] m-0 italic opacity-80 font-nav text-0.85rem tracking-1px uppercase">
+          <p class="m-0 italic opacity-80 font-nav text-0.85rem tracking-1px uppercase" style={{ color: tokens.textMuted }}>
             ARCHIVE EXPLORER // {totalItems} ENTRIES FOUND // PAGE {safePage} OF{" "}
             {totalPages || 1}
           </p>
@@ -258,7 +261,7 @@ app.get("/*", async (c) => {
 
         {paginatedPages.length > 0 ? (
           <>
-            <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8 my-12">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 my-12">
               {paginatedPages.map((p) => {
                 const thumbnail = p.featuredImage;
                 return (
@@ -269,8 +272,9 @@ app.get("/*", async (c) => {
                     <ThemeUI.Card title={p.title} glow={true} class="h-full">
                       {thumbnail && (
                         <div
-                          class="w-full h-180px mb-4 border border-solid border-[var(--ruri-border-outline)] overflow-hidden relative"
+                          class={`w-full h-180px mb-4 border border-solid overflow-hidden relative`}
                           style={{
+                            borderColor: tokens.border,
                             background: `url(${thumbnail}) center/cover no-repeat`,
                           }}
                         >
@@ -282,7 +286,7 @@ app.get("/*", async (c) => {
                           {p.description}
                         </p>
                       )}
-                      <div class="mt-6 flex items-center gap-2 text-0.75rem font-mono uppercase tracking-2px text-[var(--ruri-primary)] opacity-70 group-hover:opacity-100 transition-all">
+                      <div class="mt-6 flex items-center gap-2 text-0.75rem font-mono uppercase tracking-2px opacity-70 group-hover:opacity-100 transition-all" style={{ color: tokens.primary }}>
                         ACCESS DATA{" "}
                         <span class="group-hover:translate-x-1 transition-transform">
                           &rarr;
@@ -294,11 +298,12 @@ app.get("/*", async (c) => {
               })}
             </div>
             {totalPages > 1 && (
-              <div class="flex justify-between items-center mt-12 border-t border-solid border-[var(--theme-accent-glow)] pt-6">
+              <div class="flex justify-between items-center mt-12 border-t border-solid pt-6" style={{ borderColor: tokens.border }}>
                 {safePage > 1 ? (
                   <a
                     href={`?page=${safePage - 1}`}
-                    class="btn-primary no-underline"
+                    class="no-underline font-mono text-0.8rem uppercase tracking-2px px-6 py-2 border border-solid transition-all hover:opacity-100 opacity-80"
+                    style={{ color: tokens.primary, borderColor: tokens.primary }}
                   >
                     &larr; PREVIOUS SECTOR
                   </a>
@@ -308,7 +313,8 @@ app.get("/*", async (c) => {
                 {safePage < totalPages ? (
                   <a
                     href={`?page=${safePage + 1}`}
-                    class="btn-primary no-underline"
+                    class="no-underline font-mono text-0.8rem uppercase tracking-2px px-6 py-2 border border-solid transition-all hover:opacity-100 opacity-80"
+                    style={{ color: tokens.primary, borderColor: tokens.primary }}
                   >
                     NEXT SECTOR &rarr;
                   </a>
@@ -319,8 +325,8 @@ app.get("/*", async (c) => {
             )}
           </>
         ) : (
-          <div class="py-24 text-center border border-dashed border-[var(--theme-accent-glow)] opacity-50">
-            <p class="font-nav uppercase tracking-2px">
+          <div class="py-24 text-center border border-dashed opacity-50" style={{ borderColor: tokens.border }}>
+            <p class="font-nav uppercase tracking-2px" style={{ color: tokens.textMuted }}>
               SECTOR IS CURRENTLY EMPTY // NO DATA ENTRIES DETECTED
             </p>
           </div>
@@ -337,19 +343,27 @@ app.get("/*", async (c) => {
       site={site}
       footer={footer}
       detectedUrl={detectedUrl}
+      currentPath={new URL(c.req.url).pathname}
     >
       <div class="text-center py-24">
-        <h1 class="text-4rem mb-4 font-header tracking-widest text-[var(--theme-accent)] drop-shadow-[0_0_15px_var(--theme-accent-glow)]">
+        <h1
+          class="text-4rem mb-4 font-header tracking-widest"
+          style={{ color: tokens.primary }}
+        >
           404: SECTOR NOT FOUND
         </h1>
-        <p class="mb-12 text-[var(--theme-text-dim)] font-nav uppercase tracking-2px opacity-80">
-          The coordinate <strong>/${slug}</strong> does not exist in our current
+        <p class="mb-12 font-nav uppercase tracking-2px opacity-80" style={{ color: tokens.textMuted }}>
+          The coordinate <strong>/{slug}</strong> does not exist in our current
           database.
         </p>
         <a
           href="/"
-          class="btn-primary no-underline inline-block px-10 py-4 transition-all hover:scale-105"
-          style={{ textShadow: "none" }}
+          class="no-underline inline-block px-10 py-4 border border-solid font-mono text-0.85rem uppercase tracking-2px transition-all hover:scale-105"
+          style={{
+            color: tokens.primary,
+            borderColor: tokens.primary,
+            textShadow: "none",
+          }}
         >
           RETURN TO HOME SECTOR
         </a>
