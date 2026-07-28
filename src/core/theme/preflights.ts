@@ -14,14 +14,14 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
   return {
     shortcuts: {
       "content-frame":
-        `my-8 rounded-xl overflow-hidden border border-solid border-[${tokens.border}] bg-[${tokens.surface}] p-2 shadow-xs`,
-      "content-img": "max-w-full h-auto block mx-auto rounded-lg",
+        `my-8 overflow-hidden border border-solid border-[${tokens.border}] bg-[${tokens.surface}] p-2 shadow-xs`,
+      "content-img": "max-w-full h-auto block mx-auto",
       "image-stretched":
-        "important-w-[calc(100%+4rem)] important-ml--8 important-mr--8 important-max-w-none important-rounded-none",
+        "important-w-[calc(100%+4rem)] important-ml--8 important-mr--8 important-max-w-none",
       "image-with-border":
         `important-border-2 important-border-solid important-border-[${tokens.primary}]`,
       "image-with-background":
-        `bg-[${tokens.surfaceVariant}] important-p-12 flex flex-col justify-center items-center rounded-xl`,
+        `bg-[${tokens.surfaceVariant}] important-p-12 flex flex-col justify-center items-center`,
     },
     preflights: [
       {
@@ -132,7 +132,6 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
           #main-content code {
             background: ${tokens.surfaceVariant};
             border: 1px solid ${tokens.border};
-            border-radius: 4px;
             color: ${tokens.primary};
             padding: 0.2rem 0.45rem;
             font-family: ${tokens.fontMono};
@@ -142,7 +141,6 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
           #main-content blockquote {
             background: ${tokens.surfaceVariant};
             border-left: 4px solid ${tokens.primary};
-            border-radius: 0 12px 12px 0;
             padding: 1.25rem 1.5rem;
             margin: 1.75rem 0;
             font-style: italic;

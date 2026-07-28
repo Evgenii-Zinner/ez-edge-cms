@@ -52,6 +52,7 @@ export interface ImageProps {
   alt?: string;
   header?: string;
   footer?: string;
+  caption?: string;
   stretched?: boolean;
   withBorder?: boolean;
   withBackground?: boolean;

@@ -115,7 +115,7 @@ export class RuriThemeConnector implements ThemeConnector {
         alt={props.alt || ""}
         header={props.header}
         footer={props.footer || props.caption}
-        withPanel={props.withPanel !== false}
+        withPanel={props.withPanel === true}
         class={props.class || "my-6"}
       />
     ),
@@ -168,34 +168,52 @@ export class RuriThemeConnector implements ThemeConnector {
     ),
 
     Video: (props: VideoProps) => {
-      const mediaHtml = props.embedUrl
-        ? `<iframe src="${props.embedUrl}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`
-        : `<video src="${props.url}" class="w-full h-full" controls preload="metadata"></video>`;
-      return `
-        <div class="ruri-embed my-6">
-          <div class="aspect-video w-full">
-            ${mediaHtml}
+      const mediaHtml = props.embedUrl ? (
+        <iframe
+          src={props.embedUrl}
+          class="w-full h-full border-0 block"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy"
+        />
+      ) : (
+        <video src={props.url} class="w-full h-full border-0 block" controls preload="metadata" />
+      );
+
+      return (
+        <Panel shape="sci-fi" glow={true} class="my-6">
+          <div class="aspect-video w-full overflow-hidden bg-ruriVoid">
+            {mediaHtml}
           </div>
-          ${props.caption ? `<div class="ruri-embed-caption mt-2 text-center">${props.caption}</div>` : ""}
-        </div>
-      `;
+          {props.caption ? (
+            <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriOnSurfaceMuted">
+              — {props.caption}
+            </div>
+          ) : null}
+        </Panel>
+      );
     },
 
-    Embed: (props: EmbedProps) => `
-      <div class="ruri-embed my-6">
-        <div class="aspect-video w-full">
+    Embed: (props: EmbedProps) => (
+      <Panel shape="sci-fi" glow={true} class="my-6">
+        <div class="aspect-video w-full overflow-hidden bg-ruriVoid">
           <iframe
-            src="${props.embed}"
-            class="w-full h-full"
+            src={props.embed}
+            class="w-full h-full border-0 block"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
             loading="lazy"
-          ></iframe>
+          />
         </div>
-        ${props.caption ? `<div class="ruri-embed-caption mt-2 text-center">${props.caption}</div>` : ""}
-      </div>
-    `,
+        {props.caption ? (
+          <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriOnSurfaceMuted">
+            — {props.caption}
+          </div>
+        ) : null}
+      </Panel>
+    ),
 
     Delimiter: () => `<hr class="ruri-delimiter my-8" />`,
 
