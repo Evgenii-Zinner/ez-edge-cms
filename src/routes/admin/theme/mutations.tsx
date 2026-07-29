@@ -7,10 +7,8 @@
 
 import { Hono } from "hono";
 import { saveTheme } from "@core/kv";
-import { ThemeSchema } from "@core/schema";
 import { createDefaultTheme } from "@core/factory";
 import { GlobalConfigVariables } from "@core/middleware";
-import { validateForm } from "@utils/validation";
 import { toastResponse } from "@utils/admin-responses";
 
 /**
@@ -31,39 +29,22 @@ const mutations = new Hono<{
  */
 mutations.post("/save", async (c): Promise<Response> => {
   try {
-    const p = (u: string) => (v: any) => `${v}${u}`;
-
-    const validatedValues = await validateForm(
-      c.req,
-      ThemeSchema.shape.values,
-      {
-        coerce: {
-          primary_hue: "number",
-          surface_opacity: "number",
-        },
-        map: {
-          primary_sat: p("%"),
-          primary_light: p("%"),
-          bg_sat: p("%"),
-          bg_light: p("%"),
-          surface_sat: p("%"),
-          surface_light: p("%"),
-          text_main_sat: p("%"),
-          text_main_light: p("%"),
-          text_dim_sat: p("%"),
-          text_dim_light: p("%"),
-          glow_spread: p("px"),
-          boot_speed: p("s"),
-          elevation: p("px"),
-        },
-      },
-    );
-
+    const formData = await c.req.parseBody();
     const currentTheme = c.var.theme;
+
+    const updatedValues = {
+      ...currentTheme.values,
+      styling_system: (formData.styling_system as string) || currentTheme.values.styling_system || "ruri",
+      font_header: (formData.font_header as string) || currentTheme.values.font_header,
+      font_nav: (formData.font_nav as string) || currentTheme.values.font_nav,
+      font_body: (formData.font_body as string) || currentTheme.values.font_body,
+      font_mono: (formData.font_mono as string) || currentTheme.values.font_mono,
+    };
+
     const updatedTheme = {
       ...currentTheme,
       updatedAt: new Date().toISOString(),
-      values: validatedValues,
+      values: updatedValues,
     };
 
     await saveTheme(c.env, updatedTheme);
