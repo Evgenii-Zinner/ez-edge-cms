@@ -213,7 +213,7 @@ export class RuriThemeConnector implements ThemeConnector {
 
 
     Header: (props) => (
-      <header>
+      <header class="sticky top-0 z-50">
         <Nav
           brand={
             <div class="flex items-center gap-2">
@@ -311,6 +311,59 @@ export class RuriThemeConnector implements ThemeConnector {
       #theme-toggle .dark-icon { display: block; }
       [data-theme="dark"] #theme-toggle .light-icon { display: block !important; }
       [data-theme="dark"] #theme-toggle .dark-icon { display: none !important; }
+
+      /* Ruri Connector Sci-Fi List Typography */
+      #main-content ul,
+      #main-content .list-bullet {
+        position: relative;
+        list-style: none !important;
+        margin: 1.5rem 0;
+        padding-left: 1.75rem;
+      }
+      #main-content ul::before,
+      #main-content .list-bullet::before {
+        content: '';
+        position: absolute;
+        top: 0.6rem;
+        bottom: 0.6rem;
+        left: 6px;
+        width: 1px;
+        background: linear-gradient(to bottom, rgba(0, 195, 255, 0.8) 0%, rgba(0, 195, 255, 0.3) 100%);
+        pointer-events: none;
+      }
+      #main-content ul > li,
+      #main-content .list-bullet > li {
+        position: relative;
+        list-style: none !important;
+        margin-bottom: 0.75rem;
+        line-height: 1.65;
+        color: var(--ruri-text-muted, #94a3b8);
+      }
+      #main-content ul > li::before,
+      #main-content .list-bullet > li::before {
+        content: '';
+        position: absolute;
+        left: -1.75rem;
+        top: 0.45rem;
+        width: 12px;
+        height: 10px;
+        background-color: var(--ruri-primary, #00c3ff);
+        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+      }
+
+      #main-content ol,
+      #main-content .list-number {
+        list-style-type: decimal !important;
+        padding-left: 1.75rem;
+        margin: 1.25rem 0;
+      }
+      #main-content ol > li,
+      #main-content .list-number > li {
+        list-style-type: decimal !important;
+        margin-bottom: 0.5rem;
+        line-height: 1.65;
+        color: var(--ruri-text-muted, #94a3b8);
+      }
     `);
   }
 

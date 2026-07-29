@@ -144,10 +144,17 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
             dangerouslySetInnerHTML={{
               __html: `
           if (!window.mouseListenerAdded) {
-            document.addEventListener('mousemove', (e) => {
-              document.body.style.setProperty('--mouse-x', e.clientX + 'px');
-              document.body.style.setProperty('--mouse-y', e.clientY + 'px');
-            });
+            var ticking = false;
+            document.addEventListener('mousemove', function(e) {
+              if (!ticking) {
+                requestAnimationFrame(function() {
+                  document.body.style.setProperty('--mouse-x', e.clientX + 'px');
+                  document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+                  ticking = false;
+                });
+                ticking = true;
+              }
+            }, { passive: true });
             window.mouseListenerAdded = true;
           }
         `,

@@ -352,6 +352,35 @@ export class AstryxThemeConnector implements ThemeConnector {
       #theme-toggle .dark-icon { display: block; }
       [data-theme="dark"] #theme-toggle .light-icon { display: block !important; }
       [data-theme="dark"] #theme-toggle .dark-icon { display: none !important; }
+
+      /* Astryx Connector List Typography */
+      #main-content ul,
+      #main-content .list-bullet {
+        list-style-type: disc !important;
+        margin: 1.25rem 0;
+        padding-left: 1.75rem;
+      }
+      #main-content ul > li,
+      #main-content .list-bullet > li {
+        list-style-type: disc !important;
+        margin-bottom: 0.5rem;
+        line-height: 1.7;
+        color: var(--astryx-text-muted, #475569);
+      }
+
+      #main-content ol,
+      #main-content .list-number {
+        list-style-type: decimal !important;
+        margin: 1.25rem 0;
+        padding-left: 1.75rem;
+      }
+      #main-content ol > li,
+      #main-content .list-number > li {
+        list-style-type: decimal !important;
+        margin-bottom: 0.5rem;
+        line-height: 1.7;
+        color: var(--astryx-text-muted, #475569);
+      }
     `);
   }
 

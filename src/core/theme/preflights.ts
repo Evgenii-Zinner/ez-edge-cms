@@ -93,67 +93,6 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             text-decoration: underline;
           }
 
-          #main-content ul,
-          #main-content .list-bullet {
-            list-style-type: disc !important;
-            margin: 1.25rem 0;
-            padding-left: 1.75rem;
-          }
-          #main-content ul > li,
-          #main-content .list-bullet > li {
-            list-style-type: disc !important;
-            margin-bottom: 0.5rem;
-            line-height: 1.7;
-            color: var(--astryx-text-muted, var(--ruri-text-muted, var(--theme-text-dim, ${tokens.textMuted})));
-          }
-
-          #main-content ol,
-          #main-content .list-number {
-            list-style-type: decimal !important;
-            padding-left: 1.75rem;
-            margin: 1.25rem 0;
-          }
-          #main-content ol > li,
-          #main-content .list-number > li {
-            list-style-type: decimal !important;
-            margin-bottom: 0.5rem;
-            line-height: 1.7;
-            color: var(--astryx-text-muted, var(--ruri-text-muted, var(--theme-text-dim, ${tokens.textMuted})));
-          }
-
-          .ruri-content ul {
-            position: relative;
-            list-style: none;
-            margin: 1.5rem 0;
-            padding-left: 1.75rem;
-          }
-          .ruri-content ul::before {
-            content: '';
-            position: absolute;
-            top: 0.6rem;
-            bottom: 0.6rem;
-            left: 6px;
-            width: 1px;
-            background: linear-gradient(to bottom, rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.8) 0%, rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.3) 100%);
-            pointer-events: none;
-          }
-          .ruri-content ul > li {
-            position: relative;
-            margin-bottom: 0.75rem;
-            line-height: 1.65;
-            color: ${tokens.textMuted};
-          }
-          .ruri-content ul > li::before {
-            content: '';
-            position: absolute;
-            left: -1.75rem;
-            top: 0.45rem;
-            width: 12px;
-            height: 10px;
-            background-color: ${tokens.primary};
-            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-          }
-
           #main-content :not(pre) > code {
             background: ${tokens.surfaceVariant};
             border: 1px solid ${tokens.border};
