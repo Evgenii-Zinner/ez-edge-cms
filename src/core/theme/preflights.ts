@@ -93,23 +93,29 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             text-decoration: underline;
           }
 
-          #main-content ul {
-            list-style-type: disc;
+          #main-content ul,
+          #main-content .list-bullet {
+            list-style-type: disc !important;
             margin: 1.25rem 0;
             padding-left: 1.75rem;
           }
-          #main-content ul > li {
+          #main-content ul > li,
+          #main-content .list-bullet > li {
+            list-style-type: disc !important;
             margin-bottom: 0.5rem;
             line-height: 1.7;
             color: var(--astryx-text-muted, var(--ruri-text-muted, var(--theme-text-dim, ${tokens.textMuted})));
           }
 
-          #main-content ol {
-            list-style-type: decimal;
+          #main-content ol,
+          #main-content .list-number {
+            list-style-type: decimal !important;
             padding-left: 1.75rem;
             margin: 1.25rem 0;
           }
-          #main-content ol > li {
+          #main-content ol > li,
+          #main-content .list-number > li {
+            list-style-type: decimal !important;
             margin-bottom: 0.5rem;
             line-height: 1.7;
             color: var(--astryx-text-muted, var(--ruri-text-muted, var(--theme-text-dim, ${tokens.textMuted})));
