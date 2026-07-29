@@ -225,22 +225,29 @@ describe("Public Routes & Archive Explorer", () => {
       expect(body.byteLength).toBe(3);
     });
 
-    it("GET /images/* - should return 404 if image path has no filename", async () => {
+    it("GET /images/* - should return SVG fallback image if image path has no filename", async () => {
       const res = await app.request(
         "http://localhost/images/no-filename",
         { method: "GET" },
         mockEnv(),
       );
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
+      const text = await res.text();
+      expect(text).toContain("<svg");
     });
 
-    it("GET /images/* - should return 404 if image does not exist", async () => {
+    it("GET /images/* - should return SVG fallback image if image does not exist", async () => {
       const res = await app.request(
         "http://localhost/images/pages/missing.png",
         { method: "GET" },
         mockEnv(),
       );
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
+      const text = await res.text();
+      expect(text).toContain("<svg");
+      expect(text).toContain("MEDIA // NOT FOUND IN KV STORAGE");
     });
 
     it("GET / - should redirect to setup and ensure defaults when both admin user and system status are absent", async () => {

@@ -16,6 +16,8 @@ function minifyCss(css: string): string {
   return css.replace(/\s+/g, " ").trim();
 }
 
+import { renderAsyncYouTubeFacade } from "./youtube-facade";
+
 export class AstryxThemeConnector implements ThemeConnector {
   readonly id = "astryx";
   readonly name = "Meta Astryx Design System";
@@ -79,14 +81,14 @@ export class AstryxThemeConnector implements ThemeConnector {
     ),
 
     CodeBlock: (props) => (
-      <div class="my-6 rounded-xl overflow-hidden border border-solid border-[#334155] bg-[#0f172a] text-slate-100 p-5 font-mono text-0.875rem shadow-md">
+      <div class="my-6 rounded-xl overflow-hidden border border-solid border-[#334155] bg-[#0f172a] text-[#f8fafc] p-5 font-mono text-0.875rem shadow-md">
         {props.filename && (
-          <div class="text-xs text-slate-400 border-b border-slate-700/60 pb-2.5 mb-3 font-mono tracking-wide flex items-center gap-2">
-            <span class="inline-block w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+          <div class="text-xs text-[#94a3b8] border-b border-solid border-[#334155]/60 pb-2.5 mb-3 font-mono tracking-wide flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-[#475569]"></span>
             {props.filename}
           </div>
         )}
-        <pre class="m-0 overflow-x-auto"><code class={props.language || ""}>{props.code}</code></pre>
+        <pre class="m-0 overflow-x-auto text-[#f8fafc]" style={{ color: "#f8fafc" }}><code class={props.language || ""} style={{ color: "#f8fafc" }}>{props.code}</code></pre>
       </div>
     ),
 
@@ -154,35 +156,20 @@ export class AstryxThemeConnector implements ThemeConnector {
     },
 
     Video: (props: VideoProps) => {
-      const mediaHtml = props.embedUrl
-        ? `<iframe src="${props.embedUrl}" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`
-        : `<video src="${props.url}" controls width="100%" height="100%" preload="metadata"></video>`;
+      if (props.embedUrl) {
+        return renderAsyncYouTubeFacade(props.embedUrl, props.caption, 'astryx');
+      }
       return `
         <div class="my-6 rounded-xl overflow-hidden border border-solid border-[var(--astryx-border,#e2e8f0)] shadow-sm">
           <div class="aspect-video w-full bg-[var(--astryx-surface-variant,#f8fafc)]">
-            ${mediaHtml}
+            <video src="${props.url}" controls width="100%" height="100%" preload="metadata"></video>
           </div>
           ${props.caption ? `<div class="text-center text-0.8rem text-[var(--astryx-text-muted,#475569)] mt-2 italic px-4 pb-3">${props.caption}</div>` : ""}
         </div>
       `;
     },
 
-    Embed: (props: EmbedProps) => `
-      <div class="my-6 rounded-xl overflow-hidden border border-solid border-[var(--astryx-border,#e2e8f0)] shadow-sm">
-        <div class="aspect-video w-full bg-[var(--astryx-surface-variant,#f8fafc)]">
-          <iframe
-            src="${props.embed}"
-            width="100%"
-            height="100%"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            loading="lazy"
-          ></iframe>
-        </div>
-        ${props.caption ? `<div class="text-center text-0.8rem text-[var(--astryx-text-muted,#475569)] mt-2 italic px-4 pb-3">${props.caption}</div>` : ""}
-      </div>
-    `,
+    Embed: (props: EmbedProps) => renderAsyncYouTubeFacade(props.embed, props.caption, 'astryx'),
 
     Delimiter: () => `<hr class="border-t border-solid border-[var(--astryx-border,#e2e8f0)] w-full my-8" />`,
 

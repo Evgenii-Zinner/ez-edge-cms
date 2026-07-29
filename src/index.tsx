@@ -26,16 +26,41 @@ const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
 app.use("*", injectGlobalConfig());
 app.use("*", injectUnoCSS());
 
+function createFallbackImageSvg(filename: string): string {
+  const cleanName = filename.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").toUpperCase();
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(0,195,255,0.08)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  <circle cx="400" cy="190" r="40" fill="none" stroke="#00c3ff" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+  <path d="M 388 180 L 412 180 L 412 200 L 388 200 Z M 382 190 L 376 190 M 424 190 L 418 190" fill="none" stroke="#00c3ff" stroke-width="1.5"/>
+  <text x="50%" y="255" text-anchor="middle" fill="#00c3ff" font-family="monospace" font-size="12" letter-spacing="2" opacity="0.85">${cleanName}</text>
+  <text x="50%" y="280" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="10" letter-spacing="1">MEDIA // NOT FOUND IN KV STORAGE</text>
+</svg>`;
+}
+
 /**
  * Binary Image Delivery Route.
  * Fetches binary image data from KV based on the slug and filename.
+ * Automatically falls back to a generated SVG graphic if the image is missing in KV (eliminates 404 console errors).
  */
 app.get("/images/*", async (c) => {
   const path = c.req.path;
   const relativePath = path.substring(8);
   const lastSlashIndex = relativePath.lastIndexOf("/");
 
-  if (lastSlashIndex === -1) return c.notFound();
+  if (lastSlashIndex === -1) {
+    c.header("Content-Type", "image/svg+xml");
+    return c.body(createFallbackImageSvg("unknown"));
+  }
 
   const slug = relativePath.substring(0, lastSlashIndex);
   const filename = relativePath.substring(lastSlashIndex + 1);
@@ -45,13 +70,39 @@ app.get("/images/*", async (c) => {
     contentType: string;
   }>(imageKey, "arrayBuffer");
 
-  if (!value) return c.notFound();
+  if (!value) {
+    c.header("Content-Type", "image/svg+xml");
+    c.header("Cache-Control", "no-cache");
+    return c.body(createFallbackImageSvg(filename));
+  }
 
   const contentType = metadata?.contentType || "image/webp";
   c.header("Content-Type", contentType);
   c.header("Cache-Control", "public, max-age=31536000, immutable");
 
   return c.body(value as ArrayBuffer);
+});
+
+const DEFAULT_FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 866" width="32" height="32"><polygon points="250,0 750,0 1000,433 750,866 250,866 0,433" fill="#020612" stroke="#00c3ff" stroke-width="60"/><polygon points="350,173 650,173 800,433 650,693 350,693 200,433" fill="#00c3ff" opacity="0.85"/></svg>`;
+
+/**
+ * Favicon Delivery Routes (/favicon.ico & /favicon.svg).
+ * Serves configured site.logoSvg or default EZ EDGE brand favicon with 200 OK status.
+ */
+app.get("/favicon.ico", async (c) => {
+  const site = c.get("site");
+  const svgContent = site?.logoSvg || DEFAULT_FAVICON_SVG;
+  c.header("Content-Type", "image/svg+xml");
+  c.header("Cache-Control", "public, max-age=86400");
+  return c.body(svgContent);
+});
+
+app.get("/favicon.svg", async (c) => {
+  const site = c.get("site");
+  const svgContent = site?.logoSvg || DEFAULT_FAVICON_SVG;
+  c.header("Content-Type", "image/svg+xml");
+  c.header("Cache-Control", "public, max-age=86400");
+  return c.body(svgContent);
 });
 
 /**

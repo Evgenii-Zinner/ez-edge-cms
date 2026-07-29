@@ -15,6 +15,8 @@ function minifyCss(css: string): string {
   return css.replace(/\s+/g, " ").trim();
 }
 
+import { renderAsyncYouTubeFacade } from "./youtube-facade";
+
 export class DefaultThemeConnector implements ThemeConnector {
   readonly id = "default";
   readonly name = "Default Standalone Theme";
@@ -115,35 +117,20 @@ export class DefaultThemeConnector implements ThemeConnector {
     ),
 
     Video: (props: VideoProps) => {
-      const mediaHtml = props.embedUrl
-        ? `<iframe src="${props.embedUrl}" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`
-        : `<video src="${props.url}" controls width="100%" height="100%" preload="metadata"></video>`;
+      if (props.embedUrl) {
+        return renderAsyncYouTubeFacade(props.embedUrl, props.caption, 'default');
+      }
       return `
         <div class="my-6">
           <div class="aspect-video w-full border border-solid border-[var(--theme-accent-glow,rgba(0,255,255,0.2))] bg-[rgba(0,0,0,0.2)]">
-            ${mediaHtml}
+            <video src="${props.url}" controls width="100%" height="100%" preload="metadata"></video>
           </div>
           ${props.caption ? `<div class="text-center text-0.8rem color-[var(--theme-text-dim,#a0baba)] mt-2 italic">${props.caption}</div>` : ""}
         </div>
       `;
     },
 
-    Embed: (props: EmbedProps) => `
-      <div class="my-6">
-        <div class="aspect-video w-full border border-solid border-[var(--theme-accent-glow,rgba(0,255,255,0.2))] bg-[rgba(0,0,0,0.2)]">
-          <iframe
-            src="${props.embed}"
-            width="100%"
-            height="100%"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            loading="lazy"
-          ></iframe>
-        </div>
-        ${props.caption ? `<div class="text-center text-0.8rem color-[var(--theme-text-dim,#a0baba)] mt-2 italic">${props.caption}</div>` : ""}
-      </div>
-    `,
+    Embed: (props: EmbedProps) => renderAsyncYouTubeFacade(props.embed, props.caption, 'default'),
 
     Delimiter: () => `<hr class="border-t border-solid border-[var(--theme-accent-glow,rgba(0,255,255,0.2))] opacity-30 w-full my-8" />`,
 

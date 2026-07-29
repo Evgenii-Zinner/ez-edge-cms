@@ -129,7 +129,7 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             line-height: 1.65;
           }
 
-          #main-content code {
+          #main-content :not(pre) > code {
             background: ${tokens.surfaceVariant};
             border: 1px solid ${tokens.border};
             color: ${tokens.primary};
