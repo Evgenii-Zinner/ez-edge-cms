@@ -2,94 +2,59 @@
 /**
  * @module ThemeComponents
  * @description Shared UI components for the Theme Styler.
+ * Features an interactive live iframe preview panel with Dark/Light mode toggling.
  */
 
 import type { FC } from "hono/jsx";
 import { html } from "hono/html";
-import { themeRegistry } from "@core/theme";
 
 /**
  * Component: ThemePreview
- * Renders the live-updating site preview used in the Theme Styler.
+ * Renders an iframe-based live preview container with an interactive dark/light toolbar.
  *
  * @returns A JSX element containing the site preview.
  */
 export const ThemePreview: FC = () => {
-  const RuriUI = themeRegistry.get("ruri").components;
-
   return (
-    <div class="relative border border-solid border-[var(--theme-accent-glow)] rounded-lg overflow-hidden">
-      <style id="preview-theme-styles"></style>
+    <div class="flex flex-col h-full border border-solid border-[var(--theme-accent-glow,#00c3ff)]/40 rounded-xl overflow-hidden bg-[#0a0f1d] shadow-xl">
+      {/* PREVIEW TOOLBAR */}
+      <div class="flex items-center justify-between px-4 py-2.5 bg-[#121929] border-b border-solid border-[#1e293b]">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-[#ff5f56] inline-block"></span>
+          <span class="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block"></span>
+          <span class="w-3 h-3 rounded-full bg-[#27c93f] inline-block"></span>
+          <span class="text-xs font-mono text-[#94a3b8] ml-2 tracking-wider uppercase">Live Interactive Preview</span>
+        </div>
 
-      <div
-        id="preview-container"
-        class="w-full h-full overflow-y-auto bg-[var(--theme-bg)]"
-      >
-        {/* Dummy Public Navbar */}
-        <header class="main-header relative">
-          <div class="header-content p-4 px-8">
-            <a href="#" class="logo">
-              EZ-EDGE
-            </a>
-            <nav class="main-nav">
-              <a href="#" class="nav-link">
-                HOME
-              </a>
-              <a href="#" class="nav-link">
-                RESOURCES
-              </a>
-              <a
-                href="#"
-                class="nav-link color-[var(--theme-accent)] border-b-[var(--theme-accent)]"
-              >
-                ACTIVATED
-              </a>
-            </nav>
-          </div>
-        </header>
+        {/* DARK / LIGHT MODE SWITCHER FOR PREVIEW */}
+        <div class="flex items-center gap-2 bg-[#0b0f19] p-1 rounded-lg border border-[#1e293b]">
+          <button
+            type="button"
+            id="preview-mode-dark"
+            class="px-3 py-1 text-xs font-mono rounded transition-all bg-[#00c3ff]/20 text-[#00c3ff] font-bold cursor-pointer border-0"
+            onclick="window.setPreviewMode('dark')"
+          >
+            🌙 DARK
+          </button>
+          <button
+            type="button"
+            id="preview-mode-light"
+            class="px-3 py-1 text-xs font-mono rounded transition-all text-[#94a3b8] hover:text-white cursor-pointer border-0 bg-transparent"
+            onclick="window.setPreviewMode('light')"
+          >
+            ☀️ LIGHT
+          </button>
+        </div>
+      </div>
 
-        <main id="main-content" class="m-0 p-0">
-          <div class="max-w-800px mx-auto py-12 px-8">
-            <h1 class="mb-4">SYSTEM.INITIALIZE()</h1>
-            <p class="text-1.1rem">
-              This is the <strong>Live Preview</strong> environment. Adjust the
-              controls on the left to instantly see changes to typography,
-              glassmorphism surfaces, glow effects, and core identity colors.
-            </p>
-            <p>
-              Code blocks utilize your chosen Monospace font:{" "}
-              <code>sudo ./hack_the_planet.sh</code>
-            </p>
-
-            <div class="my-8 flex gap-4">
-              <RuriUI.Button shape="cyber" variant="default">PRIMARY ACTION</RuriUI.Button>
-              <RuriUI.Button shape="notch" variant="neutral">SECONDARY</RuriUI.Button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-              <RuriUI.Card shape="sci-fi" glow={true} title="Visual Feedback" status="ACTIVE">
-                <div class="flex items-center flex-wrap gap-3 mb-4">
-                  <div class="i-carbon-development text-1.8rem color-[var(--ruri-primary)] flex-shrink-0"></div>
-                </div>
-                <p class="text-0.85rem m-0 leading-relaxed opacity-80">
-                  Notice the hover state and hologram animation driven by boot
-                  speed. The design system dynamically adjusts these effects
-                  based on your chosen accent color and transparency levels.
-                </p>
-              </RuriUI.Card>
-              <RuriUI.Card shape="rectangle" title="Surface Testing" status="ONLINE">
-                <div class="flex items-center flex-wrap gap-3 mb-4">
-                  <div class="i-carbon-color-palette text-1.8rem color-[var(--ruri-primary)] flex-shrink-0"></div>
-                </div>
-                <p class="text-0.85rem m-0 leading-relaxed opacity-80">
-                  Evaluate surface opacity against the deep background color.
-                  This card tests how your choices for surface color and
-                  primary text contrast interact in a real-world layout.
-                </p>
-              </RuriUI.Card>
-            </div>
-          </div>
-        </main>
+      {/* LIVE IFRAME CONTAINER */}
+      <div class="flex-1 w-full h-full relative bg-black">
+        <iframe
+          id="theme-preview-iframe"
+          src="/admin/theme/preview-frame?styling_system=ruri&theme_mode=dark"
+          class="w-full h-full border-0"
+          title="Live Site Theme Preview"
+        ></iframe>
       </div>
     </div>
   );
@@ -97,7 +62,7 @@ export const ThemePreview: FC = () => {
 
 /**
  * Component: ThemePreviewScript
- * Injects the client-side logic for real-time CSS variable updates.
+ * Injects the client-side logic for real-time CSS variable and iframe preview updates.
  *
  * @returns A Hono HTML template string.
  */
@@ -106,79 +71,46 @@ export const ThemePreviewScript = () => {
     <script>
       (function () {
         const form = document.querySelector("#theme-form");
-        const previewStyle = document.getElementById("preview-theme-styles");
-        const previewContainer = document.getElementById("preview-container");
+        const iframe = document.getElementById("theme-preview-iframe");
+        let currentMode = "dark";
 
-        const updatePreviewCSS = () => {
+        window.setPreviewMode = function(mode) {
+          currentMode = mode;
+          const darkBtn = document.getElementById("preview-mode-dark");
+          const lightBtn = document.getElementById("preview-mode-light");
+
+          if (mode === "dark") {
+            darkBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all bg-[#00c3ff]/20 text-[#00c3ff] font-bold cursor-pointer border-0";
+            lightBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all text-[#94a3b8] hover:text-white cursor-pointer border-0 bg-transparent";
+          } else {
+            lightBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all bg-[#00c3ff]/20 text-[#00c3ff] font-bold cursor-pointer border-0";
+            darkBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all text-[#94a3b8] hover:text-white cursor-pointer border-0 bg-transparent";
+          }
+
+          updateIframeSrc();
+        };
+
+        const updateIframeSrc = () => {
+          if (!form || !iframe) return;
           const fd = new FormData(form);
           const vals = Object.fromEntries(fd.entries());
 
-          // Ensure inputs exist and values are parsed
-          if (!vals.primary_hue) return;
+          const params = new URLSearchParams({
+            styling_system: vals.styling_system || "ruri",
+            font_header: vals.font_header || "Inter",
+            font_nav: vals.font_nav || "Inter",
+            font_body: vals.font_body || "Inter",
+            font_mono: vals.font_mono || "monospace",
+            theme_mode: currentMode
+          });
 
-          const css = \`
-          #preview-container {
-            --theme-primary-hue: \${vals.primary_hue};
-            --theme-primary-sat: \${vals.primary_sat}%;
-            --theme-primary-light: \${vals.primary_light}%;
-            
-            --theme-accent: hsl(var(--theme-primary-hue), var(--theme-primary-sat), var(--theme-primary-light));
-            --theme-accent-glow: hsla(var(--theme-primary-hue), var(--theme-primary-sat), var(--theme-primary-light), 0.4);
-            --theme-accent-dim: hsla(var(--theme-primary-hue), var(--theme-primary-sat), var(--theme-primary-light), 0.1);
-            
-            --theme-bg: hsl(var(--theme-primary-hue), \${vals.bg_sat}%, \${vals.bg_light}%);
-            --theme-surface: hsla(var(--theme-primary-hue), \${vals.surface_sat}%, \${vals.surface_light}%, \${vals.surface_opacity});
-            --theme-surface-solid: hsl(var(--theme-primary-hue), \${vals.surface_sat}%, \${vals.surface_light}%);
-            --theme-text-main: hsl(var(--theme-primary-hue), \${vals.text_main_sat}%, \${vals.text_main_light}%);
-            --theme-text-dim: hsl(var(--theme-primary-hue), \${vals.text_dim_sat}%, \${vals.text_dim_light}%);
-            
-            --font-header: '\${vals.font_header}', sans-serif;
-            --font-nav: '\${vals.font_nav}', sans-serif;
-            --font-body: '\${vals.font_body}', sans-serif;
-            --font-mono: '\${vals.font_mono}', monospace;
-            
-            --ui-glow-spread: \${vals.glow_spread}px;
-            --ui-boot-speed: \${vals.boot_speed}s;
-            --ui-elevation: \${vals.elevation}px;
-          }
-        \`;
-
-          previewStyle.textContent = css;
-
-          // Load Google Fonts dynamically for preview using a singleton link tag
-          const fontNames = [
-            vals.font_header,
-            vals.font_nav,
-            vals.font_body,
-            vals.font_mono,
-          ].filter(Boolean);
-          const uniqueFonts = [...new Set(fontNames)];
-
-          const fontUrl =
-            "https://fonts.googleapis.com/css2?" +
-            uniqueFonts
-              .map((f) => "family=" + f.replace(/s+/g, "+") + ":wght@400;700")
-              .join("&") +
-            "&display=swap";
-
-          let fontLink = document.getElementById("dynamic-fonts-preview");
-          if (!fontLink) {
-            fontLink = document.createElement("link");
-            fontLink.id = "dynamic-fonts-preview";
-            fontLink.rel = "stylesheet";
-            document.head.appendChild(fontLink);
-          }
-          if (fontLink.href !== fontUrl) {
-            fontLink.href = fontUrl;
-          }
+          iframe.src = "/admin/theme/preview-frame?" + params.toString();
         };
 
-        // Initialize preview on load
-        updatePreviewCSS();
-
-        // Listen for all input changes
-        form.addEventListener("input", updatePreviewCSS);
-        form.addEventListener("change", updatePreviewCSS);
+        if (form) {
+          form.addEventListener("input", updateIframeSrc);
+          form.addEventListener("change", updateIframeSrc);
+        }
       })();
     </script>
   `;
@@ -198,7 +130,7 @@ export const ThemeFontPreloader: FC<{ fonts: string[] }> = (props) => {
   const fontUrl =
     "https://fonts.googleapis.com/css2?" +
     uniqueFonts
-      .map((f) => "family=" + f.replace(/\s+/g, "+") + ":wght@400")
+      .map((f) => "family=" + encodeURIComponent(f) + ":wght@400;600;700")
       .join("&") +
     "&display=swap";
 
