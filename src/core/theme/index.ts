@@ -8,5 +8,4 @@ export * from "./registry";
 export * from "./tokens";
 export * from "./preflights";
 export * from "./connectors/ruri";
-export * from "./connectors/default";
 export * from "./connectors/astryx";

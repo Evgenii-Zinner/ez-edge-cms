@@ -9,13 +9,13 @@ import type { FC } from "hono/jsx";
 import { Button as RuriButton } from "ruri-ui";
 
 export interface ThemeSwitcherProps {
-  /** Theme connector style identifier ('ruri' | 'astryx' | 'default') */
-  styleVariant?: "ruri" | "astryx" | "default";
+  /** Theme connector style identifier ('ruri' | 'astryx') */
+  styleVariant?: "ruri" | "astryx";
   class?: string;
 }
 
 export const ThemeSwitcher: FC<ThemeSwitcherProps> = ({
-  styleVariant = "default",
+  styleVariant = "ruri",
   class: className = "",
 }) => {
   const icons = (
@@ -56,38 +56,31 @@ export const ThemeSwitcher: FC<ThemeSwitcherProps> = ({
     </>
   );
 
-  if (styleVariant === "ruri") {
+  if (styleVariant === "astryx") {
     return (
-      <RuriButton
-        shape="icon"
+      <button
+        type="button"
         id="theme-toggle"
-        class={className}
+        class={`inline-flex items-center justify-center p-2 rounded-lg border border-solid border-[var(--astryx-border,#e2e8f0)] text-[var(--astryx-text-muted,#475569)] hover:text-[var(--astryx-primary,#1877f2)] hover:bg-[var(--astryx-surface-variant,#f8fafc)] transition-all cursor-pointer bg-transparent ${className}`.trim()}
         onclick="if(window.toggleTheme){window.toggleTheme()}"
         aria-label="Toggle dark/light mode"
         title="Toggle dark/light mode"
       >
         {icons}
-      </RuriButton>
+      </button>
     );
   }
 
-  let buttonClasses = "";
-  if (styleVariant === "astryx") {
-    buttonClasses = `inline-flex items-center justify-center p-2 rounded-lg border border-solid border-[var(--astryx-border,#e2e8f0)] text-[var(--astryx-text-muted,#475569)] hover:text-[var(--astryx-primary,#1877f2)] hover:bg-[var(--astryx-surface-variant,#f8fafc)] transition-all cursor-pointer bg-transparent ${className}`.trim();
-  } else {
-    buttonClasses = `inline-flex items-center justify-center p-2 rounded-md border border-solid border-current opacity-80 hover:opacity-100 transition-all cursor-pointer bg-transparent ${className}`.trim();
-  }
-
   return (
-    <button
-      type="button"
+    <RuriButton
+      shape="icon"
       id="theme-toggle"
-      class={buttonClasses}
+      class={className}
       onclick="if(window.toggleTheme){window.toggleTheme()}"
       aria-label="Toggle dark/light mode"
       title="Toggle dark/light mode"
     >
       {icons}
-    </button>
+    </RuriButton>
   );
 };

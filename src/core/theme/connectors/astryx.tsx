@@ -139,17 +139,17 @@ export class AstryxThemeConnector implements ThemeConnector {
     Image: (props: ImageProps) => {
       const wrapperClasses = [
         "my-8 overflow-hidden border border-solid border-[var(--astryx-border,#e2e8f0)] rounded-xl bg-[var(--astryx-surface,#ffffff)] p-2 shadow-sm",
-        props.stretched ? "important-w-[calc(100%+4rem)] important-ml--8 important-mr--8 important-max-w-none important-rounded-none" : "",
-        props.withBorder ? "important-border-2 important-border-solid important-border-[var(--astryx-primary,#1877f2)]" : "",
-        props.withBackground ? "bg-[var(--astryx-surface-variant,#f8fafc)] important-p-12 flex flex-col justify-center items-center rounded-xl" : "",
+        props.stretched ? "image-stretched important-w-[calc(100%+4rem)] important-ml--8 important-mr--8 important-max-w-none" : "",
+        props.withBorder ? "image-with-border important-rounded-none important-border-2 important-border-solid important-border-[var(--astryx-primary,#1877f2)]" : "",
+        props.withBackground ? "image-with-background bg-[var(--astryx-surface-variant,#f8fafc)] important-p-12 flex flex-col justify-center items-center rounded-xl" : "",
         props.class || "",
       ].filter(Boolean).join(" ");
       return (
         <div class={wrapperClasses}>
           <img src={props.src} alt={props.alt || ""} class="max-w-full h-auto block mx-auto rounded-lg" loading="lazy" />
-          {props.header && (
+          {(props.caption || props.header) && (
             <div style={{ textAlign: "center", color: "var(--astryx-text-muted,#475569)", fontSize: "0.8rem", marginTop: "0.5rem" }}>
-              {props.header}
+              {props.caption || props.header}
             </div>
           )}
         </div>

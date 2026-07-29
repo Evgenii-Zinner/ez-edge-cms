@@ -26,7 +26,7 @@ export function parseYouTubeUrl(url: string | undefined): EmbedInfo | null {
 export function renderAsyncYouTubeFacade(
   url: string | undefined,
   caption: string | undefined,
-  themeStyle: 'ruri' | 'astryx' | 'default' = 'default'
+  themeStyle: 'ruri' | 'astryx' = 'ruri'
 ): string {
   const ytInfo = parseYouTubeUrl(url);
 
@@ -53,7 +53,15 @@ export function renderAsyncYouTubeFacade(
   let playBtnCss = '';
   let playBtnHtml = '';
 
-  if (themeStyle === 'ruri') {
+  if (themeStyle === 'astryx') {
+    playBtnCss = `
+      .ez-astryx-play{position:absolute;width:68px;height:48px;background:rgba(24,119,242,0.92);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(24,119,242,0.45);transition:all .3s ease}
+      .ez-video-facade:hover .ez-astryx-play{background:#1877f2;transform:scale(1.08)}
+      .ez-astryx-tri{width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #ffffff;margin-left:3px}
+    `;
+    playBtnHtml = `<div class="ez-astryx-play"><div class="ez-astryx-tri"></div></div>`;
+  } else {
+    // Default to Ruri UI cybernetic play button
     playBtnCss = `
       .ez-ruri-play{position:absolute;width:76px;height:66px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 8px rgba(0,195,255,0.6));transition:transform .3s ease}
       .ez-video-facade:hover .ez-ruri-play{transform:scale(1.1)}
@@ -73,20 +81,6 @@ export function renderAsyncYouTubeFacade(
         <div class="ez-ruri-tri"></div>
       </div>
     `;
-  } else if (themeStyle === 'astryx') {
-    playBtnCss = `
-      .ez-astryx-play{position:absolute;width:68px;height:48px;background:rgba(24,119,242,0.92);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(24,119,242,0.45);transition:all .3s ease}
-      .ez-video-facade:hover .ez-astryx-play{background:#1877f2;transform:scale(1.08)}
-      .ez-astryx-tri{width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #ffffff;margin-left:3px}
-    `;
-    playBtnHtml = `<div class="ez-astryx-play"><div class="ez-astryx-tri"></div></div>`;
-  } else {
-    playBtnCss = `
-      .ez-default-play{position:absolute;width:64px;height:64px;background:rgba(0,0,0,0.75);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.8);transition:all .3s ease}
-      .ez-video-facade:hover .ez-default-play{background:rgba(0,0,0,0.9);transform:scale(1.08)}
-      .ez-default-tri{width:0;height:0;border-style:solid;border-width:9px 0 9px 16px;border-color:transparent transparent transparent #ffffff;margin-left:3px}
-    `;
-    playBtnHtml = `<div class="ez-default-play"><div class="ez-default-tri"></div></div>`;
   }
 
   return `

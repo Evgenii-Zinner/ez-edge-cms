@@ -4,7 +4,7 @@ import {
   generateAdminCssVariables,
 } from "../../src/utils/styles";
 import { ThemeConfig } from "../../src/core/schema";
-import { themeRegistry, RuriThemeConnector, DefaultThemeConnector } from "../../src/core/theme";
+import { themeRegistry, RuriThemeConnector } from "../../src/core/theme";
 
 describe("Styles Utilities & Theme Connectors", () => {
   const mockTheme: ThemeConfig = {
@@ -73,30 +73,10 @@ describe("Styles Utilities & Theme Connectors", () => {
     });
   });
 
-  describe("DefaultThemeConnector", () => {
-    it("should generate classic standalone CSS variables when requested", () => {
-      const defaultTheme: ThemeConfig = {
-        ...mockTheme,
-        values: {
-          ...mockTheme.values,
-          styling_system: "default",
-        },
-      };
-      const css = generateCssVariables(defaultTheme);
-
-      expect(css).toContain("--theme-primary-hue: 200");
-      expect(css).toContain("--theme-bg: hsl(var(--theme-primary-hue), 10%, 5%)");
-      expect(css).toContain("--theme-surface: hsla(var(--theme-primary-hue), 15%, 10%, 0.5)");
-    });
-  });
-
   describe("ThemeConnectorRegistry", () => {
     it("should register and retrieve connectors correctly", () => {
       const ruri = themeRegistry.get("ruri");
-      const defaultConnector = themeRegistry.get("default");
-
       expect(ruri).toBeInstanceOf(RuriThemeConnector);
-      expect(defaultConnector).toBeInstanceOf(DefaultThemeConnector);
       expect(themeRegistry.get("non-existent")).toBeInstanceOf(RuriThemeConnector);
       expect(themeRegistry.list().length).toBeGreaterThanOrEqual(2);
 
@@ -104,9 +84,6 @@ describe("Styles Utilities & Theme Connectors", () => {
       expect(typeof ruri.components.Card).toBe("function");
       expect(typeof ruri.components.Button).toBe("function");
       expect(typeof ruri.components.Hero).toBe("function");
-
-      expect(typeof defaultConnector.components.Card).toBe("function");
-      expect(typeof defaultConnector.components.Button).toBe("function");
     });
   });
 

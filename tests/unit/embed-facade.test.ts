@@ -48,14 +48,8 @@ describe("YouTube Embed Facade Utility", () => {
       expect(html).toContain("https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
     });
 
-    test("should render Default theme glassmorphism play button facade", () => {
-      const html = renderAsyncYouTubeFacade("https://youtu.be/dQw4w9WgXcQ", "Caption", "default");
-      expect(html).toContain("ez-video-facade");
-      expect(html).toContain("ez-default-play");
-    });
-
     test("should fallback to standard iframe for non-YouTube URLs", () => {
-      const html = renderAsyncYouTubeFacade("https://player.vimeo.com/video/123456", "Vimeo", "default");
+      const html = renderAsyncYouTubeFacade("https://player.vimeo.com/video/123456", "Vimeo", "ruri");
       expect(html).toContain("<iframe");
       expect(html).toContain("https://player.vimeo.com/video/123456");
     });

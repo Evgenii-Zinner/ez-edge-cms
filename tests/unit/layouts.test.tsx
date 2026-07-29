@@ -164,9 +164,9 @@ describe("Layouts", () => {
     });
 
     it("should render mobile navigation drawer separately from header", () => {
-      const defaultTheme = {
+      const astryxTheme = {
         ...theme,
-        values: { ...theme.values, styling_system: "default" },
+        values: { ...theme.values, styling_system: "astryx" },
       };
       const html = BaseLayout({
         title: "Nav Test",
@@ -174,7 +174,7 @@ describe("Layouts", () => {
         site,
         nav,
         footer,
-        theme: defaultTheme,
+        theme: astryxTheme,
       })!.toString();
       expect(html).toContain('id="main-nav"');
     });

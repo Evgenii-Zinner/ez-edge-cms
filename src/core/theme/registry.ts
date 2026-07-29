@@ -6,7 +6,6 @@
 
 import { ThemeConnector } from "./connector";
 import { RuriThemeConnector } from "./connectors/ruri";
-import { DefaultThemeConnector } from "./connectors/default";
 import { AstryxThemeConnector } from "./connectors/astryx";
 
 /**
@@ -18,7 +17,6 @@ class ThemeConnectorRegistry {
   constructor() {
     // Register built-in theme connectors
     this.register(new RuriThemeConnector());
-    this.register(new DefaultThemeConnector());
     this.register(new AstryxThemeConnector());
   }
 

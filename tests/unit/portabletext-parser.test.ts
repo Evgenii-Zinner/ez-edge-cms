@@ -108,12 +108,12 @@ describe("PortableText Parser Utility", () => {
           withBackground: true,
         },
       ];
-      const defaultHtml = renderPortableText(blocks, "default");
-      expect(defaultHtml).toContain('src="/img/pic.png"');
-      expect(defaultHtml).toContain("Beautiful Image");
-      expect(defaultHtml).toContain("image-stretched");
-      expect(defaultHtml).toContain("image-with-border");
-      expect(defaultHtml).toContain("image-with-background");
+      const astryxHtml = renderPortableText(blocks, "astryx");
+      expect(astryxHtml).toContain('src="/img/pic.png"');
+      expect(astryxHtml).toContain("Beautiful Image");
+      expect(astryxHtml).toContain("image-stretched");
+      expect(astryxHtml).toContain("image-with-border");
+      expect(astryxHtml).toContain("image-with-background");
 
       const ruriHtml = renderPortableText(blocks, "ruri");
       expect(ruriHtml).toContain("/img/pic.png");
@@ -127,7 +127,7 @@ describe("PortableText Parser Utility", () => {
           file: { url: "/img/file.png" },
         },
       ];
-      const html = renderPortableText(blocks, "default");
+      const html = renderPortableText(blocks, "astryx");
       expect(html).toContain('src="/img/file.png"');
     });
 
