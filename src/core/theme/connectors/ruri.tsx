@@ -35,6 +35,8 @@ import type { UserConfig } from "unocss";
 function minifyCss(css: string): string {
   return css.replace(/\s+/g, " ").trim();
 }
+
+import { ThemeSwitcher } from "@components/ThemeSwitcher";
 import { renderAsyncYouTubeFacade } from "./youtube-facade";
 
 export class RuriThemeConnector implements ThemeConnector {
@@ -237,6 +239,7 @@ export class RuriThemeConnector implements ThemeConnector {
             label: item.label,
           }))}
           currentPath={props.currentPath}
+          actions={<ThemeSwitcher styleVariant="ruri" />}
         />
       </header>
     ),
@@ -302,6 +305,12 @@ export class RuriThemeConnector implements ThemeConnector {
         --font-body: "${fontBody}", sans-serif;
         --font-mono: "${fontMono}", "Consolas", "Monaco", monospace;
       }
+
+      /* Theme Switcher Icon Toggle Rules */
+      #theme-toggle .light-icon { display: none; }
+      #theme-toggle .dark-icon { display: block; }
+      [data-theme="dark"] #theme-toggle .light-icon { display: block !important; }
+      [data-theme="dark"] #theme-toggle .dark-icon { display: none !important; }
     `);
   }
 

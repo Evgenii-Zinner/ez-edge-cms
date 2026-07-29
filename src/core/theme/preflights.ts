@@ -27,16 +27,23 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
       {
         getCSS: () => `
           *, ::before, ::after { box-sizing: border-box; }
-          body {
+          html, body {
             margin: 0;
             padding: 0;
-            background-color: ${tokens.surface};
-            color: ${tokens.text};
+            background-color: var(--astryx-surface, var(--ruri-surface, var(--theme-surface, ${tokens.surface})));
+            color: var(--astryx-text, var(--ruri-text, var(--theme-text, ${tokens.text})));
             font-family: ${tokens.fontBody};
             line-height: 1.6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+          }
+
+          html[data-theme='dark'],
+          html[data-theme='dark'] body,
+          html[data-theme='dark'] #main-content {
+            background-color: var(--astryx-surface, var(--ruri-surface, #0f172a));
+            color: var(--astryx-text, var(--ruri-text, #f8fafc));
           }
 
           #main-content {
@@ -87,12 +94,34 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
           }
 
           #main-content ul {
+            list-style-type: disc;
+            margin: 1.25rem 0;
+            padding-left: 1.75rem;
+          }
+          #main-content ul > li {
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+            color: var(--astryx-text-muted, var(--ruri-text-muted, var(--theme-text-dim, ${tokens.textMuted})));
+          }
+
+          #main-content ol {
+            list-style-type: decimal;
+            padding-left: 1.75rem;
+            margin: 1.25rem 0;
+          }
+          #main-content ol > li {
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+            color: var(--astryx-text-muted, var(--ruri-text-muted, var(--theme-text-dim, ${tokens.textMuted})));
+          }
+
+          .ruri-content ul {
             position: relative;
             list-style: none;
             margin: 1.5rem 0;
             padding-left: 1.75rem;
           }
-          #main-content ul::before {
+          .ruri-content ul::before {
             content: '';
             position: absolute;
             top: 0.6rem;
@@ -102,13 +131,13 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             background: linear-gradient(to bottom, rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.8) 0%, rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.3) 100%);
             pointer-events: none;
           }
-          #main-content ul > li {
+          .ruri-content ul > li {
             position: relative;
             margin-bottom: 0.75rem;
             line-height: 1.65;
             color: ${tokens.textMuted};
           }
-          #main-content ul > li::before {
+          .ruri-content ul > li::before {
             content: '';
             position: absolute;
             left: -1.75rem;
@@ -117,16 +146,6 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             height: 10px;
             background-color: ${tokens.primary};
             clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-          }
-
-          #main-content ol {
-            padding-left: 1.5rem;
-            margin: 1.5rem 0;
-            color: ${tokens.textMuted};
-          }
-          #main-content ol > li {
-            margin-bottom: 0.5rem;
-            line-height: 1.65;
           }
 
           #main-content :not(pre) > code {

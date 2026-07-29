@@ -16,6 +16,7 @@ function minifyCss(css: string): string {
   return css.replace(/\s+/g, " ").trim();
 }
 
+import { ThemeSwitcher } from "@components/ThemeSwitcher";
 import { renderAsyncYouTubeFacade } from "./youtube-facade";
 
 export class AstryxThemeConnector implements ThemeConnector {
@@ -205,12 +206,15 @@ export class AstryxThemeConnector implements ThemeConnector {
             MENU
           </button>
 
-          <div class="max-lg:hidden flex gap-7 items-center">
-            {props.nav.items.map((item) => (
-              <a href={normalizePath(item.path)} class="font-nav text-[var(--astryx-text-muted,#475569)] no-underline font-medium hover:text-[var(--astryx-primary,#1877f2)] transition-colors text-0.9rem">
-                {item.label}
-              </a>
-            ))}
+          <div class="flex items-center gap-4">
+            <div class="max-lg:hidden flex gap-7 items-center">
+              {props.nav.items.map((item) => (
+                <a href={normalizePath(item.path)} class="font-nav text-[var(--astryx-text-muted,#475569)] no-underline font-medium hover:text-[var(--astryx-primary,#1877f2)] transition-colors text-0.9rem">
+                  {item.label}
+                </a>
+              ))}
+            </div>
+            <ThemeSwitcher styleVariant="astryx" />
           </div>
         </div>
       </header>
@@ -308,6 +312,46 @@ export class AstryxThemeConnector implements ThemeConnector {
         --font-body: "${fontBody}", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         --font-mono: "${fontMono}", "Consolas", "Monaco", monospace;
       }
+
+      html, body {
+        background-color: var(--astryx-surface, #ffffff);
+        color: var(--astryx-text, #0f172a);
+      }
+
+      [data-theme='dark'] {
+        --astryx-surface: #0f172a;
+        --astryx-surface-variant: #1e293b;
+        --astryx-text: #f8fafc;
+        --astryx-text-muted: #94a3b8;
+        --astryx-border: #334155;
+      }
+
+      [data-theme='dark'] body,
+      [data-theme='dark'] #main-content {
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --astryx-surface: #0f172a;
+          --astryx-surface-variant: #1e293b;
+          --astryx-text: #f8fafc;
+          --astryx-text-muted: #94a3b8;
+          --astryx-border: #334155;
+        }
+        :root:not([data-theme='light']) body,
+        :root:not([data-theme='light']) #main-content {
+          background-color: #0f172a !important;
+          color: #f8fafc !important;
+        }
+      }
+
+      /* Theme Switcher Icon Toggle Rules */
+      #theme-toggle .light-icon { display: none; }
+      #theme-toggle .dark-icon { display: block; }
+      [data-theme="dark"] #theme-toggle .light-icon { display: block !important; }
+      [data-theme="dark"] #theme-toggle .dark-icon { display: none !important; }
     `);
   }
 

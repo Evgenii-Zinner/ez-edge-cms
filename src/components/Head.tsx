@@ -78,6 +78,8 @@ export const Head: FC<HeadProps> = (props) => {
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      {/* Zero-Flash OS Theme Preference Detector & Toggle Script */}
+      <script dangerouslySetInnerHTML={{ __html: `(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var t=localStorage.getItem('theme')||m;document.documentElement.setAttribute('data-theme',t);}catch(e){}})();window.toggleTheme=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('theme',c);document.cookie='theme='+c+';path=/;max-age=31536000';}catch(e){}};` }} />
       <title>{displayTitle}</title>
 
       {/* Connectivity Hints */}

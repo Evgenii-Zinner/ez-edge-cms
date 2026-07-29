@@ -15,6 +15,7 @@ function minifyCss(css: string): string {
   return css.replace(/\s+/g, " ").trim();
 }
 
+import { ThemeSwitcher } from "@components/ThemeSwitcher";
 import { renderAsyncYouTubeFacade } from "./youtube-facade";
 
 export class DefaultThemeConnector implements ThemeConnector {
@@ -167,12 +168,15 @@ export class DefaultThemeConnector implements ThemeConnector {
             MENU
           </button>
 
-          <div class="max-lg:hidden flex gap-6 items-center">
-            {props.nav.items.map((item) => (
-              <a href={normalizePath(item.path)} class="nav-link">
-                {item.label}
-              </a>
-            ))}
+          <div class="flex items-center gap-4">
+            <div class="max-lg:hidden flex gap-6 items-center">
+              {props.nav.items.map((item) => (
+                <a href={normalizePath(item.path)} class="nav-link">
+                  {item.label}
+                </a>
+              ))}
+            </div>
+            <ThemeSwitcher styleVariant="default" />
           </div>
         </div>
       </header>
@@ -327,7 +331,11 @@ export class DefaultThemeConnector implements ThemeConnector {
         --font-header: "${values.font_header}", sans-serif;
         --font-nav: "${values.font_nav}", sans-serif;
         --font-body: "${values.font_body}", sans-serif;
-        --font-mono: "${values.font_mono}", monospace;
+        /* Theme Switcher Icon Toggle Rules */
+        #theme-toggle .light-icon { display: none; }
+        #theme-toggle .dark-icon { display: block; }
+        [data-theme="dark"] #theme-toggle .light-icon { display: block !important; }
+        [data-theme="dark"] #theme-toggle .dark-icon { display: none !important; }
         
         --ui-glow-spread: ${values.glow_spread};
         --ui-boot-speed: ${values.boot_speed};
