@@ -22,7 +22,7 @@
     "@portabletext/to-html": "^5.0.2",
     "ez-portable-text": "github:Evgenii-Zinner/ez-portable-text",
     "hono": "^4.0.0",
-    "ruri-ui": "file:../ruri",
+    "ruri-ui": "github:Evgenii-Zinner/ruri",
     "zod": "^3.22.4"
   },
   "devDependencies": {
