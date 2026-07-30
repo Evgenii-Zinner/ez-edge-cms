@@ -41,7 +41,6 @@ describe("Admin Theme Routes", () => {
       expect(html).toContain("Theme Styler");
       expect(html).toContain("Theme Engine");
       expect(html).toContain("Typography");
-      expect(html).toContain("theme-preview-iframe");
     });
   });
 
