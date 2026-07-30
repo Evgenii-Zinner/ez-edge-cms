@@ -47,7 +47,7 @@ describe("Ruri Theme Connector", () => {
 
   it("should render Table component with headers and rows", () => {
     const Table = ruri.components.Table;
-    const jsx = <Table headers={["A", "B"]} rows={[["1", "2"]]} withHeadings={true} />;
+    const jsx = <Table rows={[["A", "B"], ["1", "2"]]} withHeadings={true} />;
     expect(jsx).toBeDefined();
   });
 

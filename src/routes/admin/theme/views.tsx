@@ -64,18 +64,43 @@ views.get("/preview-frame", async (c): Promise<Response> => {
     .map((f) => `family=${encodeURIComponent(f)}:wght@400;600;700`)
     .join("&")}&display=swap`;
 
-  const bgStyle =
-    themeMode === "dark"
-      ? stylingSystem === "astryx"
-        ? "#0f172a"
-        : "#02060c"
-      : "#ffffff";
-  const textStyle =
-    themeMode === "dark"
-      ? stylingSystem === "astryx"
-        ? "#f8fafc"
-        : "#00c3ff"
-      : "#0f172a";
+  const previewSite = {
+    ...c.var.site,
+    title: c.var.site?.title || "EZ EDGE SITE",
+  };
+
+  const rawNav =
+    c.var.nav?.items && c.var.nav.items.length > 0
+      ? c.var.nav
+      : {
+          schemaVersion: "1.0.0",
+          items: [
+            { label: "HOME", path: "#" },
+            { label: "ARTICLES", path: "#" },
+            { label: "ABOUT", path: "#" },
+          ],
+        };
+
+  const previewNav = {
+    ...rawNav,
+    items: rawNav.items.map((item: any) => ({ ...item, path: "#" })),
+  };
+
+  const rawFooter = c.var.footer?.links
+    ? c.var.footer
+    : {
+        schemaVersion: "1.0.0",
+        links: [
+          { label: "HOME", path: "#" },
+          { label: "PRIVACY", path: "#" },
+          { label: "TERMS", path: "#" },
+        ],
+      };
+
+  const previewFooter = {
+    ...rawFooter,
+    links: rawFooter.links.map((link: any) => ({ ...link, path: "#" })),
+  };
 
   const { html } = await import("hono/html");
 
@@ -88,92 +113,69 @@ views.get("/preview-frame", async (c): Promise<Response> => {
       <link rel="stylesheet" href="${fontUrl}">
       <style>
         ${cssVariables}
-        /* Disable CRT scanlines and flicker overlays in theme preview frame */
-        .scanlines, .ui-overlay, .ruri-crt { display: none !important; }
+        /* Disable CRT scanlines and overlays inside preview iframe */
+        .scanlines, .ui-overlay, .ruri-crt, .ruri-panel-bg::after { display: none !important; }
         
         body {
           margin: 0;
-          padding: 2rem;
+          padding: 0;
           box-sizing: border-box;
           font-family: var(--font-body), sans-serif;
-          background-color: ${bgStyle};
-          color: ${textStyle};
+          background-color: var(--ruri-bg-void, var(--astryx-surface, #02060c));
+          color: var(--ruri-text-main, var(--astryx-text, #ffffff));
           min-height: 100vh;
         }
-        #main-content h1, #main-content h2, #main-content h3 {
-          font-family: var(--font-header), sans-serif;
-        }
-        nav a {
-          font-family: var(--font-nav), sans-serif;
-        }
-        code, pre {
-          font-family: var(--font-mono), monospace;
+        [data-theme='light'] body {
+          background-color: var(--ruri-bg-void, var(--astryx-surface, #ffffff));
+          color: var(--ruri-text-main, var(--astryx-text, #0f172a));
         }
       </style>
+      <script>
+        document.addEventListener('click', function(e) {
+          var a = e.target.closest('a');
+          if (a) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }, true);
+      </script>
     </head>
     <body>
-      <header style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(148,163,184,0.2); padding-bottom: 1rem; margin-bottom: 2rem;">
-        <h2 style="margin: 0; font-size: 1.25rem;">EZ-EDGE // ${connector.name.toUpperCase()}</h2>
-        <nav style="display: flex; gap: 1.5rem;">
-          <a href="#" style="color: inherit; text-decoration: none; font-weight: bold;">HOME</a>
-          <a href="#" style="color: inherit; opacity: 0.7; text-decoration: none;">ARTICLES</a>
-          <a href="#" style="color: inherit; opacity: 0.7; text-decoration: none;">ABOUT</a>
-        </nav>
-      </header>
+      ${UI.Overlays ? <UI.Overlays /> : ""}
+      ${<UI.Header site={previewSite} nav={previewNav} title={previewSite.title} currentPath="/" />}
 
-      <main id="main-content" class="${stylingSystem === "ruri" ? "ruri-content" : ""}">
-        <h1 style="font-size: 2.2rem; margin-top: 0;">Interactive Theme Engine Preview</h1>
-        <p style="font-size: 1.05rem; line-height: 1.7; opacity: 0.85;">
-          Currently rendering <strong>${connector.name}</strong> theme connector with preloaded Google fonts. 
-          Use the dark/light mode toggle on top to evaluate both surface themes in real time.
-        </p>
+      ${<UI.Main>
+        <UI.Hero
+          title="Interactive Theme Engine Preview"
+          subtitle={`Currently previewing ${connector.name} with real-time typography and surface design tokens.`}
+        />
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
-          ${<UI.Card title="⚡ Edge Engine Performance" status="ACTIVE" shape="sci-fi" glow={true}>
+        <UI.Grid cols={{ sm: 1, md: 2 }} gap={6} class="my-8">
+          <UI.Card title="⚡ Edge Engine Performance" status="ACTIVE" shape="sci-fi" glow={true}>
             <p class="text-sm opacity-80 leading-relaxed m-0">
               Ultra-fast serverless HTML rendering powered by Hono and Cloudflare Workers KV with zero bundle bloat.
             </p>
-          </UI.Card>}
-          ${<UI.Card title="🎨 Curated Design Tokens" status="ONLINE" shape="rectangle">
+          </UI.Card>
+          <UI.Card title="🎨 Curated Design Tokens" status="ONLINE" shape="rectangle">
             <p class="text-sm opacity-80 leading-relaxed m-0">
               Seamless switching between Ruri's HUD cybernetics and Astryx's sleek modern slate design system.
             </p>
-          </UI.Card>}
+          </UI.Card>
+        </UI.Grid>
+
+        <div class="my-8 flex justify-center gap-4 flex-wrap">
+          <UI.Button shape="cyber" variant="default">EXPLORE SYSTEM</UI.Button>
+          <UI.Button shape="notch" variant="neutral">DOCUMENTATION</UI.Button>
         </div>
 
-        <div style="margin: 2rem 0; text-align: center; padding: 2rem; background: ${themeMode === 'light' ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.02)'}; border-radius: 12px;">
-          <h2 style="font-size: 1.5rem; margin-bottom: 1rem; margin-top: 0;">Ready to Deploy Your Edge Site?</h2>
-          <div style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
-            ${<UI.Button shape="cyber" variant="default">EXPLORE SYSTEM</UI.Button>}
-            ${<UI.Button shape="notch" variant="neutral">VIEW DOCUMENTATION</UI.Button>}
-          </div>
-        </div>
-
-        ${<UI.Delimiter />}
-
-        <h3 style="margin-top: 2rem;">Authentic Image Formatting</h3>
-        ${UI.Image ? <UI.Image
-          src="https://placehold.co/800x400/1e293b/00c3ff?text=Edge+Engine"
-          alt="Design System Preview Sample Image"
-          caption="Authentic Theme Component Image Framing"
-          withBorder={true}
-          withBackground={true}
-        /> : <div class="content-frame my-6"><img src="https://placehold.co/800x400/1e293b/00c3ff?text=Edge+Engine" alt="Preview" class="max-w-full h-auto block mx-auto rounded-xl shadow-lg border border-[rgba(148,163,184,0.2)]" /></div>}
-
-        <h3 style="margin-top: 2rem;">Typography & Structure</h3>
-        <ul style="padding-left: 1.75rem; line-height: 1.8;">
-          <li>Theme-tailored typography and surface tokens without color picker clutter</li>
-          <li>Zero-flash dark/light mode surface preference detection</li>
-          <li>Scoped list bullets (disc for Astryx, cybernetic HUD nodes for Ruri)</li>
-        </ul>
-
-        <h3 style="margin-top: 2rem;">Monospaced Code Block</h3>
-        ${<UI.CodeBlock
+        <UI.CodeBlock
           code={`const cms = new EZEdgeCMS({\n  styling_system: "${stylingSystem}",\n  fonts: { header: "${fontHeader}", body: "${fontBody}" }\n});`}
           language="typescript"
           filename="theme.config.ts"
-        />}
-      </main>
+        />
+      </UI.Main>}
+
+      ${<UI.Footer site={previewSite} footer={previewFooter} />}
     </body>
     </html>`
   );

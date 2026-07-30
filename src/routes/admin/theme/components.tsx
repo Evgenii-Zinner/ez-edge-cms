@@ -17,22 +17,22 @@ import { html } from "hono/html";
  */
 export const ThemePreview: FC = () => {
   return (
-    <div class="flex flex-col h-full border border-solid border-[var(--theme-border,#1e2d4a)] rounded-xl overflow-hidden bg-[#090d16] shadow-xl">
+    <div class="flex flex-col h-full border border-solid border-[#1e2d4a] bg-[#070a12] shadow-2xl overflow-hidden">
       {/* ADMIN HUD PREVIEW TOOLBAR */}
-      <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d1527] border-b border-solid border-[#1e2d4a]">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0d1527] border-b border-solid border-[#1e2d4a]">
         <div class="flex items-center gap-2">
           <span class="inline-block w-2 h-2 rounded-full bg-[var(--theme-accent,#00c3ff)] animate-pulse"></span>
-          <span class="text-xs font-mono text-[#94a3b8] tracking-widest uppercase font-semibold">
+          <span class="text-xs font-mono text-[#94a3b8] tracking-widest uppercase font-bold">
             Live Preview // Active System View
           </span>
         </div>
 
         {/* DARK / LIGHT MODE SWITCHER FOR PREVIEW */}
-        <div class="flex items-center gap-1.5 bg-[#070a12] p-1 rounded-lg border border-[#1e2d4a]">
+        <div class="flex items-center gap-1 bg-[#03060c] p-1 border border-solid border-[#1e2d4a]">
           <button
             type="button"
             id="preview-mode-dark"
-            class="px-3 py-1 text-xs font-mono rounded transition-all bg-[var(--theme-accent,#00c3ff)]/20 text-[var(--theme-accent,#00c3ff)] font-bold cursor-pointer border-0"
+            class="px-3 py-1 text-xs font-mono transition-all bg-[var(--theme-accent,#00c3ff)]/20 text-[var(--theme-accent,#00c3ff)] font-bold cursor-pointer border-0"
             onclick="window.setPreviewMode('dark')"
           >
             🌙 DARK
@@ -40,7 +40,7 @@ export const ThemePreview: FC = () => {
           <button
             type="button"
             id="preview-mode-light"
-            class="px-3 py-1 text-xs font-mono rounded transition-all text-[#94a3b8] hover:text-white cursor-pointer border-0 bg-transparent"
+            class="px-3 py-1 text-xs font-mono transition-all text-[#94a3b8] hover:text-white cursor-pointer border-0 bg-transparent"
             onclick="window.setPreviewMode('light')"
           >
             ☀️ LIGHT
@@ -53,7 +53,7 @@ export const ThemePreview: FC = () => {
         <iframe
           id="theme-preview-iframe"
           src="/admin/theme/preview-frame?styling_system=ruri&theme_mode=dark"
-          class="w-full h-full border-0"
+          class="w-full h-full border-0 block"
           title="Live Site Theme Preview"
         ></iframe>
       </div>

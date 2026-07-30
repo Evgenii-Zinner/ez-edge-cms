@@ -117,34 +117,36 @@ export interface MainProps {
   class?: string;
 }
 
+import type { FC } from "hono/jsx";
+
 export interface ThemeComponents {
-  Card: (props: CardProps) => any;
-  Button: (props: ButtonProps) => any;
-  Grid: (props: GridProps) => any;
-  Hero: (props: HeroProps) => any;
-  Image?: (props: ImageProps) => any;
-  CodeBlock: (props: CodeBlockProps) => any;
-  Table: (props: TableProps) => any;
-  Quote: (props: QuoteProps) => any;
+  Card: FC<CardProps>;
+  Button: FC<ButtonProps>;
+  Grid: FC<GridProps>;
+  Hero: FC<HeroProps>;
+  Image?: FC<ImageProps>;
+  CodeBlock: FC<CodeBlockProps>;
+  Table: FC<TableProps>;
+  Quote: FC<QuoteProps>;
   /**
    * Renders a video block. The parser resolves YouTube/Vimeo URLs into embed
    * URLs before calling this — connectors only need to render the result.
    */
-  Video: (props: VideoProps) => any;
+  Video: FC<VideoProps>;
   /** Renders an arbitrary iframe embed block. */
-  Embed: (props: EmbedProps) => any;
+  Embed: FC<EmbedProps>;
   /** Renders a thematic section break (e.g. a styled <hr>). */
-  Delimiter: () => any;
-  Overlays: () => any;
+  Delimiter: (props?: any) => any;
+  Overlays: (props?: any) => any;
   /**
    * Optional standalone mobile nav drawer.
    * Connectors that self-manage nav inside their Header component
    * (selfContainedNav = true) should omit this or return null.
    */
-  Nav?: (props: NavProps) => any;
-  Header: (props: HeaderProps) => any;
-  Main?: (props: MainProps) => any;
-  Footer: (props: FooterProps) => any;
+  Nav?: FC<NavProps>;
+  Header: FC<HeaderProps>;
+  Main: FC<MainProps>;
+  Footer: FC<FooterProps>;
 }
 
 export interface ThemeConnector {
