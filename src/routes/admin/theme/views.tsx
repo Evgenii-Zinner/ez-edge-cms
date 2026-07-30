@@ -2,8 +2,8 @@
 /**
  * @module ThemeViews
  * @description GET route handlers for the Theme Styler.
- * Provides the interactive design system dashboard where administrators can customize
- * foundations like colors, typography, and visual effects with real-time feedback.
+ * Features a streamlined design system dashboard (Theme Engine choice + Typography pickers)
+ * and an interactive live iframe preview with dark/light mode toggling.
  */
 
 import { Hono } from "hono";
@@ -16,12 +16,9 @@ import {
 } from "@core/constants";
 import { GlobalConfigVariables } from "@core/middleware";
 import { CustomSelect } from "@components/CustomSelect";
-import {
-  ThemePreview,
-  ThemePreviewScript,
-  ThemeFontPreloader,
-} from "@routes/admin/theme/components";
-import { AdminRange, AdminHeader } from "@components/AdminUI";
+import { ThemeFontPreloader } from "@routes/admin/theme/components";
+import { AdminHeader } from "@components/AdminUI";
+import { themeRegistry } from "@core/theme";
 
 /**
  * Hono sub-app for theme views.
@@ -30,15 +27,11 @@ const views = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
 
 /**
  * GET /admin/theme
- * Renders the primary Theme Styler interface with sidebar controls and a live preview pane.
- *
- * @param c - Hono context.
- * @returns A promise resolving to the rendered HTML Theme Styler.
+ * Renders the streamlined Theme Styler interface without preview.
  */
 views.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
 
-  // Aggregate all fonts to preload them for zero-latency previews
   const allFonts = [
     ...FONT_OPTIONS_HEADER,
     ...FONT_OPTIONS_NAV,
@@ -54,7 +47,7 @@ views.get("/", async (c): Promise<Response> => {
         <AdminHeader title="Theme Styler">
           <button
             hx-post="/admin/theme/reset"
-            data-confirm="Restore all visual settings to factory defaults? This cannot be undone."
+            data-confirm="Restore visual settings to defaults? This cannot be undone."
             class="btn-primary border-[#ff4444] color-[#ff4444]"
           >
             RESET DEFAULTS
@@ -64,247 +57,106 @@ views.get("/", async (c): Promise<Response> => {
           </button>
         </AdminHeader>
 
-        {/* SPLIT PANE BODY */}
-        <div class="grid grid-cols-[400px_1fr] gap-8 flex-1 min-h-0">
-          {/* LEFT PANEL: CONTROLS */}
-          <div class="overflow-y-auto pr-4 flex flex-col">
+        {/* CENTERED BODY */}
+        <div class="flex-1 overflow-y-auto px-4 py-8">
+          <div class="max-w-3xl mx-auto flex flex-col">
             <form
               id="theme-form"
               hx-post="/admin/theme/save"
               hx-target="#global-toast"
               class="flex flex-col gap-6 pb-16"
             >
-              <details class="admin-card p-4 m-0" open>
-                <summary class="text-1rem cursor-pointer outline-none">
-                  A. Core
-                </summary>
-                <div class="mt-6">
-                  <AdminRange
-                    label="Primary Hue (0-360)"
-                    name="primary_hue"
-                    min="0"
-                    max="360"
-                    value={theme.values.primary_hue}
-                  />
-                  <AdminRange
-                    label="Saturation"
-                    name="primary_sat"
-                    min="0"
-                    max="100"
-                    unit="%"
-                    value={parseInt(theme.values.primary_sat)}
-                  />
-                  <AdminRange
-                    label="Lightness"
-                    name="primary_light"
-                    min="0"
-                    max="100"
-                    unit="%"
-                    value={parseInt(theme.values.primary_light)}
+              {/* STYLING SYSTEM ENGINE */}
+              <div class="admin-card p-5 m-0 flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-1rem font-bold m-0 text-white">
+                    1. Theme Engine
+                  </h3>
+                  <span class="text-xs font-mono color-[var(--theme-accent,#00c3ff)] uppercase">
+                    Select Design System
+                  </span>
+                </div>
+                <p class="text-xs text-[#94a3b8] m-0 leading-relaxed">
+                  Choose the active visual identity. Each theme provides curated
+                  light and dark surface color palettes.
+                </p>
+                <div class="mt-2">
+                  <CustomSelect
+                    name="styling_system"
+                    selectedValue={theme.values.styling_system || "ruri"}
+                    options={themeRegistry.list().map((c) => ({
+                      value: c.id,
+                      label: c.name,
+                    }))}
                   />
                 </div>
-              </details>
+              </div>
 
-              <details class="admin-card p-4 m-0">
-                <summary class="text-1rem cursor-pointer outline-none">
-                  B. Typography
-                </summary>
-                <div class="flex flex-col gap-4 mt-6">
-                  {[
-                    {
-                      label: "Header Font",
-                      name: "font_header",
-                      options: FONT_OPTIONS_HEADER,
-                      selected: theme.values.font_header,
-                    },
-                    {
-                      label: "Sub-Header & Nav Font",
-                      name: "font_nav",
-                      options: FONT_OPTIONS_NAV,
-                      selected: theme.values.font_nav,
-                    },
-                    {
-                      label: "Body Font",
-                      name: "font_body",
-                      options: FONT_OPTIONS_BODY,
-                      selected: theme.values.font_body,
-                    },
-                    {
-                      label: "Mono & Code Font",
-                      name: "font_mono",
-                      options: FONT_OPTIONS_MONO,
-                      selected: theme.values.font_mono,
-                    },
-                  ].map((f) => (
-                    <div>
-                      <label class="admin-label" for={`inp-${f.name}`}>
-                        {f.label}
-                      </label>
-                      <CustomSelect
-                        name={f.name}
-                        id={`inp-${f.name}`}
-                        selectedValue={f.selected}
-                        options={f.options.map((font) => ({
-                          value: font,
-                          label: font,
-                          style: {
-                            fontFamily: `"${font}", ${
-                              f.name === "font_mono"
-                                ? "monospace"
-                                : "sans-serif"
-                            }`,
-                          },
-                        }))}
-                      />
-                    </div>
-                  ))}
+              {/* TYPOGRAPHY FOUNDATION */}
+              <div class="admin-card p-5 m-0 flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-1rem font-bold m-0 text-white">
+                    2. Typography
+                  </h3>
+                  <span class="text-xs font-mono color-[var(--theme-accent,#00c3ff)] uppercase">
+                    Font Families
+                  </span>
                 </div>
-              </details>
-
-              <details class="admin-card p-4 m-0">
-                <summary class="text-1rem cursor-pointer outline-none">
-                  C. UI & Surfaces
-                </summary>
-                <div class="mt-6 flex flex-col gap-6">
-                  <div>
-                    <h4 class="text-0.8rem color-[var(--theme-accent)] mb-3 uppercase tracking-widest font-bold">
-                      Background
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4">
-                      <AdminRange
-                        label="Saturation"
-                        name="bg_sat"
-                        min="0"
-                        max="100"
-                        unit="%"
-                        value={parseInt(theme.values.bg_sat)}
-                      />
-                      <AdminRange
-                        label="Lightness"
-                        name="bg_light"
-                        min="0"
-                        max="100"
-                        unit="%"
-                        value={parseInt(theme.values.bg_light)}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 class="text-0.8rem color-[var(--theme-accent)] mb-3 uppercase tracking-widest font-bold">
-                      Surface Panel
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                      <AdminRange
-                        label="Saturation"
-                        name="surface_sat"
-                        min="0"
-                        max="100"
-                        unit="%"
-                        value={parseInt(theme.values.surface_sat)}
-                      />
-                      <AdminRange
-                        label="Lightness"
-                        name="surface_light"
-                        min="0"
-                        max="100"
-                        unit="%"
-                        value={parseInt(theme.values.surface_light)}
-                      />
-                    </div>
-                    <AdminRange
-                      label="Opacity"
-                      name="surface_opacity"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={theme.values.surface_opacity}
+                <p class="text-xs text-[#94a3b8] m-0 leading-relaxed mb-2">
+                  Select Google Fonts for titles, navigation, body copy, and
+                  code blocks.
+                </p>
+                {[
+                  {
+                    label: "Header Font",
+                    name: "font_header",
+                    options: FONT_OPTIONS_HEADER,
+                    selected: theme.values.font_header,
+                  },
+                  {
+                    label: "Sub-Header & Nav Font",
+                    name: "font_nav",
+                    options: FONT_OPTIONS_NAV,
+                    selected: theme.values.font_nav,
+                  },
+                  {
+                    label: "Body Font",
+                    name: "font_body",
+                    options: FONT_OPTIONS_BODY,
+                    selected: theme.values.font_body,
+                  },
+                  {
+                    label: "Mono & Code Font",
+                    name: "font_mono",
+                    options: FONT_OPTIONS_MONO,
+                    selected: theme.values.font_mono,
+                  },
+                ].map((f) => (
+                  <div class="flex flex-col gap-1.5">
+                    <label class="admin-label text-xs" for={`inp-${f.name}`}>
+                      {f.label}
+                    </label>
+                    <CustomSelect
+                      name={f.name}
+                      id={`inp-${f.name}`}
+                      selectedValue={f.selected}
+                      options={f.options.map((font) => ({
+                        value: font,
+                        label: font,
+                        style: {
+                          fontFamily: `"${font}", ${
+                            f.name === "font_mono" ? "monospace" : "sans-serif"
+                          }`,
+                        },
+                      }))}
                     />
                   </div>
-
-                  <div>
-                    <h4 class="text-0.8rem color-[var(--theme-accent)] mb-3 uppercase tracking-widest font-bold">
-                      Typography Colors
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                      <AdminRange
-                        label="Main Sat"
-                        name="text_main_sat"
-                        min="0"
-                        max="100"
-                        unit="%"
-                        value={parseInt(theme.values.text_main_sat)}
-                      />
-                      <AdminRange
-                        label="Main Light"
-                        name="text_main_light"
-                        min="0"
-                        max="100"
-                        unit="%"
-                        value={parseInt(theme.values.text_main_light)}
-                      />
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <AdminRange
-                        label="Dim Sat"
-                        name="text_dim_sat"
-                        min="0"
-                        max="100"
-                        unit="%"
-                        value={parseInt(theme.values.text_dim_sat)}
-                      />
-                      <AdminRange
-                        label="Dim Light"
-                        name="text_dim_light"
-                        min="0"
-                        max="100"
-                        unit="%"
-                        value={parseInt(theme.values.text_dim_light)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-              <details class="admin-card p-4 m-0">
-                <summary class="text-1rem cursor-pointer outline-none">
-                  D. Effects
-                </summary>
-                <div class="mt-6">
-                  <AdminRange
-                    label="Glow Spread (px)"
-                    name="glow_spread"
-                    min="1"
-                    max="10"
-                    value={parseInt(theme.values.glow_spread)}
-                  />
-                  <AdminRange
-                    label="Elevation Distance (px)"
-                    name="elevation"
-                    min="0"
-                    max="40"
-                    step="5"
-                    value={parseInt(theme.values.elevation || "20")}
-                  />
-                  <AdminRange
-                    label="Boot Speed (seconds)"
-                    name="boot_speed"
-                    min="0.1"
-                    max="3"
-                    step="0.1"
-                    value={parseFloat(theme.values.boot_speed)}
-                  />
-                </div>
-              </details>
+                ))}
+              </div>
             </form>
           </div>
-
-          {/* RIGHT PANEL: LIVE PREVIEW */}
-          <ThemePreview />
         </div>
       </div>
-
-      <ThemePreviewScript />
     </AdminLayout>,
   );
 });

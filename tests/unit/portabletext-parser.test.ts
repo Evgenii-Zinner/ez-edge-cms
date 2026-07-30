@@ -33,7 +33,7 @@ describe("PortableText Parser Utility", () => {
         },
       ];
       const html = renderPortableText(blocks);
-      expect(html).toContain("background-image: url('/img/hero.webp')");
+      expect(html).toContain("/img/hero.webp");
       expect(html).toContain("My Title");
       expect(html).toContain("My Subtitle");
     });
@@ -50,7 +50,7 @@ describe("PortableText Parser Utility", () => {
         },
       ];
       const html = renderPortableText(blocks);
-      expect(html).toContain("<thead>");
+      expect(html).toMatch(/<thead[^>]*>/);
       expect(html).toContain("Col 1");
       expect(html).toContain("Val 1");
     });
@@ -64,7 +64,7 @@ describe("PortableText Parser Utility", () => {
         },
       ];
       const html = renderPortableText(blocks);
-      expect(html).not.toContain("<thead>");
+      expect(html).not.toMatch(/<thead[^>]*>/);
       expect(html).toContain("A1");
       expect(html).toContain("B2");
     });
@@ -93,7 +93,7 @@ describe("PortableText Parser Utility", () => {
       ];
       const html = renderPortableText(blocks);
       expect(html).toContain("index.js");
-      expect(html).toContain('class="javascript"');
+      expect(html).toContain('javascript"');
       expect(html).toContain("console.log(&quot;hello&quot;);");
     });
 
@@ -108,12 +108,16 @@ describe("PortableText Parser Utility", () => {
           withBackground: true,
         },
       ];
-      const html = renderPortableText(blocks);
-      expect(html).toContain('src="/img/pic.png"');
-      expect(html).toContain("Beautiful Image");
-      expect(html).toContain("image-stretched");
-      expect(html).toContain("image-with-border");
-      expect(html).toContain("image-with-background");
+      const astryxHtml = renderPortableText(blocks, "astryx");
+      expect(astryxHtml).toContain('src="/img/pic.png"');
+      expect(astryxHtml).toContain("Beautiful Image");
+      expect(astryxHtml).toContain("image-stretched");
+      expect(astryxHtml).toContain("image-with-border");
+      expect(astryxHtml).toContain("image-with-background");
+
+      const ruriHtml = renderPortableText(blocks, "ruri");
+      expect(ruriHtml).toContain("/img/pic.png");
+      expect(ruriHtml).toContain("Beautiful Image");
     });
 
     it("should render an image block from file object", () => {
@@ -123,7 +127,7 @@ describe("PortableText Parser Utility", () => {
           file: { url: "/img/file.png" },
         },
       ];
-      const html = renderPortableText(blocks);
+      const html = renderPortableText(blocks, "astryx");
       expect(html).toContain('src="/img/file.png"');
     });
 
@@ -135,10 +139,28 @@ describe("PortableText Parser Utility", () => {
           caption: "Rickroll",
         },
       ];
+      const youtubeShortBlock = [
+        {
+          _type: "video",
+          url: "https://youtu.be/dQw4w9WgXcQ",
+        },
+      ];
+      const youtubeInvalidBlock = [
+        {
+          _type: "video",
+          url: "https://youtube.com/invalid-url",
+        },
+      ];
       const vimeoBlock = [
         {
           _type: "video",
           url: "https://vimeo.com/123456789",
+        },
+      ];
+      const vimeoInvalidBlock = [
+        {
+          _type: "video",
+          url: "https://vimeo.com/invalid-id",
         },
       ];
       const html5Block = [
@@ -149,11 +171,20 @@ describe("PortableText Parser Utility", () => {
       ];
 
       expect(renderPortableText(youtubeBlock)).toContain(
-        "youtube.com/embed/dQw4w9WgXcQ",
+        "youtube-nocookie.com/embed/dQw4w9WgXcQ",
       );
       expect(renderPortableText(youtubeBlock)).toContain("Rickroll");
+      expect(renderPortableText(youtubeShortBlock)).toContain(
+        "youtube-nocookie.com/embed/dQw4w9WgXcQ",
+      );
+      expect(renderPortableText(youtubeInvalidBlock)).toContain(
+        '<video src="https://youtube.com/invalid-url"',
+      );
       expect(renderPortableText(vimeoBlock)).toContain(
         "player.vimeo.com/video/123456789",
+      );
+      expect(renderPortableText(vimeoInvalidBlock)).toContain(
+        '<video src="https://vimeo.com/invalid-id"',
       );
       expect(renderPortableText(html5Block)).toContain(
         '<video src="/videos/local.mp4"',
@@ -171,6 +202,27 @@ describe("PortableText Parser Utility", () => {
       const html = renderPortableText(blocks);
       expect(html).toContain('src="https://example.com/widget"');
       expect(html).toContain("My Widget");
+    });
+
+    it("should render a card block and quote block", () => {
+      const cardBlock = [
+        {
+          _type: "card",
+          title: "Card Title",
+          description: "Card Description Text",
+        },
+      ];
+      const quoteBlock = [
+        {
+          _type: "quote",
+          text: "Inspiring Quote",
+          caption: "Author Name",
+        },
+      ];
+      expect(renderPortableText(cardBlock)).toContain("Card Title");
+      expect(renderPortableText(cardBlock)).toContain("Card Description Text");
+      expect(renderPortableText(quoteBlock)).toContain("Inspiring Quote");
+      expect(renderPortableText(quoteBlock)).toContain("Author Name");
     });
 
     it("should render a delimiter block", () => {

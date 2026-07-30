@@ -95,7 +95,7 @@ export const CustomSelect: FC<CustomSelectProps> = ({
         </div>
 
         {/* Options Menu */}
-        <div class="absolute left-0 top-full mt-1 w-full bg-[#0a1a1a] border border-solid border-[var(--theme-accent-glow)] shadow-[0_8px_16px_rgba(0,0,0,0.5)] opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 z-50 max-h-300px overflow-y-auto">
+        <div class="custom-select-menu absolute left-0 top-full mt-1 w-full bg-[#0a1a1a] border border-solid border-[var(--theme-accent-glow)] shadow-[0_8px_24px_rgba(0,0,0,0.8)] opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 z-[1000] max-h-300px overflow-y-auto">
           {options.map((opt) => (
             <div
               class="custom-select-option block px-4 py-3 text-[var(--theme-text-main)] hover:bg-[var(--theme-accent-glow)] hover:text-[var(--theme-accent)] cursor-pointer transition-colors duration-200"

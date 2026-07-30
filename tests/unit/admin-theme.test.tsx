@@ -39,9 +39,8 @@ describe("Admin Theme Routes", () => {
       expect(res.status).toBe(200);
       const html = await res.text();
       expect(html).toContain("Theme Styler");
-      expect(html).toContain("Primary Hue");
+      expect(html).toContain("Theme Engine");
       expect(html).toContain("Typography");
-      expect(html).toContain("preview-container");
     });
   });
 
@@ -49,21 +48,7 @@ describe("Admin Theme Routes", () => {
     it("should process and save theme values", async () => {
       const app = setupApp();
       const formData = new FormData();
-      formData.append("primary_hue", "200");
-      formData.append("primary_sat", "50");
-      formData.append("primary_light", "50");
-      formData.append("bg_sat", "10");
-      formData.append("bg_light", "5");
-      formData.append("surface_sat", "10");
-      formData.append("surface_light", "10");
-      formData.append("surface_opacity", "0.8");
-      formData.append("text_main_sat", "0");
-      formData.append("text_main_light", "100");
-      formData.append("text_dim_sat", "0");
-      formData.append("text_dim_light", "70");
-      formData.append("glow_spread", "5");
-      formData.append("boot_speed", "0.8");
-      formData.append("elevation", "20");
+      formData.append("styling_system", "astryx");
       formData.append("font_header", "Inter");
       formData.append("font_nav", "Inter");
       formData.append("font_body", "Inter");
@@ -88,27 +73,10 @@ describe("Admin Theme Routes", () => {
       expect(res.status).toBe(200);
       const body = await res.text();
       expect(body).toContain("THEME SAVED");
-      expect(body).toContain("success"); // Check semantic type in toast
-      expect(savedTheme.values.primary_hue).toBe(200);
-      expect(savedTheme.values.primary_sat).toBe("50%");
-      expect(savedTheme.values.boot_speed).toBe("0.8s");
+      expect(body).toContain("success");
+      expect(savedTheme.values.styling_system).toBe("astryx");
+      expect(savedTheme.values.font_mono).toBe("Fira Code");
       expect(savedTheme.updatedAt).toBeDefined();
-    });
-
-    it("should fail validation for out-of-range values", async () => {
-      const app = setupApp();
-      const formData = new FormData();
-      formData.append("primary_hue", "400"); // Max 360
-
-      const res = await app.request("http://localhost/admin/theme/save", {
-        method: "POST",
-        body: formData,
-      });
-
-      expect(res.status).toBe(200);
-      const body = await res.text();
-      expect(body).toContain("SAVE FAILED");
-      expect(body).toContain("primary_hue"); // Should mention the field in Zod error
     });
 
     it("should handle KV persistence failure", async () => {

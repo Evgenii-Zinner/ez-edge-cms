@@ -1,6 +1,6 @@
 {
   "name": "ez-edge-cms",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A KV-backed, no-code CMS for Cloudflare Workers.",
   "author": "Evgenii Zinner",
   "type": "module",
@@ -22,6 +22,7 @@
     "@portabletext/to-html": "^5.0.2",
     "ez-portable-text": "github:Evgenii-Zinner/ez-portable-text",
     "hono": "^4.0.0",
+    "ruri-ui": "github:Evgenii-Zinner/ruri",
     "zod": "^3.22.4"
   },
   "devDependencies": {

@@ -6,21 +6,12 @@
  */
 
 import { createGenerator } from "unocss";
-import config, { EDITOR_SAFELIST } from "../../uno.config";
+import config from "../../uno.config";
 
 /**
- * The standard UnoCSS generator instance for public pages and general admin UI.
+ * The standard UnoCSS generator instance for public pages and general UI.
  */
 export const unocssEngine = createGenerator(config);
-
-/**
- * Specialized generator for the block editor, including the heavy safelist for Editor.js UI.
- * This is only invoked when rendering the Page Editor to keep public CSS lean.
- */
-export const editorEngine = createGenerator({
-  ...config,
-  safelist: [...(config.safelist || []), ...EDITOR_SAFELIST],
-});
 
 /**
  * Isolate-level cache for generated CSS.
@@ -47,29 +38,28 @@ export const getUnocssCacheSize = (): number => CSS_CACHE.size;
  *
  * @param html - The raw HTML string to parse and transform.
  * @param isHtmx - If true, treats the payload as an HTMX fragment (omits preflights).
- * @param isEditor - If true, utilizes the heavy editor generator for Editor.js UI.
+ * @param _isEditor - Legacy parameter (preserved for backward compatibility).
  * @returns A promise resolving to the HTML string with injected CSS styles.
  */
 export const renderWithUno = async (
   html: string,
   isHtmx: boolean = false,
-  isEditor: boolean = false,
+  _isEditor: boolean = false,
 ): Promise<string> => {
-  const generator = await (isEditor ? editorEngine : unocssEngine);
-
   /**
    * Generates a heuristic cache key based on content length and boundary slices
    * to uniquely identify the HTML fragment while avoiding full-string hashing.
    */
-  const cacheKey = `${isEditor}:${isHtmx}:${html.length}:${html.slice(0, 100)}${html.slice(-100)}`;
+  const cacheKey = `${isHtmx}:${html.length}:${html.slice(0, 100)}${html.slice(-100)}`;
 
   let generatedCss = CSS_CACHE.get(cacheKey);
 
   if (!generatedCss) {
     /**
      * Extracts utility classes from the HTML and generates the corresponding
-     * minified CSS rules using the selected UnoCSS generator.
+     * minified CSS rules using the UnoCSS generator.
      */
+    const generator = await unocssEngine;
     const { css } = await generator.generate(html, {
       minify: true,
       preflights: !isHtmx,

@@ -72,47 +72,49 @@ export const PageRow: FC<PageRowProps> = (props) => {
           </span>
         )}
       </td>
-      <td class="p-4 flex gap-2">
-        <a
-          href={`/admin/pages/edit/${slug}`}
-          class="btn-mini nav-item-info no-underline"
-        >
-          EDIT
-        </a>
-
-        {isDraft && !isLive && (
-          <button
-            hx-post={`/admin/pages/publish/${slug}`}
-            hx-target={`#row-${safeId}`}
-            hx-swap="outerHTML"
-            class="btn-mini nav-item-success"
+      <td class="admin-actions-td">
+        <div class="admin-actions-wrapper">
+          <a
+            href={`/admin/pages/edit/${slug}`}
+            class="btn-mini nav-item-info no-underline"
           >
-            PUBLISH
-          </button>
-        )}
+            EDIT
+          </a>
 
-        {isLive && !isProtected && (
-          <button
-            hx-post={`/admin/pages/unpublish/${slug}`}
-            hx-target={`#row-${safeId}`}
-            hx-swap="outerHTML"
-            class="btn-mini nav-item-warning"
-          >
-            UNPUBLISH
-          </button>
-        )}
+          {isDraft && !isLive && (
+            <button
+              hx-post={`/admin/pages/publish/${slug}`}
+              hx-target={`#row-${safeId}`}
+              hx-swap="outerHTML"
+              class="btn-mini nav-item-success"
+            >
+              PUBLISH
+            </button>
+          )}
 
-        {!isProtected && (
-          <button
-            hx-post={`/admin/pages/delete/${slug}`}
-            data-confirm={`Permanently delete /${slug}?`}
-            hx-target={`#row-${safeId}`}
-            hx-swap="delete"
-            class="btn-mini nav-item-error"
-          >
-            DELETE
-          </button>
-        )}
+          {isLive && !isProtected && (
+            <button
+              hx-post={`/admin/pages/unpublish/${slug}`}
+              hx-target={`#row-${safeId}`}
+              hx-swap="outerHTML"
+              class="btn-mini nav-item-warning"
+            >
+              UNPUBLISH
+            </button>
+          )}
+
+          {!isProtected && (
+            <button
+              hx-post={`/admin/pages/delete/${slug}`}
+              data-confirm={`Permanently delete /${slug}?`}
+              hx-target={`#row-${safeId}`}
+              hx-swap="delete"
+              class="btn-mini nav-item-error"
+            >
+              DELETE
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );

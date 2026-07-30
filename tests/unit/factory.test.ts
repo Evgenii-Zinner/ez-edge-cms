@@ -78,16 +78,13 @@ describe("Factory Utilities", () => {
     it("should set foundational design system values", () => {
       const theme = createDefaultTheme();
       expect(theme.schemaVersion).toBe(VERSIONS.THEME);
-      expect(theme.values.primary_hue).toBe(180);
       expect(theme.values.font_header).toBe("Orbitron");
     });
 
     it("should allow partial overrides", () => {
       const theme = createDefaultTheme({
-        primary_hue: 250,
         font_body: "Inter",
       });
-      expect(theme.values.primary_hue).toBe(250);
       expect(theme.values.font_body).toBe("Inter");
       expect(theme.values.font_header).toBe("Orbitron"); // Preserved default
     });

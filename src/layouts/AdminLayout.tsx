@@ -59,13 +59,7 @@ export const AdminLayout: FC<AdminLayoutProps> = (props) => {
           <div class="ui-overlay dots"></div>
           <div class="ui-overlay dots-interactive"></div>
 
-          <div
-            class={
-              props.hideSidebar
-                ? "flex min-h-screen bg-[var(--theme-bg)] color-[var(--theme-text-main)]"
-                : "admin-shell"
-            }
-          >
+          <div class={props.hideSidebar ? "admin-auth-shell" : "admin-shell"}>
             {/* Sidebar Navigation */}
             {!props.hideSidebar && (
               <aside

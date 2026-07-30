@@ -28,7 +28,7 @@ describe("SEO Utilities", () => {
     status: "published",
     title: "Test Page",
     description: "Test Page Description",
-    content: { blocks: [] },
+    content: [],
     category: "General",
     tags: [],
     seo: {

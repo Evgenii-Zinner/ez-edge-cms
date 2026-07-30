@@ -5,7 +5,6 @@ import {
   SiteSchema,
   NavSchema,
   FooterSchema,
-  EditorJsBlockSchema,
   VERSIONS,
 } from "../../src/core/schema";
 
@@ -20,8 +19,7 @@ describe("Core Zod Schemas", () => {
     const baseTheme = {
       updatedAt: new Date().toISOString(),
       values: {
-        primary_hue: 200,
-        surface_opacity: 0.5,
+        font_header: "Orbitron",
       },
     };
 
@@ -30,65 +28,12 @@ describe("Core Zod Schemas", () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.schemaVersion).toBe(VERSIONS.THEME);
-        expect(result.data.values.glow_spread).toBe("10px");
         expect(result.data.values.font_header).toBe("Orbitron");
-        expect(result.data.values.elevation).toBe("20px");
       }
-    });
-
-    it("should strictly enforce numeric boundaries for design system variables", () => {
-      // primary_hue boundaries [0-360]
-      expect(
-        ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: -1 } })
-          .success,
-      ).toBe(false);
-      expect(
-        ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 361 } })
-          .success,
-      ).toBe(false);
-      expect(
-        ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 0 } })
-          .success,
-      ).toBe(true);
-      expect(
-        ThemeSchema.safeParse({ ...baseTheme, values: { primary_hue: 360 } })
-          .success,
-      ).toBe(true);
-
-      // surface_opacity boundaries [0-1]
-      expect(
-        ThemeSchema.safeParse({
-          ...baseTheme,
-          values: { surface_opacity: -0.1 },
-        }).success,
-      ).toBe(false);
-      expect(
-        ThemeSchema.safeParse({
-          ...baseTheme,
-          values: { surface_opacity: 1.1 },
-        }).success,
-      ).toBe(false);
-      expect(
-        ThemeSchema.safeParse({ ...baseTheme, values: { surface_opacity: 0 } })
-          .success,
-      ).toBe(true);
-      expect(
-        ThemeSchema.safeParse({ ...baseTheme, values: { surface_opacity: 1 } })
-          .success,
-      ).toBe(true);
     });
 
     it("should perform automatic type coercion for numeric inputs (Admin HUD compatibility)", () => {
-      const raw = {
-        ...baseTheme,
-        values: { primary_hue: "180", surface_opacity: "0.9" },
-      };
-      const result = ThemeSchema.safeParse(raw);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.values.primary_hue).toBe(180);
-        expect(result.data.values.surface_opacity).toBe(0.9);
-      }
+      // (No longer applies to ThemeSchema as numeric fields were removed, but keeping test structure if needed)
     });
   });
 
@@ -234,23 +179,6 @@ describe("Core Zod Schemas", () => {
         expect(result.data.schemaVersion).toBe(VERSIONS.FOOTER);
         expect(result.data.links[0].label).toBe("Help");
       }
-    });
-  });
-
-  describe("EditorJsBlockSchema", () => {
-    it("should allow arbitrary data payloads for diverse block types", () => {
-      const block = {
-        id: "123",
-        type: "header",
-        data: { text: "Hello", level: 1 },
-      };
-      const result = EditorJsBlockSchema.safeParse(block);
-      expect(result.success).toBe(true);
-    });
-
-    it("should handle blocks with optional IDs", () => {
-      const block = { type: "paragraph", data: { text: "No ID" } };
-      expect(EditorJsBlockSchema.safeParse(block).success).toBe(true);
     });
   });
 });

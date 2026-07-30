@@ -16,27 +16,54 @@ import {
   getAdminUser,
   ensureSystemDefaults,
 } from "@core/kv";
-import { renderEditorJs } from "@utils/editorjs-parser";
 import { renderPortableText } from "@utils/portabletext-parser";
 import admin from "@routes/admin/index";
-import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
 import { injectUnoCSS } from "@core/unocss-middleware";
-
+import { injectGlobalConfig, GlobalConfigVariables } from "@core/middleware";
+import { themeRegistry } from "@core/theme";
 const app = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
-// Global Middleware: Inject site-wide configurations and the UnoCSS engine into the context.
+// Global Middleware: Inject site-wide configurations into the context.
 app.use("*", injectGlobalConfig());
 app.use("*", injectUnoCSS());
+
+function createFallbackImageSvg(filename: string): string {
+  const cleanName = filename
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[-_]/g, " ")
+    .toUpperCase();
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(0,195,255,0.08)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  <circle cx="400" cy="190" r="40" fill="none" stroke="#00c3ff" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+  <path d="M 388 180 L 412 180 L 412 200 L 388 200 Z M 382 190 L 376 190 M 424 190 L 418 190" fill="none" stroke="#00c3ff" stroke-width="1.5"/>
+  <text x="50%" y="255" text-anchor="middle" fill="#00c3ff" font-family="monospace" font-size="12" letter-spacing="2" opacity="0.85">${cleanName}</text>
+  <text x="50%" y="280" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="10" letter-spacing="1">MEDIA // NOT FOUND IN KV STORAGE</text>
+</svg>`;
+}
 
 /**
  * Binary Image Delivery Route.
  * Fetches binary image data from KV based on the slug and filename.
+ * Automatically falls back to a generated SVG graphic if the image is missing in KV (eliminates 404 console errors).
  */
 app.get("/images/*", async (c) => {
   const path = c.req.path;
   const relativePath = path.substring(8);
   const lastSlashIndex = relativePath.lastIndexOf("/");
 
-  if (lastSlashIndex === -1) return c.notFound();
+  if (lastSlashIndex === -1) {
+    c.header("Content-Type", "image/svg+xml");
+    return c.body(createFallbackImageSvg("unknown"));
+  }
 
   const slug = relativePath.substring(0, lastSlashIndex);
   const filename = relativePath.substring(lastSlashIndex + 1);
@@ -46,13 +73,39 @@ app.get("/images/*", async (c) => {
     contentType: string;
   }>(imageKey, "arrayBuffer");
 
-  if (!value) return c.notFound();
+  if (!value) {
+    c.header("Content-Type", "image/svg+xml");
+    c.header("Cache-Control", "no-cache");
+    return c.body(createFallbackImageSvg(filename));
+  }
 
   const contentType = metadata?.contentType || "image/webp";
   c.header("Content-Type", contentType);
   c.header("Cache-Control", "public, max-age=31536000, immutable");
 
   return c.body(value as ArrayBuffer);
+});
+
+const DEFAULT_FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 866" width="32" height="32"><polygon points="250,0 750,0 1000,433 750,866 250,866 0,433" fill="#020612" stroke="#00c3ff" stroke-width="60"/><polygon points="350,173 650,173 800,433 650,693 350,693 200,433" fill="#00c3ff" opacity="0.85"/></svg>`;
+
+/**
+ * Favicon Delivery Routes (/favicon.ico & /favicon.svg).
+ * Serves configured site.logoSvg or default EZ EDGE brand favicon with 200 OK status.
+ */
+app.get("/favicon.ico", async (c) => {
+  const site = c.get("site");
+  const svgContent = site?.logoSvg || DEFAULT_FAVICON_SVG;
+  c.header("Content-Type", "image/svg+xml");
+  c.header("Cache-Control", "public, max-age=86400");
+  return c.body(svgContent);
+});
+
+app.get("/favicon.svg", async (c) => {
+  const site = c.get("site");
+  const svgContent = site?.logoSvg || DEFAULT_FAVICON_SVG;
+  c.header("Content-Type", "image/svg+xml");
+  c.header("Cache-Control", "public, max-age=86400");
+  return c.body(svgContent);
 });
 
 /**
@@ -187,11 +240,16 @@ app.get("/*", async (c) => {
   const detectedUrl = new URL(c.req.url).origin;
 
   const page = await getPage(c.env, slug, "live");
+  const stylingSystem = theme.values.styling_system || "ruri";
+  const connector = themeRegistry.get(stylingSystem);
+  const ThemeUI = connector.components;
+  const tokens = connector.tokens!;
+
   if (page) {
-    const contentHtml =
-      page.content && !Array.isArray(page.content) && "blocks" in page.content
-        ? renderEditorJs(page.content)
-        : renderPortableText(Array.isArray(page.content) ? page.content : []);
+    const contentHtml = renderPortableText(
+      Array.isArray(page.content) ? page.content : [],
+      stylingSystem,
+    );
     return c.html(
       <BaseLayout
         title={page.title}
@@ -202,6 +260,7 @@ app.get("/*", async (c) => {
         page={page}
         description={page.description}
         detectedUrl={detectedUrl}
+        currentPath={new URL(c.req.url).pathname}
       >
         <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
       </BaseLayout>,
@@ -244,10 +303,17 @@ app.get("/*", async (c) => {
         site={site}
         footer={footer}
         detectedUrl={detectedUrl}
+        currentPath={new URL(c.req.url).pathname}
       >
-        <div class="mb-12 border-l-4 border-solid border-[var(--theme-accent)] pl-6">
+        <div
+          class={`mb-12 border-l-4 border-solid pl-6`}
+          style={{ borderColor: tokens.primary }}
+        >
           <h1 class="text-2.5rem mb-2">{slug.toUpperCase()}</h1>
-          <p class="text-[var(--theme-text-dim)] m-0 italic opacity-80 font-nav text-0.85rem tracking-1px uppercase">
+          <p
+            class="m-0 italic opacity-80 font-nav text-0.85rem tracking-1px uppercase"
+            style={{ color: tokens.textMuted }}
+          >
             ARCHIVE EXPLORER // {totalItems} ENTRIES FOUND // PAGE {safePage} OF{" "}
             {totalPages || 1}
           </p>
@@ -255,48 +321,58 @@ app.get("/*", async (c) => {
 
         {paginatedPages.length > 0 ? (
           <>
-            <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8 my-12">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 my-12">
               {paginatedPages.map((p) => {
                 const thumbnail = p.featuredImage;
                 return (
                   <a
                     href={`/${p.slug}`}
-                    class="bento-item group no-underline h-full overflow-hidden flex flex-col"
+                    class="no-underline h-full flex flex-col group"
                   >
-                    {thumbnail && (
+                    <ThemeUI.Card title={p.title} glow={true} class="h-full">
+                      {thumbnail && (
+                        <div
+                          class={`w-full h-180px mb-4 border border-solid overflow-hidden relative`}
+                          style={{
+                            borderColor: tokens.border,
+                            background: `url(${thumbnail}) center/cover no-repeat`,
+                          }}
+                        >
+                          <div class="w-full h-full bg-[rgba(0,0,0,0.3)] group-hover:bg-transparent transition-all duration-500"></div>
+                        </div>
+                      )}
+                      {p.description && (
+                        <p class="text-0.85rem line-clamp-3 m-0 flex-grow font-body leading-relaxed opacity-80">
+                          {p.description}
+                        </p>
+                      )}
                       <div
-                        class="w-full h-180px mb-4 border border-solid border-[var(--theme-accent-glow)] overflow-hidden"
-                        style={{
-                          background: `url(${thumbnail}) center/cover no-repeat`,
-                        }}
+                        class="mt-6 flex items-center gap-2 text-0.75rem font-mono uppercase tracking-2px opacity-70 group-hover:opacity-100 transition-all"
+                        style={{ color: tokens.primary }}
                       >
-                        <div class="w-full h-full bg-[rgba(0,0,0,0.3)] group-hover:bg-transparent transition-all duration-500"></div>
+                        ACCESS DATA{" "}
+                        <span class="group-hover:translate-x-1 transition-transform">
+                          &rarr;
+                        </span>
                       </div>
-                    )}
-                    <h3 class="font-header text-[var(--theme-accent)] m-0 mb-3 text-1.2rem group-hover:drop-shadow-[0_0_8px_var(--theme-accent-glow)] transition-all">
-                      {p.title}
-                    </h3>
-                    {p.description && (
-                      <p class="text-0.85rem text-[var(--theme-text-dim)] line-clamp-3 m-0 flex-grow font-body leading-relaxed">
-                        {p.description}
-                      </p>
-                    )}
-                    <div class="mt-6 flex items-center gap-2 text-0.75rem font-nav uppercase tracking-2px text-[var(--theme-accent)] opacity-60 group-hover:opacity-100 transition-all">
-                      ACCESS DATA{" "}
-                      <span class="group-hover:translate-x-1 transition-transform">
-                        &rarr;
-                      </span>
-                    </div>
+                    </ThemeUI.Card>
                   </a>
                 );
               })}
             </div>
             {totalPages > 1 && (
-              <div class="flex justify-between items-center mt-12 border-t border-solid border-[var(--theme-accent-glow)] pt-6">
+              <div
+                class="flex justify-between items-center mt-12 border-t border-solid pt-6"
+                style={{ borderColor: tokens.border }}
+              >
                 {safePage > 1 ? (
                   <a
                     href={`?page=${safePage - 1}`}
-                    class="btn-primary no-underline"
+                    class="no-underline font-mono text-0.8rem uppercase tracking-2px px-6 py-2 border border-solid transition-all hover:opacity-100 opacity-80"
+                    style={{
+                      color: tokens.primary,
+                      borderColor: tokens.primary,
+                    }}
                   >
                     &larr; PREVIOUS SECTOR
                   </a>
@@ -306,7 +382,11 @@ app.get("/*", async (c) => {
                 {safePage < totalPages ? (
                   <a
                     href={`?page=${safePage + 1}`}
-                    class="btn-primary no-underline"
+                    class="no-underline font-mono text-0.8rem uppercase tracking-2px px-6 py-2 border border-solid transition-all hover:opacity-100 opacity-80"
+                    style={{
+                      color: tokens.primary,
+                      borderColor: tokens.primary,
+                    }}
                   >
                     NEXT SECTOR &rarr;
                   </a>
@@ -317,8 +397,14 @@ app.get("/*", async (c) => {
             )}
           </>
         ) : (
-          <div class="py-24 text-center border border-dashed border-[var(--theme-accent-glow)] opacity-50">
-            <p class="font-nav uppercase tracking-2px">
+          <div
+            class="py-24 text-center border border-dashed opacity-50"
+            style={{ borderColor: tokens.border }}
+          >
+            <p
+              class="font-nav uppercase tracking-2px"
+              style={{ color: tokens.textMuted }}
+            >
               SECTOR IS CURRENTLY EMPTY // NO DATA ENTRIES DETECTED
             </p>
           </div>
@@ -335,19 +421,30 @@ app.get("/*", async (c) => {
       site={site}
       footer={footer}
       detectedUrl={detectedUrl}
+      currentPath={new URL(c.req.url).pathname}
     >
       <div class="text-center py-24">
-        <h1 class="text-4rem mb-4 font-header tracking-widest text-[var(--theme-accent)] drop-shadow-[0_0_15px_var(--theme-accent-glow)]">
+        <h1
+          class="text-4rem mb-4 font-header tracking-widest"
+          style={{ color: tokens.primary }}
+        >
           404: SECTOR NOT FOUND
         </h1>
-        <p class="mb-12 text-[var(--theme-text-dim)] font-nav uppercase tracking-2px opacity-80">
-          The coordinate <strong>/${slug}</strong> does not exist in our current
+        <p
+          class="mb-12 font-nav uppercase tracking-2px opacity-80"
+          style={{ color: tokens.textMuted }}
+        >
+          The coordinate <strong>/{slug}</strong> does not exist in our current
           database.
         </p>
         <a
           href="/"
-          class="btn-primary no-underline inline-block px-10 py-4 transition-all hover:scale-105"
-          style={{ textShadow: "none" }}
+          class="no-underline inline-block px-10 py-4 border border-solid font-mono text-0.85rem uppercase tracking-2px transition-all hover:scale-105"
+          style={{
+            color: tokens.primary,
+            borderColor: tokens.primary,
+            textShadow: "none",
+          }}
         >
           RETURN TO HOME SECTOR
         </a>

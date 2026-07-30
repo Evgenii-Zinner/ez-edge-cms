@@ -11,6 +11,7 @@ import { raw } from "hono/html";
 import { ThemeConfig, SiteConfig, PageConfig } from "@core/schema";
 import { generateCssVariables, generateAdminCssVariables } from "@utils/styles";
 import { generateMetaTags, generateJsonLd } from "@utils/seo";
+import { ADMIN_CSS } from "../styles/admin";
 
 /**
  * Props for the Head component.
@@ -77,6 +78,12 @@ export const Head: FC<HeadProps> = (props) => {
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      {/* Zero-Flash OS Theme Preference Detector & Toggle Script */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var t=localStorage.getItem('theme')||m;document.documentElement.setAttribute('data-theme',t);}catch(e){}})();window.toggleTheme=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('theme',c);document.cookie='theme='+c+';path=/;max-age=31536000';}catch(e){}};`,
+        }}
+      />
       <title>{displayTitle}</title>
 
       {/* Connectivity Hints */}
@@ -106,14 +113,17 @@ export const Head: FC<HeadProps> = (props) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Dynamic Favicon (SVG) */}
-      {site.logoSvg && (
-        <link
-          rel="icon"
-          type="image/svg+xml"
-          href={`data:image/svg+xml,${encodeURIComponent(site.logoSvg)}`}
-        />
-      )}
+      {/* Dynamic Favicon (SVG & ICO Fallback) */}
+      <link
+        rel="icon"
+        type="image/svg+xml"
+        href={
+          site.logoSvg
+            ? `data:image/svg+xml,${encodeURIComponent(site.logoSvg)}`
+            : "/favicon.svg"
+        }
+      />
+      <link rel="alternate icon" href="/favicon.ico" />
 
       {/* Optimized Google Fonts: Non-blocking load pattern */}
       <link
@@ -134,65 +144,29 @@ export const Head: FC<HeadProps> = (props) => {
         defer
       />
 
-      {/* Administrative Assets (Deferred) */}
-      {isAdmin &&
-        isEditor &&
-        (!page || Array.isArray(page.content) || !("blocks" in page.content) ? (
-          <>
-            <link rel="stylesheet" href="/admin/assets/ez-portable-text.css" />
-            <script src="/admin/assets/ez-portable-text.js" defer />
-          </>
-        ) : (
-          <>
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.9.3"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.2"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.6.0"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.4.3"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.6"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/code@2.9.3"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2"
-              defer
-            />
-            <script
-              src="https://cdn.jsdelivr.net/npm/editorjs-drag-drop@1.1.18"
-              defer
-            />
-            <script src="https://cdn.jsdelivr.net/npm/editorjs-undo" defer />
-          </>
-        ))}
+      {/* Administrative PortableText Assets (Deferred) */}
+      {isAdmin && isEditor && (
+        <>
+          <link rel="stylesheet" href="/admin/assets/ez-portable-text.css" />
+          <script src="/admin/assets/ez-portable-text.js" defer />
+        </>
+      )}
 
       {/* Global Custom Head Scripts (Permanent, for Analytics) */}
       {site.customHeadScripts && raw(site.customHeadScripts)}
 
       {/* Dynamic CSS Theme Variables Injection */}
       <style id="dynamic-theme">{raw(cssVariables)}</style>
+
+      {/* Standalone Admin HUD Styles Injection */}
+      {isAdmin && <style id="admin-styles">{raw(ADMIN_CSS)}</style>}
+
+      {/* Global Video Facade Player Script (Passive Event Polyfill Wrapper) */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `window.ezPlayVideo=function(c,u){var s='<!DOCTYPE html><html><head><script>(function(){if(typeof EventTarget!=="undefined"){var a=EventTarget.prototype.addEventListener;EventTarget.prototype.addEventListener=function(t,f,o){if(t==="touchstart"||t==="touchmove"){if(typeof o==="boolean"){o={capture:o,passive:true};}else if(typeof o==="object"&&o!==null){if(o.passive===undefined)o.passive=true;}else{o={passive:true};}}return a.call(this,t,f,o);};}})();<\\/script><style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;background:#02060c;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="'+u+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture *; web-share" allowfullscreen></iframe></body></html>';c.innerHTML='<iframe srcdoc="'+s.replace(/"/g,'&quot;')+'" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture *; web-share" allowfullscreen></iframe>';};`,
+        }}
+      />
 
       {/* UnoCSS Insertion Point */}
       {raw("<!-- CSS_INJECTION_POINT -->")}

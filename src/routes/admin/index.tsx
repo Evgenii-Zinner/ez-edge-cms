@@ -57,8 +57,9 @@ admin.use("*", async (c, next) => {
     }
   }
 
-  // Inject security headers
-  c.header("X-Frame-Options", "DENY");
+  // Inject security headers (Allow SAMEORIGIN framing specifically for theme live preview)
+  const isPreviewFrame = c.req.path === "/admin/theme/preview-frame";
+  c.header("X-Frame-Options", isPreviewFrame ? "SAMEORIGIN" : "DENY");
   c.header("X-Content-Type-Options", "nosniff");
   c.header("Referrer-Policy", "strict-origin-when-cross-origin");
 
@@ -70,7 +71,8 @@ admin.use("*", async (c, next) => {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' data: https://fonts.gstatic.com; " +
       "img-src 'self' data: blob:; " +
-      "connect-src 'self';",
+      "connect-src 'self'; " +
+      (isPreviewFrame ? "frame-ancestors 'self';" : "frame-ancestors 'none';"),
   );
 
   await next();

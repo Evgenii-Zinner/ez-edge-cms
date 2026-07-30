@@ -225,22 +225,29 @@ describe("Public Routes & Archive Explorer", () => {
       expect(body.byteLength).toBe(3);
     });
 
-    it("GET /images/* - should return 404 if image path has no filename", async () => {
+    it("GET /images/* - should return SVG fallback image if image path has no filename", async () => {
       const res = await app.request(
         "http://localhost/images/no-filename",
         { method: "GET" },
         mockEnv(),
       );
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
+      const text = await res.text();
+      expect(text).toContain("<svg");
     });
 
-    it("GET /images/* - should return 404 if image does not exist", async () => {
+    it("GET /images/* - should return SVG fallback image if image does not exist", async () => {
       const res = await app.request(
         "http://localhost/images/pages/missing.png",
         { method: "GET" },
         mockEnv(),
       );
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
+      const text = await res.text();
+      expect(text).toContain("<svg");
+      expect(text).toContain("MEDIA // NOT FOUND IN KV STORAGE");
     });
 
     it("GET / - should redirect to setup and ensure defaults when both admin user and system status are absent", async () => {
@@ -497,38 +504,6 @@ describe("Public Routes & Archive Explorer", () => {
   });
 
   describe("Universal Page Content Resolution", () => {
-    it("should render page using Editor.js renderer", async () => {
-      const page = {
-        ...createDefaultPage("EditorJS Page", "editorjs"),
-        content: {
-          time: 1234,
-          blocks: [
-            {
-              type: "paragraph",
-              data: { text: "EditorJS paragraph" },
-            },
-          ],
-        },
-      };
-
-      const res = await app.request(
-        "http://localhost/editorjs",
-        { method: "GET" },
-        mockEnv({
-          initialData: {
-            "system:admin_user": { username: "admin" },
-            "system:onboarding_complete": true,
-            "page:live:editorjs": page,
-          },
-        }),
-      );
-
-      expect(res.status).toBe(200);
-      const html = await res.text();
-      expect(html).toContain("EditorJS Page");
-      expect(html).toContain("EditorJS paragraph");
-    });
-
     it("should render page using PortableText renderer", async () => {
       const page = {
         ...createDefaultPage("PortableText Page", "portabletext"),
@@ -556,6 +531,46 @@ describe("Public Routes & Archive Explorer", () => {
       const html = await res.text();
       expect(html).toContain("PortableText Page");
       expect(html).toContain("PortableText paragraph");
+    });
+  });
+
+  describe("Favicon Routes", () => {
+    it("should serve /favicon.ico with SVG content type", async () => {
+      const res = await app.request(
+        "http://localhost/favicon.ico",
+        { method: "GET" },
+        mockEnv({
+          initialData: {
+            "system:admin_user": { username: "admin" },
+            "system:onboarding_complete": true,
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
+      expect(res.headers.get("Cache-Control")).toBe("public, max-age=86400");
+      const body = await res.text();
+      expect(body).toContain("<svg");
+    });
+
+    it("should serve /favicon.svg with SVG content type", async () => {
+      const res = await app.request(
+        "http://localhost/favicon.svg",
+        { method: "GET" },
+        mockEnv({
+          initialData: {
+            "system:admin_user": { username: "admin" },
+            "system:onboarding_complete": true,
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
+      expect(res.headers.get("Cache-Control")).toBe("public, max-age=86400");
+      const body = await res.text();
+      expect(body).toContain("<svg");
     });
   });
 });

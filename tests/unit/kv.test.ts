@@ -140,17 +140,17 @@ describe("KV Core Data Utilities", () => {
       // 2. Poison KV with VALID schema object to verify cache usage
       const poisonedTheme = {
         ...theme,
-        values: { ...theme.values, primary_hue: 200 },
+        values: { ...theme.values, font_body: "Comic Sans" },
       };
       await env.EZ_CONTENT.put(KEYS.THEME, JSON.stringify(poisonedTheme));
 
       const cached = await getTheme(env);
       expect(cached).toEqual(theme); // Still the original theme
-      expect(cached.values.primary_hue).not.toBe(200);
+      expect(cached.values.font_body).not.toBe("Comic Sans");
 
       // 3. Force Refresh should bypass cache
       const refreshed = await getTheme(env, true);
-      expect(refreshed.values.primary_hue).toBe(200);
+      expect(refreshed.values.font_body).toBe("Comic Sans");
     });
 
     it("should handle cache eviction for site configuration", async () => {

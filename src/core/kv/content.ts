@@ -10,8 +10,7 @@ import {
   VERSIONS,
 } from "@core/schema";
 import { parsePage } from "@core/parser";
-import { KEYS, updateQueue, setUpdateQueue, cache } from "@core/kv/base";
-import { getFirstImage } from "@utils/editorjs-parser";
+import { KEYS, cache } from "@core/kv/base";
 import { getFirstImageForPortableText } from "@utils/portabletext-parser";
 
 /**
@@ -34,7 +33,6 @@ export const getPage = async (
 
 /**
  * Updates the persistent index list of page slugs for a specific environment mode.
- * Utilizes a sequential update queue to prevent race conditions during indexing.
  * Handles the v1 (string array) to v2 (object array) schema migration on-the-fly.
  *
  * @param env - Cloudflare Worker environment bindings.
@@ -49,75 +47,68 @@ const modifyPageList = async (
   mode: "draft" | "live",
   action: "add" | "remove",
 ): Promise<void> => {
-  const newQueue = updateQueue
-    .then(async () => {
-      const slug =
-        typeof pageOrSlug === "string" ? pageOrSlug : pageOrSlug.slug;
-      const key = KEYS.PAGE_LIST(mode);
-      const raw: any = await env.EZ_CONTENT.get(key, { type: "json" });
+  try {
+    const slug = typeof pageOrSlug === "string" ? pageOrSlug : pageOrSlug.slug;
+    const key = KEYS.PAGE_LIST(mode);
+    const raw: any = await env.EZ_CONTENT.get(key, { type: "json" });
 
-      let indexObj: PageListIndex = {
-        schemaVersion: VERSIONS.PAGE_LIST,
-        items: [],
+    let indexObj: PageListIndex = {
+      schemaVersion: VERSIONS.PAGE_LIST,
+      items: [],
+    };
+
+    /**
+     * Handle v1 (string array) to v2 schema migration.
+     */
+    if (Array.isArray(raw)) {
+      indexObj.items = raw.map((s) => ({
+        slug: s,
+        title: s,
+        createdAt: new Date().toISOString(),
+      }));
+    } else if (raw && raw.items) {
+      indexObj = raw;
+    }
+
+    const existingIndex = indexObj.items.findIndex(
+      (item) => item.slug === slug,
+    );
+
+    if (action === "add" && typeof pageOrSlug !== "string") {
+      const entry: PageListEntry = {
+        slug: pageOrSlug.slug,
+        title: pageOrSlug.title,
+        description: pageOrSlug.description,
+        featuredImage:
+          pageOrSlug.featuredImage ||
+          (Array.isArray(pageOrSlug.content)
+            ? getFirstImageForPortableText(pageOrSlug.content) || undefined
+            : undefined),
+        createdAt: pageOrSlug.metadata.createdAt,
+        publishedAt: pageOrSlug.metadata.publishedAt,
       };
 
-      /**
-       * Handle v1 (string array) to v2 schema migration.
-       */
-      if (Array.isArray(raw)) {
-        indexObj.items = raw.map((s) => ({
-          slug: s,
-          title: s,
-          createdAt: new Date().toISOString(),
-        }));
-      } else if (raw && raw.items) {
-        indexObj = raw;
-      }
-
-      const existingIndex = indexObj.items.findIndex(
-        (item) => item.slug === slug,
-      );
-
-      if (action === "add" && typeof pageOrSlug !== "string") {
-        const entry: PageListEntry = {
-          slug: pageOrSlug.slug,
-          title: pageOrSlug.title,
-          description: pageOrSlug.description,
-          featuredImage:
-            pageOrSlug.featuredImage ||
-            (Array.isArray(pageOrSlug.content)
-              ? getFirstImageForPortableText(pageOrSlug.content)
-              : getFirstImage(pageOrSlug.content as any)) ||
-            undefined,
-          createdAt: pageOrSlug.metadata.createdAt,
-          publishedAt: pageOrSlug.metadata.publishedAt,
-        };
-
-        if (existingIndex === -1) {
-          indexObj.items.push(entry);
-        } else {
-          indexObj.items[existingIndex] = entry;
-        }
-      } else if (action === "remove" && existingIndex !== -1) {
-        indexObj.items.splice(existingIndex, 1);
+      if (existingIndex === -1) {
+        indexObj.items.push(entry);
       } else {
-        return;
+        indexObj.items[existingIndex] = entry;
       }
+    } else if (action === "remove" && existingIndex !== -1) {
+      indexObj.items.splice(existingIndex, 1);
+    } else {
+      return;
+    }
 
-      await env.EZ_CONTENT.put(key, JSON.stringify(indexObj));
+    await env.EZ_CONTENT.put(key, JSON.stringify(indexObj));
 
-      /**
-       * Update the isolate-level cache with the new index.
-       */
-      if (mode === "live") cache.pageListLive = indexObj;
-      else cache.pageListDraft = indexObj;
-    })
-    .catch((err) => {
-      console.error("PageList Update Queue Error:", err);
-    });
-
-  setUpdateQueue(newQueue as Promise<void>);
-  return newQueue as Promise<void>;
+    /**
+     * Update the isolate-level cache with the new index.
+     */
+    if (mode === "live") cache.pageListLive = indexObj;
+    else cache.pageListDraft = indexObj;
+  } catch (err) {
+    console.error("PageList Update Error:", err);
+  }
 };
 
 /**
@@ -278,7 +269,6 @@ export const renamePage = async (
     getPage(env, oldSlug, "live"),
   ]);
 
-  const savePromises: Promise<void>[] = [];
   const deletePromises: Promise<void>[] = [];
 
   /**
@@ -286,7 +276,7 @@ export const renamePage = async (
    */
   if (draftPage) {
     draftPage.slug = newSlug;
-    savePromises.push(savePage(env, draftPage, "draft"));
+    await savePage(env, draftPage, "draft");
     deletePromises.push(env.EZ_CONTENT.delete(KEYS.PAGE("draft", oldSlug)));
     deletePromises.push(modifyPageList(env, oldSlug, "draft", "remove"));
   }
@@ -296,7 +286,7 @@ export const renamePage = async (
    */
   if (livePage) {
     livePage.slug = newSlug;
-    savePromises.push(savePage(env, livePage, "live"));
+    await savePage(env, livePage, "live");
     deletePromises.push(env.EZ_CONTENT.delete(KEYS.PAGE("live", oldSlug)));
     deletePromises.push(modifyPageList(env, oldSlug, "live", "remove"));
   }
@@ -314,9 +304,6 @@ export const renamePage = async (
     }
   });
 
-  /**
-   * Execute saves and copy images, followed by deletions of the old keys.
-   */
-  await Promise.all([...savePromises, ...imagePromises]);
+  await Promise.all(imagePromises);
   await Promise.all(deletePromises);
 };

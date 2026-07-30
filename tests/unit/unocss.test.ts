@@ -34,16 +34,6 @@ describe("UnoCSS Engine Utility", () => {
     expect(result).not.toContain("<html>");
   });
 
-  it("should correctly handle the isEditor flag by including editor-specific utilities", async () => {
-    const html = `<div class="ce-block">Editor Content</div>`;
-    const result = await renderWithUno(html, false, true);
-
-    expect(result).toContain('<style id="ez-unocss">');
-    // Editor.js classes should trigger specific UnoCSS rules if configured,
-    // but at minimum we verify the engine runs with the flag.
-    expect(result).toContain(".ce-block");
-  });
-
   it("should fallback to appending to </head> if injection point is missing", async () => {
     const html = `<html><head><title>Test</title></head><body><div class="p-1"></div></body></html>`;
     const result = await renderWithUno(html, false);
