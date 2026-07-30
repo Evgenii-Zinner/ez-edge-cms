@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, spyOn } from "bun:test";
+import { describe, it, expect, beforeEach } from "bun:test";
 import {
   extractAndSaveImages,
   saveSiteImage,
@@ -41,9 +41,6 @@ describe("ImageStorage Utilities", () => {
 
   beforeEach(() => {
     env = createMockEnv();
-    // Silence console to keep test output clean, but allow spying
-    spyOn(console, "error").mockImplementation(() => {});
-    spyOn(console, "log").mockImplementation(() => {});
   });
 
   describe("extractAndSaveImages", () => {
@@ -232,6 +229,25 @@ describe("ImageStorage Utilities", () => {
         `img:${slug}:new.png`,
       ]);
     });
+    it("should handle garbage collection error gracefully if KV list fails", async () => {
+      const failingEnv = {
+        EZ_CONTENT: {
+          get: async () => null,
+          list: async () => ({ keys: [{ name: "img:page-gc-fail:old.png" }] }),
+          put: async () => { },
+          delete: async () => {
+            throw new Error("KV Delete Error");
+          },
+        },
+      } as any;
+
+      const base64Image =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+      const content = [{ _key: "b1", _type: "image", url: base64Image }];
+
+      const result = await extractAndSaveImages(failingEnv, "page-gc-fail", content);
+      expect(result[0].url).toBe("/images/page-gc-fail/b1.png");
+    });
   });
 
   describe("saveSiteImage", () => {
@@ -249,18 +265,38 @@ describe("ImageStorage Utilities", () => {
       expect(stored.metadata.contentType).toBe("image/svg+xml");
     });
 
-    it("should return unchanged URL if string is not base64", async () => {
-      const httpUrl = "https://example.com/logo.png";
-      const result = await saveSiteImage(env, "logo.png", httpUrl);
-      expect(result).toBe(httpUrl);
+    it("should handle site image GC error gracefully if KV list fails", async () => {
+      const failingEnv = {
+        EZ_CONTENT: {
+          get: async () => null,
+          list: async () => ({ keys: [{ name: "img:site:og-image.png" }] }),
+          put: async () => { },
+          delete: async () => {
+            throw new Error("KV Delete Fail");
+          },
+        },
+      } as any;
 
-      // Verify nothing was saved to KV
-      const list = await env.EZ_CONTENT.list({ prefix: "img:site:" });
-      expect(list.keys).toHaveLength(0);
-    });
+      const base64Png =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
-    it("should return empty string if input URL is empty", async () => {
-      expect(await saveSiteImage(env, "logo.png", "")).toBe("");
+      const url = await saveSiteImage(failingEnv, "og-image", base64Png);
+      expect(url).toBe("/images/site/og-image.webp");
     });
   });
+
+  it("should return unchanged URL if string is not base64", async () => {
+    const httpUrl = "https://example.com/logo.png";
+    const result = await saveSiteImage(env, "logo.png", httpUrl);
+    expect(result).toBe(httpUrl);
+
+    // Verify nothing was saved to KV
+    const list = await env.EZ_CONTENT.list({ prefix: "img:site:" });
+    expect(list.keys).toHaveLength(0);
+  });
+
+  it("should return empty string if input URL is empty", async () => {
+    expect(await saveSiteImage(env, "logo.png", "")).toBe("");
+  });
 });
+

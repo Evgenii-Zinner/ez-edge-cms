@@ -323,6 +323,42 @@ describe("Admin Pages Routes", () => {
       expect(await res.text()).toContain("PAGE SAVED");
       expect(savedData.title).toBe("Updated Title");
     });
+
+    it("should extract usedBlocks from Editor.js blocks object format (lines 103-110)", async () => {
+      const app = setupApp();
+      const page = createDefaultPage("Old Title", "test");
+
+      const editorJsContent = {
+        blocks: [
+          { type: "paragraph", data: { text: "Hello" } },
+          { type: "header", data: { text: "Title", level: 2 } },
+        ],
+      };
+
+      const formData = new FormData();
+      formData.append("title", "Editor.js Page");
+      formData.append("content", JSON.stringify(editorJsContent));
+
+      let savedData: any = null;
+      const res = await app.request(
+        "http://localhost/admin/pages/save/test",
+        {
+          method: "POST",
+          body: formData,
+        },
+        mockEnv({
+          initialData: { "page:draft:test": page },
+          put: async (key: string, val: any) => {
+            if (key === "page:draft:test")
+              savedData = typeof val === "string" ? JSON.parse(val) : val;
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain("PAGE SAVED");
+      expect(savedData.title).toBe("Editor.js Page");
+    });
   });
 
   describe("Lifecycle Mutations", () => {

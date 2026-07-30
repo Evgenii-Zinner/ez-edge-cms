@@ -533,4 +533,44 @@ describe("Public Routes & Archive Explorer", () => {
       expect(html).toContain("PortableText paragraph");
     });
   });
+
+  describe("Favicon Routes", () => {
+    it("should serve /favicon.ico with SVG content type", async () => {
+      const res = await app.request(
+        "http://localhost/favicon.ico",
+        { method: "GET" },
+        mockEnv({
+          initialData: {
+            "system:admin_user": { username: "admin" },
+            "system:onboarding_complete": true,
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
+      expect(res.headers.get("Cache-Control")).toBe("public, max-age=86400");
+      const body = await res.text();
+      expect(body).toContain("<svg");
+    });
+
+    it("should serve /favicon.svg with SVG content type", async () => {
+      const res = await app.request(
+        "http://localhost/favicon.svg",
+        { method: "GET" },
+        mockEnv({
+          initialData: {
+            "system:admin_user": { username: "admin" },
+            "system:onboarding_complete": true,
+          },
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
+      expect(res.headers.get("Cache-Control")).toBe("public, max-age=86400");
+      const body = await res.text();
+      expect(body).toContain("<svg");
+    });
+  });
 });

@@ -130,14 +130,20 @@ export function createBaseThemeComponents(
       </div>
     ),
 
-    Image: (props: ImageProps) => (
-      <figure class={styles.image.container(props)}>
-        <img src={props.src} alt={props.alt || ""} class={styles.image.img} />
-        {props.caption && styles.image.caption && (
-          <figcaption class={styles.image.caption}>{props.caption}</figcaption>
-        )}
-      </figure>
-    ),
+    Image: (props: ImageProps) => {
+      const containerClass =
+        typeof styles.image?.container === "function"
+          ? styles.image.container(props)
+          : (styles.image?.container as any) || "";
+      return (
+        <figure class={containerClass}>
+          <img src={props.src} alt={props.alt || ""} class={styles.image?.img || ""} />
+          {props.caption && styles.image?.caption && (
+            <figcaption class={styles.image.caption}>{props.caption}</figcaption>
+          )}
+        </figure>
+      );
+    },
 
     CodeBlock: (props: CodeBlockProps) => (
       <div class={styles.codeBlock.container(props)}>
@@ -243,9 +249,9 @@ export function createBaseThemeComponents(
     Overlays: () => (styles.overlays ? styles.overlays() : <></>),
 
     Nav: (props: NavProps) => (
-      <nav class={styles.nav.container} id="main-nav">
-        {props.nav.items.map((item) => (
-          <a href={normalizePath(item.path)} class={styles.nav.link}>
+      <nav class={styles.nav?.container || ""} id="main-nav">
+        {(props.nav?.items || []).map((item) => (
+          <a href={normalizePath(item.path)} class={styles.nav?.link || ""}>
             {item.label}
           </a>
         ))}

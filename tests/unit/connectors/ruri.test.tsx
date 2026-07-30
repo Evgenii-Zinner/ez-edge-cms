@@ -26,81 +26,103 @@ describe("Ruri Theme Connector", () => {
     expect(css).toContain("Orbitron");
   });
 
-  it("should render Card component using Ruri Panel", () => {
-    const Card = ruri.components.Card;
-    const jsx = (
-      <Card title="Test Card" status="ACTIVE">
-        <p>Content</p>
-      </Card>
-    );
-    expect(jsx).toBeDefined();
+  it("should return a valid UnoCSS config from getUnoConfig", () => {
+    const config = ruri.getUnoConfig();
+    expect(config).toBeDefined();
+    expect(config.shortcuts).toBeDefined();
+    expect(config.preflights).toBeDefined();
+    expect(Array.isArray(config.rules)).toBe(true);
+    expect(Array.isArray(config.safelist)).toBe(true);
   });
 
-  it("should render Button component using Ruri Button", () => {
-    const Button = ruri.components.Button;
-    const jsx = (
-      <Button shape="cyber" variant="default">
-        Click Me
-      </Button>
-    );
-    expect(jsx).toBeDefined();
+  // All component tests use direct function calls (not JSX) because Hono's JSX
+  // only creates a descriptor object and never invokes the component function body.
+  it("should invoke Card component", () => {
+    const result = ruri.components.Card({ title: "Test Card", status: "ACTIVE", children: "Content" } as any);
+    expect(result).toBeDefined();
   });
 
-  it("should render Hero component with sanitized title", () => {
-    const Hero = ruri.components.Hero;
-    const jsx = <Hero title="Hello<br/>World" subtitle="Subtitle" />;
-    expect(jsx).toBeDefined();
+  it("should invoke Button component with all props", () => {
+    const result = ruri.components.Button({
+      shape: "cyber" as any,
+      variant: "default" as any,
+      class: "my-custom-btn",
+      type: "submit" as any,
+      children: "Submit",
+    });
+    expect(result).toBeDefined();
   });
 
-  it("should render CodeBlock component in sci-fi panel", () => {
-    const CodeBlock = ruri.components.CodeBlock;
-    const jsx = (
-      <CodeBlock code="const x = 1;" language="ts" filename="index.ts" />
-    );
-    expect(jsx).toBeDefined();
+  it("should invoke Grid component", () => {
+    const result = ruri.components.Grid({
+      cols: { sm: 1, md: 2 } as any,
+      gap: 4 as any,
+      class: "my-grid",
+      children: null,
+    });
+    expect(result).toBeDefined();
   });
 
-  it("should render Table component with headers and rows", () => {
-    const Table = ruri.components.Table;
-    const jsx = (
-      <Table
-        rows={[
-          ["A", "B"],
-          ["1", "2"],
-        ]}
-        withHeadings={true}
-      />
-    );
-    expect(jsx).toBeDefined();
+  it("should invoke Hero component with sanitized title", () => {
+    const result = ruri.components.Hero({ title: "Hello<br/>World", subtitle: "Subtitle" });
+    expect(result).toBeDefined();
   });
 
-  it("should render Quote component using Callout", () => {
-    const Quote = ruri.components.Quote;
-    const jsx = <Quote text="Famous quote" caption="Author" />;
-    expect(jsx).toBeDefined();
+  it("should invoke Image component", () => {
+    const result = ruri.components.Image!({ src: "/pic.png", alt: "Pic", caption: "Cap", class: "img" });
+    expect(result).toBeDefined();
   });
 
-  it("should render Header component with logo and theme switcher", () => {
-    const Header = ruri.components.Header;
-    const jsx = (
-      <Header site={site} nav={nav} title={site.title} currentPath="/" />
-    );
-    expect(jsx).toBeDefined();
+  it("should invoke CodeBlock component", () => {
+    const result = ruri.components.CodeBlock({ code: "const x = 1;", language: "ts", filename: "index.ts" });
+    expect(result).toBeDefined();
   });
 
-  it("should render Footer component with links and copyright", () => {
-    const Footer = ruri.components.Footer;
-    const jsx = <Footer site={site} footer={footer} />;
-    expect(jsx).toBeDefined();
+  it("should invoke Table component with headers and rows", () => {
+    const result = ruri.components.Table({
+      rows: [["A", "B"], ["1", "2"]],
+      withHeadings: true,
+    });
+    expect(result).toBeDefined();
   });
 
-  it("should render Main component with ruri-content wrapper", () => {
-    const Main = ruri.components.Main;
-    const jsx = (
-      <Main>
-        <p>Hello</p>
-      </Main>
-    );
-    expect(jsx).toBeDefined();
+  it("should invoke Quote component", () => {
+    const result = ruri.components.Quote({ text: "Famous quote", caption: "Author" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Video component with embedUrl", () => {
+    const result = ruri.components.Video({ url: "https://youtube.com/watch?v=x", embedUrl: "https://youtube.com/embed/x", caption: "Video" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Video component without embedUrl (html5 fallback)", () => {
+    const result = ruri.components.Video({ url: "/video.mp4", caption: "HTML5" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Embed component", () => {
+    const result = ruri.components.Embed({ embed: "https://example.com", caption: "Embed" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Delimiter component", () => {
+    const result = ruri.components.Delimiter({});
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Header component", () => {
+    const result = ruri.components.Header({ site: site, nav: nav, title: site.title, currentPath: "/" } as any);
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Footer component", () => {
+    const result = ruri.components.Footer({ site: site, footer: footer } as any);
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Main component", () => {
+    const result = ruri.components.Main({ children: "Hello", class: "custom" });
+    expect(result).toBeDefined();
   });
 });

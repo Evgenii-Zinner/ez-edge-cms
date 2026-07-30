@@ -1,8 +1,7 @@
 /** @jsxImportSource hono/jsx */
 import { describe, expect, it } from "bun:test";
 import { AstryxThemeConnector } from "../../../src/core/theme";
-import {
-  createDefaultTheme,
+import { createDefaultTheme,
   createDefaultSite,
   createDefaultNav,
   createDefaultFooter,
@@ -25,65 +24,106 @@ describe("Astryx Theme Connector", () => {
     expect(css).toContain("--astryx-primary");
   });
 
-  it("should render Card component with astryx-card class", () => {
-    const Card = astryx.components.Card;
-    const jsx = (
-      <Card title="Astryx Card">
-        <p>Body</p>
-      </Card>
-    );
-    expect(jsx).toBeDefined();
+  it("should return a valid UnoCSS config from getUnoConfig", () => {
+    const config = astryx.getUnoConfig();
+    expect(config).toBeDefined();
   });
 
-  it("should render Button component with primary classes", () => {
-    const Button = astryx.components.Button;
-    const jsx = <Button>Submit</Button>;
-    expect(jsx).toBeDefined();
+  // All component tests use direct function calls (not JSX) because Hono's JSX
+  // only creates a descriptor object and never invokes the component function body.
+  it("should invoke Card component", () => {
+    const result = astryx.components.Card({ title: "Astryx Card", class: "custom", children: "Body" });
+    expect(result).toBeDefined();
   });
 
-  it("should render Hero component with gradient container", () => {
-    const Hero = astryx.components.Hero;
-    const jsx = (
-      <Hero
-        title="Astryx Hero"
-        subtitle="Welcome"
-        imageUrl="https://placehold.co/100"
-      />
-    );
-    expect(jsx).toBeDefined();
+  it("should invoke Button component", () => {
+    const result = astryx.components.Button({ class: "my-btn", children: "Submit" });
+    expect(result).toBeDefined();
   });
 
-  it("should render CodeBlock component", () => {
-    const CodeBlock = astryx.components.CodeBlock;
-    const jsx = <CodeBlock code="console.log('hi');" filename="app.js" />;
-    expect(jsx).toBeDefined();
+  it("should invoke Grid component", () => {
+    const result = astryx.components.Grid({ class: "my-grid", children: "items" });
+    expect(result).toBeDefined();
   });
 
-  it("should render Table component", () => {
-    const Table = astryx.components.Table;
-    const jsx = (
-      <Table
-        rows={[
-          ["Col1", "Col2"],
-          ["Val1", "Val2"],
-        ]}
-        withHeadings={true}
-      />
-    );
-    expect(jsx).toBeDefined();
+  it("should invoke Hero component with imageUrl (background branch)", () => {
+    const result = astryx.components.Hero({ title: "Astryx Hero", subtitle: "Welcome", imageUrl: "/hero.jpg" });
+    expect(result).toBeDefined();
   });
 
-  it("should render Header component with mobile toggle and switcher", () => {
-    const Header = astryx.components.Header;
-    const jsx = (
-      <Header site={site} nav={nav} title={site.title} currentPath="/" />
-    );
-    expect(jsx).toBeDefined();
+  it("should invoke Hero component without imageUrl", () => {
+    const result = astryx.components.Hero({ title: "No BG", subtitle: "Sub" });
+    expect(result).toBeDefined();
   });
 
-  it("should render Footer component", () => {
-    const Footer = astryx.components.Footer;
-    const jsx = <Footer site={site} footer={footer} />;
-    expect(jsx).toBeDefined();
+  it("should invoke Image component with all style branches", () => {
+    const result = astryx.components.Image!({
+      src: "/pic.png",
+      alt: "Pic",
+      caption: "A caption",
+      stretched: true,
+      withBorder: true,
+      withBackground: true,
+      class: "img-class",
+    });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke CodeBlock component", () => {
+    const result = astryx.components.CodeBlock({ code: "let x = 1;", language: "ts", filename: "app.ts" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Table component", () => {
+    const result = astryx.components.Table({
+      rows: [["Col1", "Col2"], ["Val1", "Val2"]],
+      withHeadings: true,
+    });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Quote component", () => {
+    const result = astryx.components.Quote({ text: "A quote", caption: "Author" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Video component with embedUrl", () => {
+    const result = astryx.components.Video({ url: "https://youtube.com/watch?v=x", embedUrl: "https://youtube.com/embed/x", caption: "Video" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Embed component", () => {
+    const result = astryx.components.Embed({ embed: "https://example.com", caption: "Embed" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Delimiter component", () => {
+    const result = astryx.components.Delimiter({});
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Overlays component", () => {
+    const result = astryx.components.Overlays({});
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Nav component", () => {
+    const result = astryx.components.Nav!({ nav: nav } as any);
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Header component with renderNavArea", () => {
+    const result = astryx.components.Header({ site: site, nav: nav, title: site.title, currentPath: "/" } as any);
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Main component", () => {
+    const result = astryx.components.Main({ children: "content", class: "main-class" });
+    expect(result).toBeDefined();
+  });
+
+  it("should invoke Footer component", () => {
+    const result = astryx.components.Footer({ site: site, footer: footer } as any);
+    expect(result).toBeDefined();
   });
 });
