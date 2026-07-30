@@ -548,7 +548,7 @@
 
     "run-parallel": ["run-parallel@1.2.0", "", { "dependencies": { "queue-microtask": "^1.2.2" } }, "sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA=="],
 
-    "ruri-ui": ["ruri-ui@github:Evgenii-Zinner/ruri#b528bc9", { "dependencies": { "hono": "^4.12.31", "htmx.org": "^1.9.10", "uplot": "^1.6.32" } }, "Evgenii-Zinner-ruri-b528bc9", "sha512-OHmVL0MA1JhtQhD8bDNSB+f4BMP1KOYNNCOn6ai9AB81fQa8lSjpIb19wcWdjDfX4lJhmDLoxxCosC5JZJWfZg=="],
+    "ruri-ui": ["ruri-ui@github:Evgenii-Zinner/ruri#8dc7cd6", { "dependencies": { "hono": "^4.12.31", "htmx.org": "^1.9.10", "uplot": "^1.6.32" } }, "Evgenii-Zinner-ruri-8dc7cd6", "sha512-CIsi0iU/AtooCWOJz55SebG0bOvdlNY4p+RgT0+Bbi0+J8gA5NeaEMQhZhnRx2SwmL/G6sfZUAHyKb5Erihmgw=="],
 
     "scroll-into-view-if-needed": ["scroll-into-view-if-needed@3.1.0", "", { "dependencies": { "compute-scroll-into-view": "^3.0.2" } }, "sha512-49oNpRjWRvnU8NyGVmUaYG4jtTkNonFZI86MmGRDqBphEK2EXT9gdEUoQPZhuBM8yWHxCWbobltqYO5M4XrUvQ=="],
 
