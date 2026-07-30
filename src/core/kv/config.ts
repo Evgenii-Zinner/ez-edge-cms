@@ -23,16 +23,9 @@ function createConfigManager<T>(
 ) {
   return {
     get: (env: Env, force: boolean = false): Promise<T> =>
-      getCached(
-        env,
-        key,
-        parser,
-        force,
-        () => cache[cacheKey] as T | null,
-        (v) => (cache[cacheKey] = v as any),
-      ),
+      getCached(env, key, parser, force, cacheKey),
     save: (env: Env, config: T): Promise<void> =>
-      saveCached(env, key, config, (v) => (cache[cacheKey] = v as any)),
+      saveCached(env, key, config, cacheKey),
   };
 }
 

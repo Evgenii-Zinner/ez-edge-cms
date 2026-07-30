@@ -62,8 +62,7 @@ export const cache = {
  * @param key - The KV key to fetch.
  * @param parser - Validation and parsing function for the raw JSON.
  * @param forceRefresh - If true, bypasses the in-memory cache.
- * @param getter - Function to retrieve the current cached value.
- * @param setter - Function to update the in-memory cache.
+ * @param cacheKey - Key in the isolate-level cache object.
  * @returns A promise resolving to the parsed data.
  */
 export async function getCached<T>(
@@ -71,15 +70,14 @@ export async function getCached<T>(
   key: string,
   parser: (raw: any) => T,
   forceRefresh: boolean,
-  getter: () => T | null,
-  setter: (val: T) => void,
+  cacheKey: keyof typeof cache,
 ): Promise<T> {
-  const cached = getter();
+  const cached = cache[cacheKey] as T | null;
   if (cached && !forceRefresh) return cached;
 
   const raw = await env.EZ_CONTENT.get(key, { type: "json" });
   const data = parser(raw);
-  setter(data);
+  (cache[cacheKey] as any) = data;
   return data;
 }
 
@@ -89,31 +87,15 @@ export async function getCached<T>(
  * @param env - Cloudflare Worker environment.
  * @param key - The KV key to write.
  * @param config - The data object to persist.
- * @param setter - Function to update the in-memory cache.
+ * @param cacheKey - Key in the isolate-level cache object.
  * @returns A promise resolving when the data is saved and cached.
  */
 export async function saveCached<T>(
   env: Env,
   key: string,
   config: T,
-  setter: (val: T) => void,
+  cacheKey: keyof typeof cache,
 ): Promise<void> {
   await env.EZ_CONTENT.put(key, JSON.stringify(config));
-  setter(config);
+  (cache[cacheKey] as any) = config;
 }
-
-/**
- * @description Isolate-level queue to prevent race conditions during sequential indexing.
- * Ensures that KV operations requiring sequential updates (like page lists) are atomic.
- */
-export let updateQueue: Promise<void> = Promise.resolve();
-
-/**
- * @description Updates the sequential queue with a new operation.
- *
- * @param newQueue - The new promise to append to the queue.
- * @returns void
- */
-export const setUpdateQueue = (newQueue: Promise<void>): void => {
-  updateQueue = newQueue;
-};
