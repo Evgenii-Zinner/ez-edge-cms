@@ -159,7 +159,7 @@ export class RuriThemeConnector implements ThemeConnector {
     CodeBlock: (props) => (
       <Panel
         shape="rectangle"
-        title={props.filename ? `// FILE: ${props.filename}` : undefined}
+        title={props.filename}
         class="my-6"
       >
         <CodeBlock class={props.language || ""}>{props.code}</CodeBlock>
@@ -188,10 +188,10 @@ export class RuriThemeConnector implements ThemeConnector {
     Quote: (props) => (
       <Callout
         variant="primary"
-        title={props.caption ? `— ${props.caption}` : undefined}
+        title={props.caption}
         class="my-6"
       >
-        "{props.text}"
+        {props.text}
       </Callout>
     ),
 
@@ -206,7 +206,7 @@ export class RuriThemeConnector implements ThemeConnector {
             />
             {props.caption ? (
               <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriTextMuted">
-                — {props.caption}
+                {props.caption}
               </div>
             ) : null}
           </Panel>
@@ -225,7 +225,7 @@ export class RuriThemeConnector implements ThemeConnector {
           </div>
           {props.caption ? (
             <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriTextMuted">
-              — {props.caption}
+              {props.caption}
             </div>
           ) : null}
         </Panel>
@@ -241,7 +241,7 @@ export class RuriThemeConnector implements ThemeConnector {
         />
         {props.caption ? (
           <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriTextMuted">
-            — {props.caption}
+            {props.caption}
           </div>
         ) : null}
       </Panel>
