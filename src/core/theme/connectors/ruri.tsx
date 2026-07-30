@@ -281,8 +281,8 @@ export class RuriThemeConnector implements ThemeConnector {
         copyright={
           props.site.copyright
             ? props.site.copyright
-                .replace(/\{year\}/g, new Date().getFullYear().toString())
-                .replace(/\{author\}/g, props.site.author || "")
+              .replace(/\{year\}/g, new Date().getFullYear().toString())
+              .replace(/\{author\}/g, props.site.author || "")
             : undefined
         }
         poweredBy={props.site.showStatus}

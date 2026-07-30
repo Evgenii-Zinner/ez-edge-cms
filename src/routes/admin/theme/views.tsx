@@ -16,11 +16,7 @@ import {
 } from "@core/constants";
 import { GlobalConfigVariables } from "@core/middleware";
 import { CustomSelect } from "@components/CustomSelect";
-import {
-  ThemePreview,
-  ThemePreviewScript,
-  ThemeFontPreloader,
-} from "@routes/admin/theme/components";
+import { ThemeFontPreloader } from "@routes/admin/theme/components";
 import { AdminHeader } from "@components/AdminUI";
 import { themeRegistry } from "@core/theme";
 
@@ -30,160 +26,8 @@ import { themeRegistry } from "@core/theme";
 const views = new Hono<{ Bindings: Env; Variables: GlobalConfigVariables }>();
 
 /**
- * GET /admin/theme/preview-frame
- * Renders an isolated HTML document previewing the selected theme connector and fonts.
- */
-views.get("/preview-frame", async (c): Promise<Response> => {
-  const query = c.req.query();
-  const stylingSystem = query.styling_system || "ruri";
-  const themeMode = query.theme_mode || "dark";
-  const fontHeader = query.font_header || "Inter";
-  const fontNav = query.font_nav || "Inter";
-  const fontBody = query.font_body || "Inter";
-  const fontMono = query.font_mono || "monospace";
-
-  const themeConfig = {
-    ...c.var.theme,
-    values: {
-      ...c.var.theme.values,
-      styling_system: stylingSystem,
-      font_header: fontHeader,
-      font_nav: fontNav,
-      font_body: fontBody,
-      font_mono: fontMono,
-    },
-  };
-
-  const connector = themeRegistry.get(stylingSystem);
-  const cssVariables = connector.generateCssVariables(themeConfig);
-  const UI = connector.components;
-
-  const fontUrl = `https://fonts.googleapis.com/css2?${[
-    ...new Set([fontHeader, fontNav, fontBody, fontMono]),
-  ]
-    .map((f) => `family=${encodeURIComponent(f)}:wght@400;600;700`)
-    .join("&")}&display=swap`;
-
-  const previewSite = {
-    ...c.var.site,
-    title: c.var.site?.title || "EZ EDGE SITE",
-  };
-
-  const rawNav =
-    c.var.nav?.items && c.var.nav.items.length > 0
-      ? c.var.nav
-      : {
-          schemaVersion: "1.0.0",
-          items: [
-            { label: "HOME", path: "#" },
-            { label: "ARTICLES", path: "#" },
-            { label: "ABOUT", path: "#" },
-          ],
-        };
-
-  const previewNav = {
-    ...rawNav,
-    items: rawNav.items.map((item: any) => ({ ...item, path: "#" })),
-  };
-
-  const rawFooter = c.var.footer?.links
-    ? c.var.footer
-    : {
-        schemaVersion: "1.0.0",
-        links: [
-          { label: "HOME", path: "#" },
-          { label: "PRIVACY", path: "#" },
-          { label: "TERMS", path: "#" },
-        ],
-      };
-
-  const previewFooter = {
-    ...rawFooter,
-    links: rawFooter.links.map((link: any) => ({ ...link, path: "#" })),
-  };
-
-  const { html } = await import("hono/html");
-
-  return c.html(
-    html`<!DOCTYPE html>
-    <html lang="en" data-theme="${themeMode}">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="${fontUrl}">
-      <style>
-        ${cssVariables}
-        /* Disable CRT scanlines and overlays inside preview iframe */
-        .scanlines, .ui-overlay, .ruri-crt, .ruri-panel-bg::after { display: none !important; }
-        
-        body {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-          font-family: var(--font-body), sans-serif;
-          background-color: var(--ruri-bg-void, var(--astryx-surface, #02060c));
-          color: var(--ruri-text-main, var(--astryx-text, #ffffff));
-          min-height: 100vh;
-        }
-        [data-theme='light'] body {
-          background-color: var(--ruri-bg-void, var(--astryx-surface, #ffffff));
-          color: var(--ruri-text-main, var(--astryx-text, #0f172a));
-        }
-      </style>
-      <script>
-        document.addEventListener('click', function(e) {
-          var a = e.target.closest('a');
-          if (a) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }, true);
-      </script>
-    </head>
-    <body>
-      ${UI.Overlays ? <UI.Overlays /> : ""}
-      ${<UI.Header site={previewSite} nav={previewNav} title={previewSite.title} currentPath="/" />}
-
-      ${<UI.Main>
-        <UI.Hero
-          title="Interactive Theme Engine Preview"
-          subtitle={`Currently previewing ${connector.name} with real-time typography and surface design tokens.`}
-        />
-
-        <UI.Grid cols={{ sm: 1, md: 2 }} gap={6} class="my-8">
-          <UI.Card title="⚡ Edge Engine Performance" status="ACTIVE" shape="sci-fi" glow={true}>
-            <p class="text-sm opacity-80 leading-relaxed m-0">
-              Ultra-fast serverless HTML rendering powered by Hono and Cloudflare Workers KV with zero bundle bloat.
-            </p>
-          </UI.Card>
-          <UI.Card title="🎨 Curated Design Tokens" status="ONLINE" shape="rectangle">
-            <p class="text-sm opacity-80 leading-relaxed m-0">
-              Seamless switching between Ruri's HUD cybernetics and Astryx's sleek modern slate design system.
-            </p>
-          </UI.Card>
-        </UI.Grid>
-
-        <div class="my-8 flex justify-center gap-4 flex-wrap">
-          <UI.Button shape="cyber" variant="default">EXPLORE SYSTEM</UI.Button>
-          <UI.Button shape="notch" variant="neutral">DOCUMENTATION</UI.Button>
-        </div>
-
-        <UI.CodeBlock
-          code={`const cms = new EZEdgeCMS({\n  styling_system: "${stylingSystem}",\n  fonts: { header: "${fontHeader}", body: "${fontBody}" }\n});`}
-          language="typescript"
-          filename="theme.config.ts"
-        />
-      </UI.Main>}
-
-      ${<UI.Footer site={previewSite} footer={previewFooter} />}
-    </body>
-    </html>`
-  );
-});
-
-/**
  * GET /admin/theme
- * Renders the streamlined Theme Styler interface.
+ * Renders the streamlined Theme Styler interface without preview.
  */
 views.get("/", async (c): Promise<Response> => {
   const { theme, site, seo } = c.var;
@@ -213,10 +57,9 @@ views.get("/", async (c): Promise<Response> => {
           </button>
         </AdminHeader>
 
-        {/* SPLIT PANE BODY */}
-        <div class="grid grid-cols-[380px_1fr] gap-8 flex-1 min-h-0">
-          {/* LEFT PANEL: STREAMLINED CONTROLS */}
-          <div class="overflow-y-auto pr-4 flex flex-col">
+        {/* CENTERED BODY */}
+        <div class="flex-1 overflow-y-auto px-4 py-8">
+          <div class="max-w-3xl mx-auto flex flex-col">
             <form
               id="theme-form"
               hx-post="/admin/theme/save"
@@ -310,14 +153,9 @@ views.get("/", async (c): Promise<Response> => {
               </div>
             </form>
           </div>
-
-          {/* RIGHT PANEL: LIVE IFRAME PREVIEW */}
-          <ThemePreview />
         </div>
       </div>
-
-      <ThemePreviewScript />
-    </AdminLayout>,
+    </AdminLayout>
   );
 });
 
