@@ -30,6 +30,7 @@ import {
   ruriUnoSafelist,
 } from "ruri-ui";
 import { normalizePath } from "@utils/seo";
+import type { FC } from "hono/jsx";
 import type { UserConfig } from "unocss";
 
 function minifyCss(css: string): string {
@@ -39,6 +40,36 @@ function minifyCss(css: string): string {
 import { ThemeSwitcher } from "@components/ThemeSwitcher";
 import { renderAsyncYouTubeFacade } from "./youtube-facade";
 import type { VideoProps, EmbedProps } from "../connector";
+
+export const RuriLogo: FC<{
+  logoSvg?: string;
+  title?: string;
+  glow?: boolean;
+  size?: number;
+}> = ({ logoSvg, title, glow = true, size = 24 }) => {
+  if (!logoSvg && !title) return null;
+  return (
+    <div class="flex items-center gap-2">
+      {logoSvg ? (
+        <img
+          src={`data:image/svg+xml,${encodeURIComponent(logoSvg)}`}
+          alt={title || "Logo"}
+          style={{
+            width: `${size}px`,
+            height: `${size}px`,
+            objectFit: "contain",
+            filter: glow ? "drop-shadow(0 0 5px var(--ruri-primary))" : "none",
+          }}
+        />
+      ) : null}
+      {title ? (
+        <span class="font-bold tracking-widest text-sm font-mono uppercase">
+          {title}
+        </span>
+      ) : null}
+    </div>
+  );
+};
 
 export class RuriThemeConnector implements ThemeConnector {
   readonly id = "ruri";
@@ -222,23 +253,11 @@ export class RuriThemeConnector implements ThemeConnector {
       <header class="sticky top-0 z-50">
         <Nav
           brand={
-            <div class="flex items-center gap-2">
-              {props.site.logoSvg ? (
-                <img
-                  src={`data:image/svg+xml,${encodeURIComponent(props.site.logoSvg)}`}
-                  alt="Logo"
-                  style={{
-                    width: "24px",
-                    height: "24px",
-                    objectFit: "contain",
-                    filter: "drop-shadow(0 0 5px var(--ruri-primary))",
-                  }}
-                />
-              ) : null}
-              <span class="font-bold tracking-widest text-sm font-mono uppercase">
-                {props.site.title}
-              </span>
-            </div>
+            <RuriLogo
+              logoSvg={props.site.logoSvg}
+              title={props.site.title}
+              glow={true}
+            />
           }
           links={props.nav.items.map((item) => ({
             href: normalizePath(item.path),
@@ -263,14 +282,10 @@ export class RuriThemeConnector implements ThemeConnector {
         brandName={props.site.title}
         logo={
           props.site.logoSvg ? (
-            <img
-              src={`data:image/svg+xml,${encodeURIComponent(props.site.logoSvg)}`}
-              alt="Logo"
-              style={{
-                width: "24px",
-                height: "24px",
-                objectFit: "contain",
-              }}
+            <RuriLogo
+              logoSvg={props.site.logoSvg}
+              title={props.site.title}
+              glow={true}
             />
           ) : undefined
         }
@@ -285,7 +300,6 @@ export class RuriThemeConnector implements ThemeConnector {
               .replace(/\{author\}/g, props.site.author || "")
             : undefined
         }
-        poweredBy={props.site.showStatus}
       />
     ),
 
