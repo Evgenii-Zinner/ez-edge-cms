@@ -64,7 +64,9 @@ const safeParse = <T extends z.ZodTypeAny>(
     }
 
     if (strict) {
-      throw new Error(`${name || "Data"} validation failed: ${result.error.message}`);
+      throw new Error(
+        `${name || "Data"} validation failed: ${result.error.message}`,
+      );
     }
 
     return fallback();
@@ -88,7 +90,13 @@ export const parseSite = (
   name: string = "Site",
   strict: boolean = false,
 ): SiteConfig => {
-  const result = safeParse(SiteSchema, rawJson, createDefaultSite, name, strict);
+  const result = safeParse(
+    SiteSchema,
+    rawJson,
+    createDefaultSite,
+    name,
+    strict,
+  );
   return result!;
 };
 
@@ -106,7 +114,13 @@ export const parseTheme = (
   name: string = "Theme",
   strict: boolean = false,
 ): ThemeConfig => {
-  const result = safeParse(ThemeSchema, rawJson, createDefaultTheme, name, strict);
+  const result = safeParse(
+    ThemeSchema,
+    rawJson,
+    createDefaultTheme,
+    name,
+    strict,
+  );
   return result!;
 };
 
@@ -140,7 +154,13 @@ export const parseFooter = (
   name: string = "Footer",
   strict: boolean = false,
 ): FooterConfig => {
-  const result = safeParse(FooterSchema, rawJson, createDefaultFooter, name, strict);
+  const result = safeParse(
+    FooterSchema,
+    rawJson,
+    createDefaultFooter,
+    name,
+    strict,
+  );
   return result!;
 };
 

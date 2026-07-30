@@ -79,7 +79,11 @@ export const Head: FC<HeadProps> = (props) => {
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       {/* Zero-Flash OS Theme Preference Detector & Toggle Script */}
-      <script dangerouslySetInnerHTML={{ __html: `(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var t=localStorage.getItem('theme')||m;document.documentElement.setAttribute('data-theme',t);}catch(e){}})();window.toggleTheme=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('theme',c);document.cookie='theme='+c+';path=/;max-age=31536000';}catch(e){}};` }} />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var t=localStorage.getItem('theme')||m;document.documentElement.setAttribute('data-theme',t);}catch(e){}})();window.toggleTheme=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('theme',c);document.cookie='theme='+c+';path=/;max-age=31536000';}catch(e){}};`,
+        }}
+      />
       <title>{displayTitle}</title>
 
       {/* Connectivity Hints */}
@@ -113,7 +117,11 @@ export const Head: FC<HeadProps> = (props) => {
       <link
         rel="icon"
         type="image/svg+xml"
-        href={site.logoSvg ? `data:image/svg+xml,${encodeURIComponent(site.logoSvg)}` : "/favicon.svg"}
+        href={
+          site.logoSvg
+            ? `data:image/svg+xml,${encodeURIComponent(site.logoSvg)}`
+            : "/favicon.svg"
+        }
       />
       <link rel="alternate icon" href="/favicon.ico" />
 
@@ -154,7 +162,11 @@ export const Head: FC<HeadProps> = (props) => {
       {isAdmin && <style id="admin-styles">{raw(ADMIN_CSS)}</style>}
 
       {/* Global Video Facade Player Script (Passive Event Polyfill Wrapper) */}
-      <script dangerouslySetInnerHTML={{ __html: `window.ezPlayVideo=function(c,u){var s='<!DOCTYPE html><html><head><script>(function(){if(typeof EventTarget!=="undefined"){var a=EventTarget.prototype.addEventListener;EventTarget.prototype.addEventListener=function(t,f,o){if(t==="touchstart"||t==="touchmove"){if(typeof o==="boolean"){o={capture:o,passive:true};}else if(typeof o==="object"&&o!==null){if(o.passive===undefined)o.passive=true;}else{o={passive:true};}}return a.call(this,t,f,o);};}})();<\\/script><style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;background:#02060c;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="'+u+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture *; web-share" allowfullscreen></iframe></body></html>';c.innerHTML='<iframe srcdoc="'+s.replace(/"/g,'&quot;')+'" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture *; web-share" allowfullscreen></iframe>';};` }} />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `window.ezPlayVideo=function(c,u){var s='<!DOCTYPE html><html><head><script>(function(){if(typeof EventTarget!=="undefined"){var a=EventTarget.prototype.addEventListener;EventTarget.prototype.addEventListener=function(t,f,o){if(t==="touchstart"||t==="touchmove"){if(typeof o==="boolean"){o={capture:o,passive:true};}else if(typeof o==="object"&&o!==null){if(o.passive===undefined)o.passive=true;}else{o={passive:true};}}return a.call(this,t,f,o);};}})();<\\/script><style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;background:#02060c;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="'+u+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture *; web-share" allowfullscreen></iframe></body></html>';c.innerHTML='<iframe srcdoc="'+s.replace(/"/g,'&quot;')+'" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture *; web-share" allowfullscreen></iframe>';};`,
+        }}
+      />
 
       {/* UnoCSS Insertion Point */}
       {raw("<!-- CSS_INJECTION_POINT -->")}

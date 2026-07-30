@@ -48,8 +48,7 @@ const modifyPageList = async (
   action: "add" | "remove",
 ): Promise<void> => {
   try {
-    const slug =
-      typeof pageOrSlug === "string" ? pageOrSlug : pageOrSlug.slug;
+    const slug = typeof pageOrSlug === "string" ? pageOrSlug : pageOrSlug.slug;
     const key = KEYS.PAGE_LIST(mode);
     const raw: any = await env.EZ_CONTENT.get(key, { type: "json" });
 

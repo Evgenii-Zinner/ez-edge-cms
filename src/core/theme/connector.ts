@@ -5,12 +5,7 @@
  * and pluggable UI component primitives (e.g. Card, Button, Grid, Hero, Header, Nav, Footer).
  */
 
-import {
-  ThemeConfig,
-  NavConfig,
-  SiteConfig,
-  FooterConfig,
-} from "@core/schema";
+import { ThemeConfig, NavConfig, SiteConfig, FooterConfig } from "@core/schema";
 import type { UserConfig } from "unocss";
 import { ThemeTokenMap } from "./tokens";
 

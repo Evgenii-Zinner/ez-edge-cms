@@ -77,7 +77,8 @@ views.get("/", async (c): Promise<Response> => {
                   </span>
                 </div>
                 <p class="text-xs text-[#94a3b8] m-0 leading-relaxed">
-                  Choose the active visual identity. Each theme provides curated light and dark surface color palettes.
+                  Choose the active visual identity. Each theme provides curated
+                  light and dark surface color palettes.
                 </p>
                 <div class="mt-2">
                   <CustomSelect
@@ -102,7 +103,8 @@ views.get("/", async (c): Promise<Response> => {
                   </span>
                 </div>
                 <p class="text-xs text-[#94a3b8] m-0 leading-relaxed mb-2">
-                  Select Google Fonts for titles, navigation, body copy, and code blocks.
+                  Select Google Fonts for titles, navigation, body copy, and
+                  code blocks.
                 </p>
                 {[
                   {
@@ -155,7 +157,7 @@ views.get("/", async (c): Promise<Response> => {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </AdminLayout>,
   );
 });
 

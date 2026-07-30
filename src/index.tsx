@@ -27,7 +27,10 @@ app.use("*", injectGlobalConfig());
 app.use("*", injectUnoCSS());
 
 function createFallbackImageSvg(filename: string): string {
-  const cleanName = filename.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").toUpperCase();
+  const cleanName = filename
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[-_]/g, " ")
+    .toUpperCase();
   return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" preserveAspectRatio="none">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -132,11 +135,11 @@ app.get("/sitemap.xml", async (c) => {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${pages
-      .map((p) => {
-        const url = p.slug === "index" ? baseUrl : `${baseUrl}/${p.slug}`;
-        return `<url><loc>${url}</loc></url>`;
-      })
-      .join("\n")}
+    .map((p) => {
+      const url = p.slug === "index" ? baseUrl : `${baseUrl}/${p.slug}`;
+      return `<url><loc>${url}</loc></url>`;
+    })
+    .join("\n")}
 </urlset>`;
 
   c.header("Content-Type", "application/xml");
@@ -197,13 +200,13 @@ app.get("/ads.txt", (c) => c.text(c.var.site.txtFiles?.ads || ""));
 app.get("/security.txt", (c) =>
   c.text(
     c.var.site.txtFiles?.security ||
-    `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
+      `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
   ),
 );
 app.get("/.well-known/security.txt", (c) =>
   c.text(
     c.var.site.txtFiles?.security ||
-    `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
+      `Contact: mailto:${c.var.site.adminEmail}\nPreferred-Languages: en`,
   ),
 );
 app.get("/.well-known/mta-sts.txt", (c) =>
@@ -302,9 +305,15 @@ app.get("/*", async (c) => {
         detectedUrl={detectedUrl}
         currentPath={new URL(c.req.url).pathname}
       >
-        <div class={`mb-12 border-l-4 border-solid pl-6`} style={{ borderColor: tokens.primary }}>
+        <div
+          class={`mb-12 border-l-4 border-solid pl-6`}
+          style={{ borderColor: tokens.primary }}
+        >
           <h1 class="text-2.5rem mb-2">{slug.toUpperCase()}</h1>
-          <p class="m-0 italic opacity-80 font-nav text-0.85rem tracking-1px uppercase" style={{ color: tokens.textMuted }}>
+          <p
+            class="m-0 italic opacity-80 font-nav text-0.85rem tracking-1px uppercase"
+            style={{ color: tokens.textMuted }}
+          >
             ARCHIVE EXPLORER // {totalItems} ENTRIES FOUND // PAGE {safePage} OF{" "}
             {totalPages || 1}
           </p>
@@ -337,7 +346,10 @@ app.get("/*", async (c) => {
                           {p.description}
                         </p>
                       )}
-                      <div class="mt-6 flex items-center gap-2 text-0.75rem font-mono uppercase tracking-2px opacity-70 group-hover:opacity-100 transition-all" style={{ color: tokens.primary }}>
+                      <div
+                        class="mt-6 flex items-center gap-2 text-0.75rem font-mono uppercase tracking-2px opacity-70 group-hover:opacity-100 transition-all"
+                        style={{ color: tokens.primary }}
+                      >
                         ACCESS DATA{" "}
                         <span class="group-hover:translate-x-1 transition-transform">
                           &rarr;
@@ -349,12 +361,18 @@ app.get("/*", async (c) => {
               })}
             </div>
             {totalPages > 1 && (
-              <div class="flex justify-between items-center mt-12 border-t border-solid pt-6" style={{ borderColor: tokens.border }}>
+              <div
+                class="flex justify-between items-center mt-12 border-t border-solid pt-6"
+                style={{ borderColor: tokens.border }}
+              >
                 {safePage > 1 ? (
                   <a
                     href={`?page=${safePage - 1}`}
                     class="no-underline font-mono text-0.8rem uppercase tracking-2px px-6 py-2 border border-solid transition-all hover:opacity-100 opacity-80"
-                    style={{ color: tokens.primary, borderColor: tokens.primary }}
+                    style={{
+                      color: tokens.primary,
+                      borderColor: tokens.primary,
+                    }}
                   >
                     &larr; PREVIOUS SECTOR
                   </a>
@@ -365,7 +383,10 @@ app.get("/*", async (c) => {
                   <a
                     href={`?page=${safePage + 1}`}
                     class="no-underline font-mono text-0.8rem uppercase tracking-2px px-6 py-2 border border-solid transition-all hover:opacity-100 opacity-80"
-                    style={{ color: tokens.primary, borderColor: tokens.primary }}
+                    style={{
+                      color: tokens.primary,
+                      borderColor: tokens.primary,
+                    }}
                   >
                     NEXT SECTOR &rarr;
                   </a>
@@ -376,8 +397,14 @@ app.get("/*", async (c) => {
             )}
           </>
         ) : (
-          <div class="py-24 text-center border border-dashed opacity-50" style={{ borderColor: tokens.border }}>
-            <p class="font-nav uppercase tracking-2px" style={{ color: tokens.textMuted }}>
+          <div
+            class="py-24 text-center border border-dashed opacity-50"
+            style={{ borderColor: tokens.border }}
+          >
+            <p
+              class="font-nav uppercase tracking-2px"
+              style={{ color: tokens.textMuted }}
+            >
               SECTOR IS CURRENTLY EMPTY // NO DATA ENTRIES DETECTED
             </p>
           </div>
@@ -403,7 +430,10 @@ app.get("/*", async (c) => {
         >
           404: SECTOR NOT FOUND
         </h1>
-        <p class="mb-12 font-nav uppercase tracking-2px opacity-80" style={{ color: tokens.textMuted }}>
+        <p
+          class="mb-12 font-nav uppercase tracking-2px opacity-80"
+          style={{ color: tokens.textMuted }}
+        >
           The coordinate <strong>/{slug}</strong> does not exist in our current
           database.
         </p>

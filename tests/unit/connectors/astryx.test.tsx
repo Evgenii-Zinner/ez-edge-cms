@@ -1,7 +1,12 @@
 /** @jsxImportSource hono/jsx */
 import { describe, expect, it } from "bun:test";
 import { AstryxThemeConnector } from "../../../src/core/theme";
-import { createDefaultTheme, createDefaultSite, createDefaultNav, createDefaultFooter } from "../../../src/core/factory";
+import {
+  createDefaultTheme,
+  createDefaultSite,
+  createDefaultNav,
+  createDefaultFooter,
+} from "../../../src/core/factory";
 
 describe("Astryx Theme Connector", () => {
   const theme = createDefaultTheme();
@@ -22,7 +27,11 @@ describe("Astryx Theme Connector", () => {
 
   it("should render Card component with astryx-card class", () => {
     const Card = astryx.components.Card;
-    const jsx = <Card title="Astryx Card"><p>Body</p></Card>;
+    const jsx = (
+      <Card title="Astryx Card">
+        <p>Body</p>
+      </Card>
+    );
     expect(jsx).toBeDefined();
   });
 
@@ -34,7 +43,13 @@ describe("Astryx Theme Connector", () => {
 
   it("should render Hero component with gradient container", () => {
     const Hero = astryx.components.Hero;
-    const jsx = <Hero title="Astryx Hero" subtitle="Welcome" imageUrl="https://placehold.co/100" />;
+    const jsx = (
+      <Hero
+        title="Astryx Hero"
+        subtitle="Welcome"
+        imageUrl="https://placehold.co/100"
+      />
+    );
     expect(jsx).toBeDefined();
   });
 
@@ -46,13 +61,23 @@ describe("Astryx Theme Connector", () => {
 
   it("should render Table component", () => {
     const Table = astryx.components.Table;
-    const jsx = <Table rows={[["Col1", "Col2"], ["Val1", "Val2"]]} withHeadings={true} />;
+    const jsx = (
+      <Table
+        rows={[
+          ["Col1", "Col2"],
+          ["Val1", "Val2"],
+        ]}
+        withHeadings={true}
+      />
+    );
     expect(jsx).toBeDefined();
   });
 
   it("should render Header component with mobile toggle and switcher", () => {
     const Header = astryx.components.Header;
-    const jsx = <Header site={site} nav={nav} title={site.title} currentPath="/" />;
+    const jsx = (
+      <Header site={site} nav={nav} title={site.title} currentPath="/" />
+    );
     expect(jsx).toBeDefined();
   });
 

@@ -34,11 +34,17 @@ mutations.post("/save", async (c): Promise<Response> => {
 
     const updatedValues = {
       ...currentTheme.values,
-      styling_system: (formData.styling_system as string) || currentTheme.values.styling_system || "ruri",
-      font_header: (formData.font_header as string) || currentTheme.values.font_header,
+      styling_system:
+        (formData.styling_system as string) ||
+        currentTheme.values.styling_system ||
+        "ruri",
+      font_header:
+        (formData.font_header as string) || currentTheme.values.font_header,
       font_nav: (formData.font_nav as string) || currentTheme.values.font_nav,
-      font_body: (formData.font_body as string) || currentTheme.values.font_body,
-      font_mono: (formData.font_mono as string) || currentTheme.values.font_mono,
+      font_body:
+        (formData.font_body as string) || currentTheme.values.font_body,
+      font_mono:
+        (formData.font_mono as string) || currentTheme.values.font_mono,
     };
 
     const updatedTheme = {

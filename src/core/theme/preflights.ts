@@ -13,15 +13,12 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
 
   return {
     shortcuts: {
-      "content-frame":
-        `my-8 overflow-hidden border border-solid border-[${tokens.border}] bg-[${tokens.surface}] p-2 shadow-xs`,
+      "content-frame": `my-8 overflow-hidden border border-solid border-[${tokens.border}] bg-[${tokens.surface}] p-2 shadow-xs`,
       "content-img": "max-w-full h-auto block mx-auto",
       "image-stretched":
         "important-w-[calc(100%+4rem)] important-ml--8 important-mr--8 important-max-w-none",
-      "image-with-border":
-        `important-border-2 important-border-solid important-border-[${tokens.primary}]`,
-      "image-with-background":
-        `bg-[${tokens.surfaceVariant}] important-p-12 flex flex-col justify-center items-center`,
+      "image-with-border": `important-border-2 important-border-solid important-border-[${tokens.primary}]`,
+      "image-with-background": `bg-[${tokens.surfaceVariant}] important-p-12 flex flex-col justify-center items-center`,
     },
     preflights: [
       {
@@ -128,14 +125,14 @@ export function createContentPreflights(tokens: ThemeTokenMap): UserConfig {
             font-family: ${tokens.fontHeader};
             font-weight: 600;
             color: ${tokens.primary};
-            background: rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.05);
+            background: rgba(${tokens.primaryRgb || "0, 195, 255"}, 0.05);
             border-bottom: 2px solid ${tokens.primary};
           }
           #main-content td {
             color: ${tokens.textMuted};
           }
           #main-content tbody tr:hover {
-            background: rgba(${tokens.primaryRgb || '0, 195, 255'}, 0.04);
+            background: rgba(${tokens.primaryRgb || "0, 195, 255"}, 0.04);
           }
         `,
       },

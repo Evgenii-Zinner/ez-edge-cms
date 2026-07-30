@@ -15,7 +15,8 @@ import { themeRegistry } from "@core/theme";
  * @returns A minified string of CSS variables defined within the :root scope.
  */
 export const generateCssVariables = (theme: ThemeConfig): string => {
-  const stylingSystem = (theme.values as Record<string, any>)?.styling_system || "ruri";
+  const stylingSystem =
+    (theme.values as Record<string, any>)?.styling_system || "ruri";
   const connector = themeRegistry.get(stylingSystem);
   return connector.generateCssVariables(theme, false);
 };

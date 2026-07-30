@@ -171,7 +171,9 @@ describe("ImageStorage Utilities", () => {
       // Verify orphaned images were deleted and active image was retained
       expect(await env.EZ_CONTENT.get(`img:${slug}:old-1.png`)).toBeNull();
       expect(await env.EZ_CONTENT.get(`img:${slug}:old-2.webp`)).toBeNull();
-      expect(await env.EZ_CONTENT.get(`img:${slug}:keep-me.jpg`)).not.toBeNull();
+      expect(
+        await env.EZ_CONTENT.get(`img:${slug}:keep-me.jpg`),
+      ).not.toBeNull();
     });
 
     it("should correctly identify existing images even with leading slashes", async () => {

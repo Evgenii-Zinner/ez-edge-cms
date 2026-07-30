@@ -13,7 +13,9 @@ export interface EmbedInfo {
 
 export function parseYouTubeUrl(url: string | undefined): EmbedInfo | null {
   if (!url) return null;
-  const match = url.match(/(?:youtube\.com\/(?:embed\/|v\/|watch\?v=)|youtu\.be\/)([\w-]+)/);
+  const match = url.match(
+    /(?:youtube\.com\/(?:embed\/|v\/|watch\?v=)|youtu\.be\/)([\w-]+)/,
+  );
   if (!match) return null;
   const id = match[1];
   return {
@@ -26,13 +28,13 @@ export function parseYouTubeUrl(url: string | undefined): EmbedInfo | null {
 export function renderAsyncYouTubeFacade(
   url: string | undefined,
   caption: string | undefined,
-  themeStyle: 'ruri' | 'astryx' = 'ruri'
+  themeStyle: "ruri" | "astryx" = "ruri",
 ): string {
   const ytInfo = parseYouTubeUrl(url);
 
   if (!ytInfo) {
     // Non-YouTube fallback iframe
-    const fallbackUrl = url || '';
+    const fallbackUrl = url || "";
     return `
       <div class="ez-video-container my-6 rounded-xl overflow-hidden aspect-video w-full">
         <iframe
@@ -44,16 +46,16 @@ export function renderAsyncYouTubeFacade(
           allowfullscreen
           loading="lazy"
         ></iframe>
-        ${caption ? `<div class="ez-video-caption text-center text-xs opacity-75 mt-2">${caption}</div>` : ''}
+        ${caption ? `<div class="ez-video-caption text-center text-xs opacity-75 mt-2">${caption}</div>` : ""}
       </div>
     `;
   }
 
   // Generate theme-appropriate play button styling
-  let playBtnCss = '';
-  let playBtnHtml = '';
+  let playBtnCss = "";
+  let playBtnHtml = "";
 
-  if (themeStyle === 'astryx') {
+  if (themeStyle === "astryx") {
     playBtnCss = `
       .ez-astryx-play{position:absolute;width:68px;height:48px;background:rgba(24,119,242,0.92);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(24,119,242,0.45);transition:all .3s ease}
       .ez-video-facade:hover .ez-astryx-play{background:#1877f2;transform:scale(1.08)}
@@ -92,7 +94,7 @@ export function renderAsyncYouTubeFacade(
           ${playBtnHtml}
         </div>
       </div>
-      ${caption ? `<div class="ez-video-caption text-center text-xs opacity-75 mt-2 italic">${caption}</div>` : ''}
+      ${caption ? `<div class="ez-video-caption text-center text-xs opacity-75 mt-2 italic">${caption}</div>` : ""}
     </div>
   `.trim();
 }

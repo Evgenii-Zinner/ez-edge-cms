@@ -7,11 +7,17 @@ import {
 describe("YouTube Embed Facade Utility", () => {
   describe("parseYouTubeUrl", () => {
     test("should correctly parse standard watch?v= YouTube URLs", () => {
-      const info = parseYouTubeUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+      const info = parseYouTubeUrl(
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      );
       expect(info).not.toBeNull();
       expect(info?.videoId).toBe("dQw4w9WgXcQ");
-      expect(info?.noCookieUrl).toBe("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1");
-      expect(info?.posterUrl).toBe("https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+      expect(info?.noCookieUrl).toBe(
+        "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1",
+      );
+      expect(info?.posterUrl).toBe(
+        "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+      );
     });
 
     test("should correctly parse short youtu.be URLs", () => {
@@ -34,22 +40,38 @@ describe("YouTube Embed Facade Utility", () => {
 
   describe("renderAsyncYouTubeFacade", () => {
     test("should render Ruri theme hex play button facade", () => {
-      const html = renderAsyncYouTubeFacade("https://youtu.be/dQw4w9WgXcQ", "Test Video", "ruri");
+      const html = renderAsyncYouTubeFacade(
+        "https://youtu.be/dQw4w9WgXcQ",
+        "Test Video",
+        "ruri",
+      );
       expect(html).toContain("ez-video-facade");
       expect(html).toContain("ez-ruri-play");
-      expect(html).toContain("https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+      expect(html).toContain(
+        "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+      );
       expect(html).toContain("Test Video");
     });
 
     test("should render Astryx theme blue play button facade", () => {
-      const html = renderAsyncYouTubeFacade("https://youtu.be/dQw4w9WgXcQ", undefined, "astryx");
+      const html = renderAsyncYouTubeFacade(
+        "https://youtu.be/dQw4w9WgXcQ",
+        undefined,
+        "astryx",
+      );
       expect(html).toContain("ez-video-facade");
       expect(html).toContain("ez-astryx-play");
-      expect(html).toContain("https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+      expect(html).toContain(
+        "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+      );
     });
 
     test("should fallback to standard iframe for non-YouTube URLs", () => {
-      const html = renderAsyncYouTubeFacade("https://player.vimeo.com/video/123456", "Vimeo", "ruri");
+      const html = renderAsyncYouTubeFacade(
+        "https://player.vimeo.com/video/123456",
+        "Vimeo",
+        "ruri",
+      );
       expect(html).toContain("<iframe");
       expect(html).toContain("https://player.vimeo.com/video/123456");
     });

@@ -50,7 +50,17 @@ export interface BaseLayoutProps {
  * composition to the active ThemeConnector (e.g. Default or Ruri UI).
  */
 export const BaseLayout: FC<BaseLayoutProps> = (props) => {
-  const { site, title, theme, page, detectedUrl, currentPath, nav, children, footer } = props;
+  const {
+    site,
+    title,
+    theme,
+    page,
+    detectedUrl,
+    currentPath,
+    nav,
+    children,
+    footer,
+  } = props;
 
   const stylingSystem = theme?.values?.styling_system || "ruri";
   const connector = themeRegistry.get(stylingSystem);
@@ -72,10 +82,17 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
           <ThemeUI.Overlays />
 
           {/* Standalone Mobile Nav Drawer (only for connectors that use a separate Nav) */}
-          {!connector.selfContainedNav && ThemeUI.Nav && <ThemeUI.Nav nav={nav} />}
+          {!connector.selfContainedNav && ThemeUI.Nav && (
+            <ThemeUI.Nav nav={nav} />
+          )}
 
           {/* Site Header */}
-          <ThemeUI.Header site={site} nav={nav} title={title} currentPath={currentPath} />
+          <ThemeUI.Header
+            site={site}
+            nav={nav}
+            title={title}
+            currentPath={currentPath}
+          />
 
           {ThemeUI.Main ? (
             <ThemeUI.Main>{children}</ThemeUI.Main>

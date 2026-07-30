@@ -59,7 +59,9 @@ describe("Styles Utilities & Theme Connectors", () => {
     it("should register and retrieve connectors correctly", () => {
       const ruri = themeRegistry.get("ruri");
       expect(ruri).toBeInstanceOf(RuriThemeConnector);
-      expect(themeRegistry.get("non-existent")).toBeInstanceOf(RuriThemeConnector);
+      expect(themeRegistry.get("non-existent")).toBeInstanceOf(
+        RuriThemeConnector,
+      );
       expect(themeRegistry.list().length).toBeGreaterThanOrEqual(2);
 
       // Verify ThemeComponents primitives exist on connectors

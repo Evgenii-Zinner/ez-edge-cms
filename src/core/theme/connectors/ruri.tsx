@@ -157,11 +157,7 @@ export class RuriThemeConnector implements ThemeConnector {
     ),
 
     CodeBlock: (props) => (
-      <Panel
-        shape="rectangle"
-        title={props.filename}
-        class="my-6"
-      >
+      <Panel shape="rectangle" title={props.filename} class="my-6">
         <CodeBlock class={props.language || ""}>{props.code}</CodeBlock>
       </Panel>
     ),
@@ -186,11 +182,7 @@ export class RuriThemeConnector implements ThemeConnector {
     },
 
     Quote: (props) => (
-      <Callout
-        variant="primary"
-        title={props.caption}
-        class="my-6"
-      >
+      <Callout variant="primary" title={props.caption} class="my-6">
         {props.text}
       </Callout>
     ),
@@ -201,7 +193,11 @@ export class RuriThemeConnector implements ThemeConnector {
           <Panel shape="sci-fi" glow={true} class="my-6 ruri-no-crt">
             <div
               dangerouslySetInnerHTML={{
-                __html: renderAsyncYouTubeFacade(props.embedUrl, undefined, "ruri"),
+                __html: renderAsyncYouTubeFacade(
+                  props.embedUrl,
+                  undefined,
+                  "ruri",
+                ),
               }}
             />
             {props.caption ? (
@@ -296,8 +292,8 @@ export class RuriThemeConnector implements ThemeConnector {
         copyright={
           props.site.copyright
             ? props.site.copyright
-              .replace(/\{year\}/g, new Date().getFullYear().toString())
-              .replace(/\{author\}/g, props.site.author || "")
+                .replace(/\{year\}/g, new Date().getFullYear().toString())
+                .replace(/\{author\}/g, props.site.author || "")
             : undefined
         }
       />
@@ -313,10 +309,18 @@ export class RuriThemeConnector implements ThemeConnector {
   };
 
   generateCssVariables(theme: ThemeConfig, isAdmin = false): string {
-    const fontHeader = isAdmin ? "Orbitron" : theme?.values?.font_header ?? "Orbitron";
-    const fontNav = isAdmin ? "Chakra Petch" : theme?.values?.font_nav ?? "Chakra Petch";
-    const fontBody = isAdmin ? "Roboto" : theme?.values?.font_body ?? "Roboto";
-    const fontMono = isAdmin ? "Fira Code" : theme?.values?.font_mono ?? "Fira Code";
+    const fontHeader = isAdmin
+      ? "Orbitron"
+      : (theme?.values?.font_header ?? "Orbitron");
+    const fontNav = isAdmin
+      ? "Chakra Petch"
+      : (theme?.values?.font_nav ?? "Chakra Petch");
+    const fontBody = isAdmin
+      ? "Roboto"
+      : (theme?.values?.font_body ?? "Roboto");
+    const fontMono = isAdmin
+      ? "Fira Code"
+      : (theme?.values?.font_mono ?? "Fira Code");
 
     return minifyCss(`
       ${RURI_CORE_CSS_TOKENS}
@@ -349,25 +353,16 @@ export class RuriThemeConnector implements ThemeConnector {
         ...(basePreflights.theme || {}),
         colors: {
           ...((basePreflights.theme as any)?.colors || {}),
-          ...ruriUnoColors
-        }
+          ...ruriUnoColors,
+        },
       },
       shortcuts: {
         ...(basePreflights.shortcuts || {}),
-        ...ruriUnoShortcuts
+        ...ruriUnoShortcuts,
       },
-      rules: [
-        ...(basePreflights.rules || []),
-        ...ruriUnoRules
-      ],
-      preflights: [
-        ...(basePreflights.preflights || []),
-        ...ruriUnoPreflights
-      ],
-      safelist: [
-        ...(basePreflights.safelist || []),
-        ...ruriUnoSafelist
-      ]
+      rules: [...(basePreflights.rules || []), ...ruriUnoRules],
+      preflights: [...(basePreflights.preflights || []), ...ruriUnoPreflights],
+      safelist: [...(basePreflights.safelist || []), ...ruriUnoSafelist],
     };
   }
 }

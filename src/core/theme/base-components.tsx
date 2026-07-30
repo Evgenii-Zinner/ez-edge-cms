@@ -1,10 +1,22 @@
 /** @jsxImportSource hono/jsx */
 import { normalizePath } from "@utils/seo";
 import { renderAsyncYouTubeFacade } from "./connectors/youtube-facade";
-import type { 
-  ThemeComponents, CardProps, ButtonProps, GridProps, HeroProps, 
-  ImageProps, CodeBlockProps, TableProps, QuoteProps, VideoProps, 
-  EmbedProps, NavProps, HeaderProps, MainProps, FooterProps 
+import type {
+  ThemeComponents,
+  CardProps,
+  ButtonProps,
+  GridProps,
+  HeroProps,
+  ImageProps,
+  CodeBlockProps,
+  TableProps,
+  QuoteProps,
+  VideoProps,
+  EmbedProps,
+  NavProps,
+  HeaderProps,
+  MainProps,
+  FooterProps,
 } from "./connector";
 
 type PropsWithChildren<P> = P & { children?: any };
@@ -75,35 +87,44 @@ export interface ThemeStyleInjections {
   systemId: "ruri" | "astryx";
 }
 
-export function createBaseThemeComponents(styles: ThemeStyleInjections): ThemeComponents {
+export function createBaseThemeComponents(
+  styles: ThemeStyleInjections,
+): ThemeComponents {
   return {
     Card: (props: CardProps) => (
       <div class={styles.card.container(props)}>
         {styles.card.renderDecorations && styles.card.renderDecorations(props)}
-        {props.title && styles.card.title && <h3 class={styles.card.title}>{props.title}</h3>}
+        {props.title && styles.card.title && (
+          <h3 class={styles.card.title}>{props.title}</h3>
+        )}
         <div class={styles.card.content || ""}>{props.children}</div>
       </div>
     ),
 
     Button: (props: ButtonProps) => (
-      <button type={(props.type as any) || "button"} class={styles.button(props)}>
+      <button
+        type={(props.type as any) || "button"}
+        class={styles.button(props)}
+      >
         {props.children}
       </button>
     ),
 
     Grid: (props: GridProps) => (
-      <div class={styles.grid(props)}>
-        {props.children}
-      </div>
+      <div class={styles.grid(props)}>{props.children}</div>
     ),
 
     Hero: (props: PropsWithChildren<HeroProps>) => (
       <div class={styles.hero.container}>
-        {styles.hero.background && props.imageUrl && styles.hero.background(props.imageUrl)}
+        {styles.hero.background &&
+          props.imageUrl &&
+          styles.hero.background(props.imageUrl)}
         {styles.hero.renderDecorations && styles.hero.renderDecorations()}
         <div class="relative z-10 w-full max-w-800px mx-auto">
           {props.title && <h1 class={styles.hero.title}>{props.title}</h1>}
-          {props.subtitle && <p class={styles.hero.subtitle}>{props.subtitle}</p>}
+          {props.subtitle && (
+            <p class={styles.hero.subtitle}>{props.subtitle}</p>
+          )}
           {props.children}
         </div>
       </div>
@@ -112,7 +133,9 @@ export function createBaseThemeComponents(styles: ThemeStyleInjections): ThemeCo
     Image: (props: ImageProps) => (
       <figure class={styles.image.container(props)}>
         <img src={props.src} alt={props.alt || ""} class={styles.image.img} />
-        {props.caption && styles.image.caption && <figcaption class={styles.image.caption}>{props.caption}</figcaption>}
+        {props.caption && styles.image.caption && (
+          <figcaption class={styles.image.caption}>{props.caption}</figcaption>
+        )}
       </figure>
     ),
 
@@ -121,15 +144,19 @@ export function createBaseThemeComponents(styles: ThemeStyleInjections): ThemeCo
         {props.filename && styles.codeBlock.title && (
           <div class={styles.codeBlock.title}>// FILE: {props.filename}</div>
         )}
-        <pre class={styles.codeBlock.content}><code class={props.language || ""}>{props.code}</code></pre>
+        <pre class={styles.codeBlock.content}>
+          <code class={props.language || ""}>{props.code}</code>
+        </pre>
       </div>
     ),
 
     Table: (props: TableProps) => {
       const rows = props.rows || [];
       const withHeadings = props.withHeadings || false;
-      const getCells = (r: any) => (Array.isArray(r) ? r : Array.isArray(r?.cells) ? r.cells : []);
-      const headers = withHeadings && rows.length > 0 ? getCells(rows[0]) : undefined;
+      const getCells = (r: any) =>
+        Array.isArray(r) ? r : Array.isArray(r?.cells) ? r.cells : [];
+      const headers =
+        withHeadings && rows.length > 0 ? getCells(rows[0]) : undefined;
       const dataRows = (withHeadings ? rows.slice(1) : rows).map(getCells);
 
       return (
@@ -169,20 +196,46 @@ export function createBaseThemeComponents(styles: ThemeStyleInjections): ThemeCo
 
     Video: (props: VideoProps) => {
       if (props.embedUrl) {
-        return <div dangerouslySetInnerHTML={{ __html: renderAsyncYouTubeFacade(props.embedUrl, props.caption, styles.systemId) }} />;
+        return (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: renderAsyncYouTubeFacade(
+                props.embedUrl,
+                props.caption,
+                styles.systemId,
+              ),
+            }}
+          />
+        );
       }
       return (
         <div class={styles.video.container}>
           <div class={styles.video.wrapper}>
-            <video src={props.url} controls width="100%" height="100%" preload="metadata"></video>
+            <video
+              src={props.url}
+              controls
+              width="100%"
+              height="100%"
+              preload="metadata"
+            ></video>
           </div>
-          {props.caption && styles.video.caption && <div class={styles.video.caption}>{props.caption}</div>}
+          {props.caption && styles.video.caption && (
+            <div class={styles.video.caption}>{props.caption}</div>
+          )}
         </div>
       );
     },
 
     Embed: (props: EmbedProps) => (
-      <div dangerouslySetInnerHTML={{ __html: renderAsyncYouTubeFacade(props.embed, props.caption, styles.systemId) }} />
+      <div
+        dangerouslySetInnerHTML={{
+          __html: renderAsyncYouTubeFacade(
+            props.embed,
+            props.caption,
+            styles.systemId,
+          ),
+        }}
+      />
     ),
 
     Delimiter: () => <hr class={styles.delimiter} />,
@@ -219,7 +272,10 @@ export function createBaseThemeComponents(styles: ThemeStyleInjections): ThemeCo
     ),
 
     Main: (props: MainProps) => (
-      <main id="main-content" class={`${styles.main} ${props.class || ""}`.trim()}>
+      <main
+        id="main-content"
+        class={`${styles.main} ${props.class || ""}`.trim()}
+      >
         {props.children}
       </main>
     ),
@@ -228,7 +284,8 @@ export function createBaseThemeComponents(styles: ThemeStyleInjections): ThemeCo
       <footer class={styles.footer.container}>
         <div class={styles.footer.inner}>
           <div class={styles.footer.text}>
-            © {new Date().getFullYear()} {props.site.title}. All rights reserved.
+            © {new Date().getFullYear()} {props.site.title}. All rights
+            reserved.
           </div>
           <nav class={styles.footer.navContainer}>
             {props.footer?.links?.map((link) => (

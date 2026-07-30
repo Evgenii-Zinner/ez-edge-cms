@@ -173,11 +173,13 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
 
       embed: ({ value }: any) =>
         renderJsxToString(
-          themeComponents.Embed({ embed: value.embed || "", caption: value.caption }),
+          themeComponents.Embed({
+            embed: value.embed || "",
+            caption: value.caption,
+          }),
         ),
 
-      delimiter: () =>
-        renderJsxToString(themeComponents.Delimiter()),
+      delimiter: () => renderJsxToString(themeComponents.Delimiter()),
     },
   };
 };
@@ -185,7 +187,10 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
 /**
  * Renders an array of PortableText blocks to HTML using the active theme connector components.
  */
-export const renderPortableText = (blocks: any[], stylingSystem = "ruri"): string => {
+export const renderPortableText = (
+  blocks: any[],
+  stylingSystem = "ruri",
+): string => {
   if (!blocks || !Array.isArray(blocks)) return "";
   const components = createPortableTextComponents(stylingSystem);
   return toHTML(blocks, { components });

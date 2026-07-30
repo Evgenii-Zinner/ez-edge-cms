@@ -1,6 +1,10 @@
 /** @jsxImportSource hono/jsx */
 import { describe, expect, it } from "bun:test";
-import { themeRegistry, RuriThemeConnector, AstryxThemeConnector } from "../../../src/core/theme";
+import {
+  themeRegistry,
+  RuriThemeConnector,
+  AstryxThemeConnector,
+} from "../../../src/core/theme";
 
 describe("Theme Registry & Base Connector Discovery", () => {
   it("should register both Ruri and Astryx connectors in themeRegistry", () => {

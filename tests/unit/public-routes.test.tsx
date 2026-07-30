@@ -504,7 +504,6 @@ describe("Public Routes & Archive Explorer", () => {
   });
 
   describe("Universal Page Content Resolution", () => {
-
     it("should render page using PortableText renderer", async () => {
       const page = {
         ...createDefaultPage("PortableText Page", "portabletext"),
