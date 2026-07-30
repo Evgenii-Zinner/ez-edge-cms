@@ -147,4 +147,16 @@ describe("Core Parser Utility", () => {
       expect(parsePage(undefined)).toBeNull();
     });
   });
+
+  describe("Strict Mode (Fail-Fast)", () => {
+    it("should throw in strict mode when data is present but fails validation", () => {
+      const invalidNav = { items: "corrupted_garbage" };
+      expect(() => parseNav(invalidNav, "Nav", true)).toThrow();
+    });
+
+    it("should still return default fallback for uninitialized (null/undefined) keys in strict mode", () => {
+      expect(parseNav(null, "Nav", true)).toBeDefined();
+      expect(parseNav(null, "Nav", true).items).toHaveLength(1);
+    });
+  });
 });
