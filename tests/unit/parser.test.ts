@@ -36,13 +36,12 @@ describe("Core Parser Utility", () => {
       expect(parseTheme(undefined).values.font_header).toBe("Orbitron");
     });
 
-    it("should handle unexpected object access errors gracefully", () => {
-      const bomb = {
-        get values() {
-          throw new Error("Parser Bomb");
-        },
+    it("should handle unexpected object validation errors gracefully", () => {
+      const invalidTheme = {
+        schemaVersion: "invalid_version",
+        values: "not_an_object",
       };
-      const result = parseTheme(bomb);
+      const result = parseTheme(invalidTheme);
       expect(result.values.font_header).toBe("Orbitron");
       expect(console.error).toHaveBeenCalled();
     });
