@@ -7,7 +7,7 @@
  */
 
 import { ThemeConfig } from "@core/schema";
-import { ThemeConnector, ThemeComponents, VideoProps, EmbedProps } from "../connector";
+import { ThemeConnector, ThemeComponents } from "../connector";
 import { ThemeTokenMap } from "../tokens";
 import { createContentPreflights } from "../preflights";
 import {
@@ -27,7 +27,7 @@ import {
   ruriUnoShortcuts,
   ruriUnoRules,
   ruriUnoPreflights,
-  ruriUnoSafelist
+  ruriUnoSafelist,
 } from "ruri-ui";
 import { normalizePath } from "@utils/seo";
 import type { UserConfig } from "unocss";
@@ -38,6 +38,7 @@ function minifyCss(css: string): string {
 
 import { ThemeSwitcher } from "@components/ThemeSwitcher";
 import { renderAsyncYouTubeFacade } from "./youtube-facade";
+import type { VideoProps, EmbedProps } from "../connector";
 
 export class RuriThemeConnector implements ThemeConnector {
   readonly id = "ruri";
@@ -96,9 +97,10 @@ export class RuriThemeConnector implements ThemeConnector {
     ),
 
     Hero: (props) => {
-      const cleanTitle = typeof props.title === "string"
-        ? props.title.replace(/<br\s*\/?>/gi, " ")
-        : props.title;
+      const cleanTitle =
+        typeof props.title === "string"
+          ? props.title.replace(/<br\s*\/?>/gi, " ")
+          : props.title;
 
       return (
         <Hero
@@ -129,17 +131,17 @@ export class RuriThemeConnector implements ThemeConnector {
         title={props.filename ? `// FILE: ${props.filename}` : undefined}
         class="my-6"
       >
-        <CodeBlock class={props.language || ""}>
-          {props.code}
-        </CodeBlock>
+        <CodeBlock class={props.language || ""}>{props.code}</CodeBlock>
       </Panel>
     ),
 
     Table: (props) => {
       const rows = props.rows || [];
       const withHeadings = props.withHeadings || false;
-      const getCells = (r: any) => (Array.isArray(r) ? r : Array.isArray(r?.cells) ? r.cells : []);
-      const headers = withHeadings && rows.length > 0 ? getCells(rows[0]) : undefined;
+      const getCells = (r: any) =>
+        Array.isArray(r) ? r : Array.isArray(r?.cells) ? r.cells : [];
+      const headers =
+        withHeadings && rows.length > 0 ? getCells(rows[0]) : undefined;
       const dataRows = (withHeadings ? rows.slice(1) : rows).map(getCells);
 
       return (
@@ -162,21 +164,17 @@ export class RuriThemeConnector implements ThemeConnector {
       </Callout>
     ),
 
-    Overlays: () => (
-      <>
-        <div class="ui-overlay scanlines"></div>
-        <div class="ui-overlay dots"></div>
-        <div class="ui-overlay dots-interactive"></div>
-      </>
-    ),
-
     Video: (props: VideoProps) => {
       if (props.embedUrl) {
         return (
           <Panel shape="sci-fi" glow={true} class="my-6 ruri-no-crt">
-            <div dangerouslySetInnerHTML={{ __html: renderAsyncYouTubeFacade(props.embedUrl, undefined, 'ruri') }} />
+            <div
+              dangerouslySetInnerHTML={{
+                __html: renderAsyncYouTubeFacade(props.embedUrl, undefined, "ruri"),
+              }}
+            />
             {props.caption ? (
-              <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriOnSurfaceMuted">
+              <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriTextMuted">
                 — {props.caption}
               </div>
             ) : null}
@@ -187,10 +185,15 @@ export class RuriThemeConnector implements ThemeConnector {
       return (
         <Panel shape="sci-fi" glow={true} class="my-6 ruri-no-crt">
           <div class="aspect-video w-full overflow-hidden bg-ruriVoid">
-            <video src={props.url} class="w-full h-full border-0 block" controls preload="metadata" />
+            <video
+              src={props.url}
+              class="w-full h-full border-0 block"
+              controls
+              preload="metadata"
+            />
           </div>
           {props.caption ? (
-            <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriOnSurfaceMuted">
+            <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriTextMuted">
               — {props.caption}
             </div>
           ) : null}
@@ -200,17 +203,20 @@ export class RuriThemeConnector implements ThemeConnector {
 
     Embed: (props: EmbedProps) => (
       <Panel shape="sci-fi" glow={true} class="my-6 ruri-no-crt">
-        <div dangerouslySetInnerHTML={{ __html: renderAsyncYouTubeFacade(props.embed, undefined, 'ruri') }} />
+        <div
+          dangerouslySetInnerHTML={{
+            __html: renderAsyncYouTubeFacade(props.embed, undefined, "ruri"),
+          }}
+        />
         {props.caption ? (
-          <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriOnSurfaceMuted">
+          <div class="mt-2 text-center text-xs font-mono tracking-wider text-ruriTextMuted">
             — {props.caption}
           </div>
         ) : null}
       </Panel>
     ),
 
-    Delimiter: () => `<hr class="ruri-delimiter my-8" />`,
-
+    Delimiter: () => <hr class="ruri-delimiter my-8" />,
 
     Header: (props) => (
       <header class="sticky top-0 z-50">
@@ -275,19 +281,24 @@ export class RuriThemeConnector implements ThemeConnector {
         copyright={
           props.site.copyright
             ? props.site.copyright
-              .replace(/\{year\}/g, new Date().getFullYear().toString())
-              .replace(/\{author\}/g, props.site.author || "")
+                .replace(/\{year\}/g, new Date().getFullYear().toString())
+                .replace(/\{author\}/g, props.site.author || "")
             : undefined
         }
         poweredBy={props.site.showStatus}
       />
     ),
+
+    Overlays: () => (
+      <>
+        <div class="ui-overlay scanlines"></div>
+        <div class="ui-overlay dots"></div>
+        <div class="ui-overlay dots-interactive"></div>
+      </>
+    ),
   };
 
   generateCssVariables(theme: ThemeConfig, isAdmin = false): string {
-    const primaryHue = isAdmin ? 180 : theme?.values?.primary_hue ?? 210;
-    const glowSpread = isAdmin ? "10px" : theme?.values?.glow_spread ?? "5px";
-
     const fontHeader = isAdmin ? "Orbitron" : theme?.values?.font_header ?? "Orbitron";
     const fontNav = isAdmin ? "Chakra Petch" : theme?.values?.font_nav ?? "Chakra Petch";
     const fontBody = isAdmin ? "Roboto" : theme?.values?.font_body ?? "Roboto";
@@ -297,8 +308,8 @@ export class RuriThemeConnector implements ThemeConnector {
       ${RURI_CORE_CSS_TOKENS}
 
       :root {
-        --ruri-primary-h: ${primaryHue};
-        --ruri-glow-blur: ${glowSpread};
+        --ruri-primary-h: 195;
+        --ruri-glow-blur: 5px;
 
         --font-header: "${fontHeader}", sans-serif;
         --font-nav: "${fontNav}", "${fontHeader}", sans-serif;
@@ -312,58 +323,7 @@ export class RuriThemeConnector implements ThemeConnector {
       [data-theme="dark"] #theme-toggle .light-icon { display: block !important; }
       [data-theme="dark"] #theme-toggle .dark-icon { display: none !important; }
 
-      /* Ruri Connector Sci-Fi List Typography */
-      #main-content ul,
-      #main-content .list-bullet {
-        position: relative;
-        list-style: none !important;
-        margin: 1.5rem 0;
-        padding-left: 1.75rem;
-      }
-      #main-content ul::before,
-      #main-content .list-bullet::before {
-        content: '';
-        position: absolute;
-        top: 0.6rem;
-        bottom: 0.6rem;
-        left: 6px;
-        width: 1px;
-        background: linear-gradient(to bottom, rgba(0, 195, 255, 0.8) 0%, rgba(0, 195, 255, 0.3) 100%);
-        pointer-events: none;
-      }
-      #main-content ul > li,
-      #main-content .list-bullet > li {
-        position: relative;
-        list-style: none !important;
-        margin-bottom: 0.75rem;
-        line-height: 1.65;
-        color: var(--ruri-text-muted, #94a3b8);
-      }
-      #main-content ul > li::before,
-      #main-content .list-bullet > li::before {
-        content: '';
-        position: absolute;
-        left: -1.75rem;
-        top: 0.45rem;
-        width: 12px;
-        height: 10px;
-        background-color: var(--ruri-primary, #00c3ff);
-        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-      }
 
-      #main-content ol,
-      #main-content .list-number {
-        list-style-type: decimal !important;
-        padding-left: 1.75rem;
-        margin: 1.25rem 0;
-      }
-      #main-content ol > li,
-      #main-content .list-number > li {
-        list-style-type: decimal !important;
-        margin-bottom: 0.5rem;
-        line-height: 1.65;
-        color: var(--ruri-text-muted, #94a3b8);
-      }
     `);
   }
 

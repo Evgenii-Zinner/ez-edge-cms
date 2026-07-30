@@ -13,7 +13,7 @@ import { PAGE_STATUSES } from "@core/constants";
  */
 export const VERSIONS = {
   /** Theme configuration schema version. */
-  THEME: "1.0.0",
+  THEME: "2.0.0",
   /** Page configuration schema version. */
   PAGE: "1.0.0",
   /** Navigation menu schema version. */
@@ -37,36 +37,6 @@ export const ThemeSchema = z.object({
   updatedAt: z.string().datetime(),
   /** The specific visual variables for the design system. */
   values: z.object({
-    /** HSL Hue for the primary brand color (0-360). */
-    primary_hue: z.coerce.number().min(0).max(360).default(180),
-    /** HSL Saturation for the primary brand color (e.g., '70%'). */
-    primary_sat: z.string().default("70%"),
-    /** HSL Lightness for the primary brand color (e.g., '50%'). */
-    primary_light: z.string().default("50%"),
-    /** HSL Saturation for the site background. */
-    bg_sat: z.string().default("10%"),
-    /** HSL Lightness for the site background. */
-    bg_light: z.string().default("2%"),
-    /** HSL Saturation for cards and surfaces. */
-    surface_sat: z.string().default("10%"),
-    /** HSL Lightness for cards and surfaces. */
-    surface_light: z.string().default("8%"),
-    /** Opacity for the surface color (0-1). */
-    surface_opacity: z.coerce.number().min(0).max(1).default(0.7),
-    /** HSL Saturation for primary text. */
-    text_main_sat: z.string().default("10%"),
-    /** HSL Lightness for primary text. */
-    text_main_light: z.string().default("90%"),
-    /** HSL Saturation for dimmed text. */
-    text_dim_sat: z.string().default("10%"),
-    /** HSL Lightness for dimmed text. */
-    text_dim_light: z.string().default("60%"),
-    /** Visual spread for glow effects (e.g., '10px'). */
-    glow_spread: z.string().default("10px"),
-    /** Speed for 'boot' animations (e.g., '0.8s'). */
-    boot_speed: z.string().default("0.8s"),
-    /** Visual elevation for depth effects (e.g., '20px'). */
-    elevation: z.string().default("20px"),
     /** Font family for headings. */
     font_header: z.string().default("Orbitron"),
     /** Font family for navigation. */
@@ -75,7 +45,7 @@ export const ThemeSchema = z.object({
     font_body: z.string().default("Roboto"),
     /** Font family for monospaced elements. */
     font_mono: z.string().default("Fira Code"),
-    /** Pluggable styling system identifier (e.g., 'ruri', 'default'). */
+    /** Pluggable styling system identifier (e.g., 'ruri', 'astryx'). */
     styling_system: z.string().default("ruri"),
   }),
 });

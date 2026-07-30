@@ -2,7 +2,8 @@
 /**
  * @module ThemeComponents
  * @description Shared UI components for the Theme Styler.
- * Features an interactive live iframe preview panel with Dark/Light mode toggling.
+ * Features an interactive live iframe preview panel with Dark/Light mode toggling
+ * styled to match the Admin HUD design system.
  */
 
 import type { FC } from "hono/jsx";
@@ -10,28 +11,28 @@ import { html } from "hono/html";
 
 /**
  * Component: ThemePreview
- * Renders an iframe-based live preview container with an interactive dark/light toolbar.
+ * Renders an iframe-based live preview container with an Admin HUD dark/light toolbar.
  *
  * @returns A JSX element containing the site preview.
  */
 export const ThemePreview: FC = () => {
   return (
-    <div class="flex flex-col h-full border border-solid border-[var(--theme-accent-glow,#00c3ff)]/40 rounded-xl overflow-hidden bg-[#0a0f1d] shadow-xl">
-      {/* PREVIEW TOOLBAR */}
-      <div class="flex items-center justify-between px-4 py-2.5 bg-[#121929] border-b border-solid border-[#1e293b]">
+    <div class="flex flex-col h-full border border-solid border-[var(--theme-border,#1e2d4a)] rounded-xl overflow-hidden bg-[#090d16] shadow-xl">
+      {/* ADMIN HUD PREVIEW TOOLBAR */}
+      <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d1527] border-b border-solid border-[#1e2d4a]">
         <div class="flex items-center gap-2">
-          <span class="w-3 h-3 rounded-full bg-[#ff5f56] inline-block"></span>
-          <span class="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block"></span>
-          <span class="w-3 h-3 rounded-full bg-[#27c93f] inline-block"></span>
-          <span class="text-xs font-mono text-[#94a3b8] ml-2 tracking-wider uppercase">Live Interactive Preview</span>
+          <span class="inline-block w-2 h-2 rounded-full bg-[var(--theme-accent,#00c3ff)] animate-pulse"></span>
+          <span class="text-xs font-mono text-[#94a3b8] tracking-widest uppercase font-semibold">
+            Live Preview // Active System View
+          </span>
         </div>
 
         {/* DARK / LIGHT MODE SWITCHER FOR PREVIEW */}
-        <div class="flex items-center gap-2 bg-[#0b0f19] p-1 rounded-lg border border-[#1e293b]">
+        <div class="flex items-center gap-1.5 bg-[#070a12] p-1 rounded-lg border border-[#1e2d4a]">
           <button
             type="button"
             id="preview-mode-dark"
-            class="px-3 py-1 text-xs font-mono rounded transition-all bg-[#00c3ff]/20 text-[#00c3ff] font-bold cursor-pointer border-0"
+            class="px-3 py-1 text-xs font-mono rounded transition-all bg-[var(--theme-accent,#00c3ff)]/20 text-[var(--theme-accent,#00c3ff)] font-bold cursor-pointer border-0"
             onclick="window.setPreviewMode('dark')"
           >
             🌙 DARK
@@ -48,7 +49,7 @@ export const ThemePreview: FC = () => {
       </div>
 
       {/* LIVE IFRAME CONTAINER */}
-      <div class="flex-1 w-full h-full relative bg-black">
+      <div class="flex-1 w-full h-full relative bg-[#02060c]">
         <iframe
           id="theme-preview-iframe"
           src="/admin/theme/preview-frame?styling_system=ruri&theme_mode=dark"
@@ -80,10 +81,10 @@ export const ThemePreviewScript = () => {
           const lightBtn = document.getElementById("preview-mode-light");
 
           if (mode === "dark") {
-            darkBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all bg-[#00c3ff]/20 text-[#00c3ff] font-bold cursor-pointer border-0";
+            darkBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all bg-[var(--theme-accent,#00c3ff)]/20 text-[var(--theme-accent,#00c3ff)] font-bold cursor-pointer border-0";
             lightBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all text-[#94a3b8] hover:text-white cursor-pointer border-0 bg-transparent";
           } else {
-            lightBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all bg-[#00c3ff]/20 text-[#00c3ff] font-bold cursor-pointer border-0";
+            lightBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all bg-[var(--theme-accent,#00c3ff)]/20 text-[var(--theme-accent,#00c3ff)] font-bold cursor-pointer border-0";
             darkBtn.className = "px-3 py-1 text-xs font-mono rounded transition-all text-[#94a3b8] hover:text-white cursor-pointer border-0 bg-transparent";
           }
 

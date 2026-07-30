@@ -72,7 +72,7 @@ export const BaseLayout: FC<BaseLayoutProps> = (props) => {
           <ThemeUI.Overlays />
 
           {/* Standalone Mobile Nav Drawer (only for connectors that use a separate Nav) */}
-          {ThemeUI.Nav && <ThemeUI.Nav nav={nav} />}
+          {!connector.selfContainedNav && ThemeUI.Nav && <ThemeUI.Nav nav={nav} />}
 
           {/* Site Header */}
           <ThemeUI.Header site={site} nav={nav} title={title} currentPath={currentPath} />

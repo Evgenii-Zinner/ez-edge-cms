@@ -21,38 +21,19 @@ describe("Core Parser Utility", () => {
         schemaVersion: VERSIONS.THEME,
         updatedAt: new Date().toISOString(),
         values: {
-          primary_hue: 220,
-          surface_opacity: 0.8,
           font_header: "Custom Font",
         },
       };
 
       const result = parseTheme(validTheme);
-      expect(result.values.primary_hue).toBe(220);
-      expect(result.values.surface_opacity).toBe(0.8);
       expect(result.values.font_header).toBe("Custom Font");
       // Verify defaults for omitted fields
       expect(result.values.font_body).toBe("Roboto");
     });
 
-    it("should coerce string values to numbers where schema allows (primary_hue)", () => {
-      const raw = {
-        updatedAt: new Date().toISOString(),
-        values: { primary_hue: "300" },
-      };
-      const result = parseTheme(raw);
-      expect(result.values.primary_hue).toBe(300);
-    });
-
-    it("should fallback to factory defaults for invalid hue (outside 0-360)", () => {
-      const invalid = { values: { primary_hue: 999 } };
-      const result = parseTheme(invalid);
-      expect(result.values.primary_hue).toBe(180); // Default
-    });
-
     it("should fallback to defaults for null or undefined input", () => {
-      expect(parseTheme(null).values.primary_hue).toBe(180);
-      expect(parseTheme(undefined).values.primary_hue).toBe(180);
+      expect(parseTheme(null).values.font_header).toBe("Orbitron");
+      expect(parseTheme(undefined).values.font_header).toBe("Orbitron");
     });
 
     it("should handle unexpected object access errors gracefully", () => {
@@ -62,7 +43,7 @@ describe("Core Parser Utility", () => {
         },
       };
       const result = parseTheme(bomb);
-      expect(result.values.primary_hue).toBe(180);
+      expect(result.values.font_header).toBe("Orbitron");
       expect(console.error).toHaveBeenCalled();
     });
   });

@@ -56,6 +56,7 @@ views.get("/preview-frame", async (c): Promise<Response> => {
 
   const connector = themeRegistry.get(stylingSystem);
   const cssVariables = connector.generateCssVariables(themeConfig);
+  const UI = connector.components;
 
   const fontUrl = `https://fonts.googleapis.com/css2?${[
     ...new Set([fontHeader, fontNav, fontBody, fontMono]),
@@ -76,8 +77,10 @@ views.get("/preview-frame", async (c): Promise<Response> => {
         : "#00c3ff"
       : "#0f172a";
 
+  const { html } = await import("hono/html");
+
   return c.html(
-    `<!DOCTYPE html>
+    html`<!DOCTYPE html>
     <html lang="en" data-theme="${themeMode}">
     <head>
       <meta charset="UTF-8">
@@ -85,6 +88,9 @@ views.get("/preview-frame", async (c): Promise<Response> => {
       <link rel="stylesheet" href="${fontUrl}">
       <style>
         ${cssVariables}
+        /* Disable CRT scanlines and flicker overlays in theme preview frame */
+        .scanlines, .ui-overlay, .ruri-crt { display: none !important; }
+        
         body {
           margin: 0;
           padding: 2rem;
@@ -94,7 +100,7 @@ views.get("/preview-frame", async (c): Promise<Response> => {
           color: ${textStyle};
           min-height: 100vh;
         }
-        #main-content h1, #main-content h2 {
+        #main-content h1, #main-content h2, #main-content h3 {
           font-family: var(--font-header), sans-serif;
         }
         nav a {
@@ -117,23 +123,56 @@ views.get("/preview-frame", async (c): Promise<Response> => {
 
       <main id="main-content" class="${stylingSystem === "ruri" ? "ruri-content" : ""}">
         <h1 style="font-size: 2.2rem; margin-top: 0;">Interactive Theme Engine Preview</h1>
-        <p style="font-size: 1.1rem; line-height: 1.7; opacity: 0.85;">
+        <p style="font-size: 1.05rem; line-height: 1.7; opacity: 0.85;">
           Currently rendering <strong>${connector.name}</strong> theme connector with preloaded Google fonts. 
           Use the dark/light mode toggle on top to evaluate both surface themes in real time.
         </p>
 
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+          ${<UI.Card title="⚡ Edge Engine Performance" status="ACTIVE" shape="sci-fi" glow={true}>
+            <p class="text-sm opacity-80 leading-relaxed m-0">
+              Ultra-fast serverless HTML rendering powered by Hono and Cloudflare Workers KV with zero bundle bloat.
+            </p>
+          </UI.Card>}
+          ${<UI.Card title="🎨 Curated Design Tokens" status="ONLINE" shape="rectangle">
+            <p class="text-sm opacity-80 leading-relaxed m-0">
+              Seamless switching between Ruri's HUD cybernetics and Astryx's sleek modern slate design system.
+            </p>
+          </UI.Card>}
+        </div>
+
+        <div style="margin: 2rem 0; text-align: center; padding: 2rem; background: ${themeMode === 'light' ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.02)'}; border-radius: 12px;">
+          <h2 style="font-size: 1.5rem; margin-bottom: 1rem; margin-top: 0;">Ready to Deploy Your Edge Site?</h2>
+          <div style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
+            ${<UI.Button shape="cyber" variant="default">EXPLORE SYSTEM</UI.Button>}
+            ${<UI.Button shape="notch" variant="neutral">VIEW DOCUMENTATION</UI.Button>}
+          </div>
+        </div>
+
+        ${<UI.Delimiter />}
+
+        <h3 style="margin-top: 2rem;">Authentic Image Formatting</h3>
+        ${UI.Image ? <UI.Image
+          src="https://placehold.co/800x400/1e293b/00c3ff?text=Edge+Engine"
+          alt="Design System Preview Sample Image"
+          caption="Authentic Theme Component Image Framing"
+          withBorder={true}
+          withBackground={true}
+        /> : <div class="content-frame my-6"><img src="https://placehold.co/800x400/1e293b/00c3ff?text=Edge+Engine" alt="Preview" class="max-w-full h-auto block mx-auto rounded-xl shadow-lg border border-[rgba(148,163,184,0.2)]" /></div>}
+
         <h3 style="margin-top: 2rem;">Typography & Structure</h3>
-        <ul style="padding-left: 1.5rem; line-height: 1.8;">
+        <ul style="padding-left: 1.75rem; line-height: 1.8;">
           <li>Theme-tailored typography and surface tokens without color picker clutter</li>
           <li>Zero-flash dark/light mode surface preference detection</li>
           <li>Scoped list bullets (disc for Astryx, cybernetic HUD nodes for Ruri)</li>
         </ul>
 
         <h3 style="margin-top: 2rem;">Monospaced Code Block</h3>
-        <pre style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(148,163,184,0.2); overflow-x: auto;"><code>const cms = new EZEdgeCMS({
-  styling_system: "${stylingSystem}",
-  fonts: { header: "${fontHeader}", body: "${fontBody}" }
-});</code></pre>
+        ${<UI.CodeBlock
+          code={`const cms = new EZEdgeCMS({\n  styling_system: "${stylingSystem}",\n  fonts: { header: "${fontHeader}", body: "${fontBody}" }\n});`}
+          language="typescript"
+          filename="theme.config.ts"
+        />}
       </main>
     </body>
     </html>`
