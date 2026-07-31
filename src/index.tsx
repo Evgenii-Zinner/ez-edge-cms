@@ -8,6 +8,13 @@
  */
 
 import { Hono } from "hono";
+import { createElement } from "hono/jsx";
+
+// Provide global React.createElement fallback for external pre-compiled packages (e.g. ruri-ui)
+if (typeof (globalThis as any).React === "undefined") {
+  (globalThis as any).React = { createElement };
+}
+
 import { BaseLayout } from "@layouts/BaseLayout";
 import {
   getPage,

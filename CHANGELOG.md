@@ -163,3 +163,7 @@
 ## [0.3.1] - 2026-07-31
 
 - Hotfix: site branding integration and safe Nav/Header SSR rendering
+
+## [0.3.2] - 2026-07-31
+
+- Hotfix: add React.createElement polyfill for external pre-compiled ruri-ui package

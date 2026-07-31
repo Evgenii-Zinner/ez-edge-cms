@@ -6,6 +6,13 @@
  * ensuring the CMS dynamic theme controls drive Ruri's native OKLCH engine seamlessly.
  */
 
+import { createElement } from "hono/jsx";
+
+// Ensure React.createElement points to Hono's createElement when ruri-ui calls React.createElement
+if (typeof (globalThis as any).React === "undefined") {
+  (globalThis as any).React = { createElement };
+}
+
 import { ThemeConfig } from "@core/schema";
 import { ThemeConnector, ThemeComponents } from "../connector";
 import { ThemeTokenMap } from "../tokens";

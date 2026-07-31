@@ -83,7 +83,8 @@ export const generateMetaTags = (
   const baseUrl = getNormalizedBaseUrl(site, detectedUrl);
   const url = getPageUrl(baseUrl, page);
 
-  const metaTitle = page?.seo?.metaTitle || page?.title || site?.title || "EZ EDGE";
+  const metaTitle =
+    page?.seo?.metaTitle || page?.title || site?.title || "EZ EDGE";
   const metaDescription =
     page?.seo?.metaDescription || page?.description || site?.tagline || "";
 

@@ -184,7 +184,10 @@ describe("Layouts", () => {
     });
 
     it("should render combined site logo, title and nav items into Header during SSR", () => {
-      const siteWithLogo = { ...site, logoSvg: "<svg id='brand-logo'>logo</svg>" };
+      const siteWithLogo = {
+        ...site,
+        logoSvg: "<svg id='brand-logo'>logo</svg>",
+      };
       const multiItemNav = {
         schemaVersion: "1.0.0",
         items: [
