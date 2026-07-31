@@ -39,7 +39,7 @@ function minifyCss(css: string): string {
 
 import { ThemeSwitcher } from "@components/ThemeSwitcher";
 import { renderAsyncYouTubeFacade } from "./youtube-facade";
-import type { VideoProps, EmbedProps } from "../connector";
+import type { VideoProps, EmbedProps, NavProps } from "../connector";
 
 export const RuriLogo: FC<{
   logoSvg?: string;
@@ -245,19 +245,37 @@ export class RuriThemeConnector implements ThemeConnector {
 
     Delimiter: () => <hr class="ruri-delimiter my-8" />,
 
+    Nav: (props: NavProps) => (
+      <Nav
+        brand={
+          <RuriLogo
+            logoSvg={props.site?.logoSvg}
+            title={props.site?.title}
+            glow={true}
+          />
+        }
+        links={(props.nav?.items || []).map((item) => ({
+          href: normalizePath(item?.path || "/"),
+          label: item?.label || "",
+        }))}
+        currentPath={props.currentPath}
+        actions={<ThemeSwitcher styleVariant="ruri" />}
+      />
+    ),
+
     Header: (props) => (
       <header class="sticky top-0 z-50">
         <Nav
           brand={
             <RuriLogo
-              logoSvg={props.site.logoSvg}
-              title={props.site.title}
+              logoSvg={props.site?.logoSvg}
+              title={props.site?.title}
               glow={true}
             />
           }
-          links={props.nav.items.map((item) => ({
-            href: normalizePath(item.path),
-            label: item.label,
+          links={(props.nav?.items || []).map((item) => ({
+            href: normalizePath(item?.path || "/"),
+            label: item?.label || "",
           }))}
           currentPath={props.currentPath}
           actions={<ThemeSwitcher styleVariant="ruri" />}

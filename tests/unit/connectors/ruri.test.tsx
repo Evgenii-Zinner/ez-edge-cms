@@ -38,7 +38,11 @@ describe("Ruri Theme Connector", () => {
   // All component tests use direct function calls (not JSX) because Hono's JSX
   // only creates a descriptor object and never invokes the component function body.
   it("should invoke Card component", () => {
-    const result = ruri.components.Card({ title: "Test Card", status: "ACTIVE", children: "Content" } as any);
+    const result = ruri.components.Card({
+      title: "Test Card",
+      status: "ACTIVE",
+      children: "Content",
+    } as any);
     expect(result).toBeDefined();
   });
 
@@ -64,45 +68,73 @@ describe("Ruri Theme Connector", () => {
   });
 
   it("should invoke Hero component with sanitized title", () => {
-    const result = ruri.components.Hero({ title: "Hello<br/>World", subtitle: "Subtitle" });
+    const result = ruri.components.Hero({
+      title: "Hello<br/>World",
+      subtitle: "Subtitle",
+    });
     expect(result).toBeDefined();
   });
 
   it("should invoke Image component", () => {
-    const result = ruri.components.Image!({ src: "/pic.png", alt: "Pic", caption: "Cap", class: "img" });
+    const result = ruri.components.Image!({
+      src: "/pic.png",
+      alt: "Pic",
+      caption: "Cap",
+      class: "img",
+    });
     expect(result).toBeDefined();
   });
 
   it("should invoke CodeBlock component", () => {
-    const result = ruri.components.CodeBlock({ code: "const x = 1;", language: "ts", filename: "index.ts" });
+    const result = ruri.components.CodeBlock({
+      code: "const x = 1;",
+      language: "ts",
+      filename: "index.ts",
+    });
     expect(result).toBeDefined();
   });
 
   it("should invoke Table component with headers and rows", () => {
     const result = ruri.components.Table({
-      rows: [["A", "B"], ["1", "2"]],
+      rows: [
+        ["A", "B"],
+        ["1", "2"],
+      ],
       withHeadings: true,
     });
     expect(result).toBeDefined();
   });
 
   it("should invoke Quote component", () => {
-    const result = ruri.components.Quote({ text: "Famous quote", caption: "Author" });
+    const result = ruri.components.Quote({
+      text: "Famous quote",
+      caption: "Author",
+    });
     expect(result).toBeDefined();
   });
 
   it("should invoke Video component with embedUrl", () => {
-    const result = ruri.components.Video({ url: "https://youtube.com/watch?v=x", embedUrl: "https://youtube.com/embed/x", caption: "Video" });
+    const result = ruri.components.Video({
+      url: "https://youtube.com/watch?v=x",
+      embedUrl: "https://youtube.com/embed/x",
+      caption: "Video",
+    });
     expect(result).toBeDefined();
   });
 
   it("should invoke Video component without embedUrl (html5 fallback)", () => {
-    const result = ruri.components.Video({ url: "/video.mp4", caption: "HTML5" });
+    const result = ruri.components.Video({
+      url: "/video.mp4",
+      caption: "HTML5",
+    });
     expect(result).toBeDefined();
   });
 
   it("should invoke Embed component", () => {
-    const result = ruri.components.Embed({ embed: "https://example.com", caption: "Embed" });
+    const result = ruri.components.Embed({
+      embed: "https://example.com",
+      caption: "Embed",
+    });
     expect(result).toBeDefined();
   });
 
@@ -112,12 +144,20 @@ describe("Ruri Theme Connector", () => {
   });
 
   it("should invoke Header component", () => {
-    const result = ruri.components.Header({ site: site, nav: nav, title: site.title, currentPath: "/" } as any);
+    const result = ruri.components.Header({
+      site: site,
+      nav: nav,
+      title: site.title,
+      currentPath: "/",
+    } as any);
     expect(result).toBeDefined();
   });
 
   it("should invoke Footer component", () => {
-    const result = ruri.components.Footer({ site: site, footer: footer } as any);
+    const result = ruri.components.Footer({
+      site: site,
+      footer: footer,
+    } as any);
     expect(result).toBeDefined();
   });
 

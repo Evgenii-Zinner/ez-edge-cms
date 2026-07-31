@@ -138,12 +138,12 @@ export class AstryxThemeConnector implements ThemeConnector {
           </button>
           <div class="flex items-center gap-4">
             <div class="max-lg:hidden flex gap-7 items-center">
-              {props.nav.items.map((item) => (
+              {(props.nav?.items || []).map((item) => (
                 <a
-                  href={normalizePath(item.path)}
+                  href={normalizePath(item?.path || "/")}
                   class="font-nav text-[var(--astryx-text-muted,#475569)] no-underline font-medium hover:text-[var(--astryx-primary,#1877f2)] transition-colors text-0.9rem"
                 >
-                  {item.label}
+                  {item?.label}
                 </a>
               ))}
             </div>

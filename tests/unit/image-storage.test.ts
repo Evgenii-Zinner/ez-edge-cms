@@ -234,7 +234,7 @@ describe("ImageStorage Utilities", () => {
         EZ_CONTENT: {
           get: async () => null,
           list: async () => ({ keys: [{ name: "img:page-gc-fail:old.png" }] }),
-          put: async () => { },
+          put: async () => {},
           delete: async () => {
             throw new Error("KV Delete Error");
           },
@@ -245,7 +245,11 @@ describe("ImageStorage Utilities", () => {
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
       const content = [{ _key: "b1", _type: "image", url: base64Image }];
 
-      const result = await extractAndSaveImages(failingEnv, "page-gc-fail", content);
+      const result = await extractAndSaveImages(
+        failingEnv,
+        "page-gc-fail",
+        content,
+      );
       expect(result[0].url).toBe("/images/page-gc-fail/b1.png");
     });
   });
@@ -270,7 +274,7 @@ describe("ImageStorage Utilities", () => {
         EZ_CONTENT: {
           get: async () => null,
           list: async () => ({ keys: [{ name: "img:site:og-image.png" }] }),
-          put: async () => { },
+          put: async () => {},
           delete: async () => {
             throw new Error("KV Delete Fail");
           },
@@ -299,4 +303,3 @@ describe("ImageStorage Utilities", () => {
     expect(await saveSiteImage(env, "logo.png", "")).toBe("");
   });
 });
-

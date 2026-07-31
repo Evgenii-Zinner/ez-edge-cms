@@ -1,6 +1,9 @@
 /** @jsxImportSource hono/jsx */
 import { describe, it, expect } from "bun:test";
-import { createBaseThemeComponents, type ThemeStyleInjections } from "../../../src/core/theme/base-components";
+import {
+  createBaseThemeComponents,
+  type ThemeStyleInjections,
+} from "../../../src/core/theme/base-components";
 import { createContentPreflights } from "../../../src/core/theme/preflights";
 import { RuriThemeConnector } from "../../../src/core/theme/connectors/ruri";
 
@@ -76,7 +79,10 @@ describe("Base Theme Components & Preflights", () => {
   const Components = createBaseThemeComponents(dummyStyles);
 
   it("should render Base Component Card", () => {
-    const card = Components.Card({ title: "Test Card", children: "Card Content" });
+    const card = Components.Card({
+      title: "Test Card",
+      children: "Card Content",
+    });
     expect(card).toBeDefined();
   });
 
@@ -101,19 +107,30 @@ describe("Base Theme Components & Preflights", () => {
   });
 
   it("should render Base Component Image", () => {
-    const img = Components.Image!({ src: "/pic.png", alt: "Pic", caption: "Caption" });
+    const img = Components.Image!({
+      src: "/pic.png",
+      alt: "Pic",
+      caption: "Caption",
+    });
     expect(img).toBeDefined();
   });
 
   it("should render Base Component CodeBlock", () => {
-    const code = Components.CodeBlock({ filename: "app.ts", language: "ts", code: "const x = 1;" });
+    const code = Components.CodeBlock({
+      filename: "app.ts",
+      language: "ts",
+      code: "const x = 1;",
+    });
     expect(code).toBeDefined();
   });
 
   it("should render Base Component Table with and without headings", () => {
     const tableWithHeadings = Components.Table({
       withHeadings: true,
-      rows: [["Col 1", "Col 2"], ["Val 1", "Val 2"]],
+      rows: [
+        ["Col 1", "Col 2"],
+        ["Val 1", "Val 2"],
+      ],
     });
     const tableWithoutHeadings = Components.Table({
       withHeadings: false,
@@ -129,14 +146,21 @@ describe("Base Theme Components & Preflights", () => {
   });
 
   it("should render Base Component Video (embedUrl and html5)", () => {
-    const embedVideo = Components.Video({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", caption: "Cap" });
+    const embedVideo = Components.Video({
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      caption: "Cap",
+    });
     const html5Video = Components.Video({ url: "/video.mp4", caption: "Cap" });
     expect(embedVideo).toBeDefined();
     expect(html5Video).toBeDefined();
   });
 
   it("should render Base Component Embed", () => {
-    const embed = Components.Embed({ embed: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", caption: "Embed" });
+    const embed = Components.Embed({
+      embed: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      caption: "Embed",
+    });
     expect(embed).toBeDefined();
   });
 
@@ -148,7 +172,9 @@ describe("Base Theme Components & Preflights", () => {
   });
 
   it("should render Base Component Nav, Header, Main, Footer", () => {
-    const nav = Components.Nav!({ nav: { items: [{ label: "Home", path: "/" }] } } as any);
+    const nav = Components.Nav!({
+      nav: { items: [{ label: "Home", path: "/" }] },
+    } as any);
     const header = Components.Header({
       title: "My Site",
       nav: { items: [] },
@@ -157,7 +183,10 @@ describe("Base Theme Components & Preflights", () => {
     const main = Components.Main({ class: "custom-main", children: "Content" });
     const footer = Components.Footer({
       site: { title: "My Site" } as any,
-      footer: { schemaVersion: "1.0.0", links: [{ label: "Privacy", path: "/privacy" }] },
+      footer: {
+        schemaVersion: "1.0.0",
+        links: [{ label: "Privacy", path: "/privacy" }],
+      },
     } as any);
 
     expect(nav).toBeDefined();
@@ -170,6 +199,8 @@ describe("Base Theme Components & Preflights", () => {
     const preflights = createContentPreflights(ruriConnector.tokens!);
     expect(preflights.shortcuts).toBeDefined();
     expect(preflights.preflights).toBeDefined();
-    expect(preflights.preflights![0].getCSS({} as any)).toContain("box-sizing: border-box");
+    expect(preflights.preflights![0].getCSS({} as any)).toContain(
+      "box-sizing: border-box",
+    );
   });
 });

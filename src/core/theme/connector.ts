@@ -99,7 +99,9 @@ export interface HeaderProps {
 }
 
 export interface NavProps {
+  site: SiteConfig;
   nav: NavConfig;
+  currentPath?: string;
 }
 
 export interface FooterProps {

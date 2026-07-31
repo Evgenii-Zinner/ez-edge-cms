@@ -159,3 +159,7 @@
 ## [0.3.0] - 2026-07-30
 
 - Ruri UI styling connector integration and WCAG 2.1 contrast compliance
+
+## [0.3.1] - 2026-07-31
+
+- Hotfix: site branding integration and safe Nav/Header SSR rendering

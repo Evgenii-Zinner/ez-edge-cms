@@ -8,14 +8,10 @@ import {
 } from "../../src/core/parser";
 import { VERSIONS } from "@core/schema";
 
-let logSpy: any;
-let errSpy: any;
-
 beforeEach(() => {
-  logSpy = spyOn(console, "log").mockImplementation(() => { });
-  errSpy = spyOn(console, "error").mockImplementation(() => { });
+  spyOn(console, "log").mockImplementation(() => {});
+  spyOn(console, "error").mockImplementation(() => {});
 });
-
 
 describe("parseTheme", () => {
   it("should parse a valid theme with foundational values", () => {
@@ -160,4 +156,3 @@ describe("Strict Mode (Fail-Fast)", () => {
     expect(parseNav(null, "Nav", true).items).toHaveLength(1);
   });
 });
-

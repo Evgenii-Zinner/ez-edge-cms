@@ -260,15 +260,15 @@ app.get("/*", async (c) => {
         page={page}
         description={page.description}
         detectedUrl={detectedUrl}
-        currentPath={new URL(c.req.url).pathname}
+        currentPath={c.req.path}
       >
         <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
       </BaseLayout>,
     );
   }
 
-  const isNavPath = nav.items.some(
-    (item) => item.path === path || item.path === `/${slug}`,
+  const isNavPath = (nav?.items || []).some(
+    (item) => item?.path === path || item?.path === `/${slug}`,
   );
 
   const allLivePages = await listPages(c.env, "live");
@@ -303,7 +303,7 @@ app.get("/*", async (c) => {
         site={site}
         footer={footer}
         detectedUrl={detectedUrl}
-        currentPath={new URL(c.req.url).pathname}
+        currentPath={c.req.path}
       >
         <div
           class={`mb-12 border-l-4 border-solid pl-6`}
@@ -421,7 +421,7 @@ app.get("/*", async (c) => {
       site={site}
       footer={footer}
       detectedUrl={detectedUrl}
-      currentPath={new URL(c.req.url).pathname}
+      currentPath={c.req.path}
     >
       <div class="text-center py-24">
         <h1

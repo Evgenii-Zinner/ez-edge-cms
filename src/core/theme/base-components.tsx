@@ -137,9 +137,15 @@ export function createBaseThemeComponents(
           : (styles.image?.container as any) || "";
       return (
         <figure class={containerClass}>
-          <img src={props.src} alt={props.alt || ""} class={styles.image?.img || ""} />
+          <img
+            src={props.src}
+            alt={props.alt || ""}
+            class={styles.image?.img || ""}
+          />
           {props.caption && styles.image?.caption && (
-            <figcaption class={styles.image.caption}>{props.caption}</figcaption>
+            <figcaption class={styles.image.caption}>
+              {props.caption}
+            </figcaption>
           )}
         </figure>
       );
@@ -250,9 +256,25 @@ export function createBaseThemeComponents(
 
     Nav: (props: NavProps) => (
       <nav class={styles.nav?.container || ""} id="main-nav">
+        {props.site && (
+          <a href="/" class={styles.header?.brand || ""}>
+            {props.site.logoSvg && (
+              <img
+                src={`data:image/svg+xml,${encodeURIComponent(props.site.logoSvg)}`}
+                alt="Logo"
+                class={styles.header?.logoClass || ""}
+                style={{ width: "28px", height: "28px", objectFit: "contain" }}
+              />
+            )}
+            {props.site.title || "EZ EDGE"}
+          </a>
+        )}
         {(props.nav?.items || []).map((item) => (
-          <a href={normalizePath(item.path)} class={styles.nav?.link || ""}>
-            {item.label}
+          <a
+            href={normalizePath(item?.path || "/")}
+            class={styles.nav?.link || ""}
+          >
+            {item?.label}
           </a>
         ))}
       </nav>
@@ -262,7 +284,7 @@ export function createBaseThemeComponents(
       <header class={styles.header.container}>
         <div class={styles.header.inner}>
           <a href="/" class={styles.header.brand}>
-            {props.site.logoSvg && (
+            {props.site?.logoSvg && (
               <img
                 src={`data:image/svg+xml,${encodeURIComponent(props.site.logoSvg)}`}
                 alt="Logo"
@@ -270,7 +292,7 @@ export function createBaseThemeComponents(
                 style={{ width: "28px", height: "28px", objectFit: "contain" }}
               />
             )}
-            {props.site.title || "EZ EDGE"}
+            {props.site?.title || "EZ EDGE"}
           </a>
           {styles.header.renderNavArea && styles.header.renderNavArea(props)}
         </div>
