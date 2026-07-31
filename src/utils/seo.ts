@@ -83,11 +83,11 @@ export const generateMetaTags = (
   const baseUrl = getNormalizedBaseUrl(site, detectedUrl);
   const url = getPageUrl(baseUrl, page);
 
-  const metaTitle = page?.seo?.metaTitle || page?.title || site.title;
+  const metaTitle = page?.seo?.metaTitle || page?.title || site?.title || "EZ EDGE";
   const metaDescription =
-    page?.seo?.metaDescription || page?.description || site.tagline || "";
+    page?.seo?.metaDescription || page?.description || site?.tagline || "";
 
-  const image = page?.seo?.ogImage || page?.featuredImage || site.ogImage;
+  const image = page?.seo?.ogImage || page?.featuredImage || site?.ogImage;
   const type = page?.seo?.pageType === "Article" ? "article" : "website";
 
   const tags: MetaTag[] = [
@@ -106,8 +106,7 @@ export const generateMetaTags = (
     tags.push({ name: "twitter:card", content: "summary" });
   }
 
-  // Optional: Twitter handle for attribution
-  if ((site.seo as any).twitterHandle) {
+  if ((site?.seo as any)?.twitterHandle) {
     tags.push({
       name: "twitter:site",
       content: (site.seo as any).twitterHandle,
@@ -136,26 +135,26 @@ export const generateJsonLd = (
   const graph: any[] = [];
 
   // Fallback for logo if not explicitly provided in identity
-  const defaultLogo = site.logoSvg
+  const defaultLogo = site?.logoSvg
     ? `data:image/svg+xml,${encodeURIComponent(site.logoSvg)}`
-    : site.ogImage;
-  const identity = site.seo.identity;
+    : site?.ogImage;
+  const identity = site?.seo?.identity;
 
   // 1. Primary Identity Entity (The publisher/owner of the site)
   const identityLd: any = {
-    "@type": identity.type,
+    "@type": identity?.type || "Person",
     "@id": `${baseUrl}/#identity`,
-    name: identity.name || site.title,
-    description: identity.description || site.tagline,
+    name: identity?.name || site?.title || "EZ EDGE",
+    description: identity?.description || site?.tagline || "",
     url: baseUrl,
-    image: identity.image || defaultLogo,
+    image: identity?.image || defaultLogo,
   };
 
-  if (identity.type === "Organization" || identity.type === "LocalBusiness") {
+  if (identity?.type === "Organization" || identity?.type === "LocalBusiness") {
     identityLd.logo = identity.logo || defaultLogo;
   }
 
-  if (identity.type === "LocalBusiness") {
+  if (identity?.type === "LocalBusiness") {
     if (identity.address) identityLd.address = identity.address;
     if (identity.phone) identityLd.telephone = identity.phone;
   }
@@ -167,8 +166,8 @@ export const generateJsonLd = (
     "@type": "WebSite",
     "@id": `${baseUrl}/#website`,
     url: baseUrl,
-    name: site.title,
-    description: site.tagline,
+    name: site?.title || "EZ EDGE",
+    description: site?.tagline || "",
     publisher: { "@id": `${baseUrl}/#identity` },
   };
   graph.push(website);

@@ -293,9 +293,9 @@ export class RuriThemeConnector implements ThemeConnector {
 
     Footer: (props) => (
       <Footer
-        brandName={props.site.title}
+        brandName={props.site?.title}
         logo={
-          props.site.logoSvg ? (
+          props.site?.logoSvg ? (
             <RuriLogo
               logoSvg={props.site.logoSvg}
               title={props.site.title}
@@ -303,15 +303,15 @@ export class RuriThemeConnector implements ThemeConnector {
             />
           ) : undefined
         }
-        links={props.footer.links.map((link) => ({
-          label: link.label,
-          href: normalizePath(link.path),
+        links={(props.footer?.links || []).map((link) => ({
+          label: link?.label || "",
+          href: normalizePath(link?.path || "/"),
         }))}
         copyright={
-          props.site.copyright
+          props.site?.copyright
             ? props.site.copyright
                 .replace(/\{year\}/g, new Date().getFullYear().toString())
-                .replace(/\{author\}/g, props.site.author || "")
+                .replace(/\{author\}/g, props.site?.author || "")
             : undefined
         }
       />

@@ -140,8 +140,43 @@ describe("Astryx Theme Connector", () => {
   });
 
   it("should invoke Nav component", () => {
-    const result = astryx.components.Nav!({ nav: nav } as any);
+    const result = astryx.components.Nav!({ site: site, nav: nav } as any);
     expect(result).toBeDefined();
+  });
+
+  it("should evaluate Astryx Header and Nav to valid HTML string during SSR", () => {
+    const siteWithLogo = { ...site, logoSvg: "<svg id='astryx-logo'></svg>" };
+    const navWithItems = {
+      schemaVersion: "1.0.0",
+      items: [
+        { label: "HOME", path: "/" },
+        { label: "DOCS", path: "/docs/" },
+        { label: "ARTICLES", path: "/articles/" },
+      ],
+    };
+
+    const headerNode = astryx.components.Header({
+      site: siteWithLogo,
+      nav: navWithItems,
+      title: site.title,
+      currentPath: "/docs/",
+    } as any);
+
+    const html = (headerNode as any).toString();
+    expect(html).toContain("HOME");
+    expect(html).toContain("/docs/");
+    expect(html).toContain("/articles/");
+  });
+
+  it("should safely evaluate Astryx Nav component with partial or uninitialized props during SSR", () => {
+    const navNode = astryx.components.Nav!({
+      site: {} as any,
+      nav: {} as any,
+      currentPath: "/",
+    });
+
+    const html = (navNode as any).toString();
+    expect(html).toContain("main-nav");
   });
 
   it("should invoke Header component with renderNavArea", () => {

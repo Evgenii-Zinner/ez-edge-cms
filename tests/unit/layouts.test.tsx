@@ -182,6 +182,51 @@ describe("Layouts", () => {
       })!.toString();
       expect(html).toContain(customScript);
     });
+
+    it("should render combined site logo, title and nav items into Header during SSR", () => {
+      const siteWithLogo = { ...site, logoSvg: "<svg id='brand-logo'>logo</svg>" };
+      const multiItemNav = {
+        schemaVersion: "1.0.0",
+        items: [
+          { label: "HOME", path: "/" },
+          { label: "DOCS", path: "/docs/" },
+          { label: "ARTICLES", path: "/articles/" },
+        ],
+      };
+
+      const html = BaseLayout({
+        title: "Branding Test",
+        children: "Content",
+        site: siteWithLogo,
+        nav: multiItemNav,
+        footer,
+        theme,
+      })!.toString();
+
+      expect(html).toContain("data:image/svg+xml");
+      expect(html).toContain("Test Site");
+      expect(html).toContain("HOME");
+      expect(html).toContain("/docs/");
+      expect(html).toContain("/articles/");
+    });
+
+    it("should safely handle uninitialized or corrupt site/nav data during SSR without crashing", () => {
+      const emptyNav = { schemaVersion: "1.0.0", items: undefined as any };
+      const partialSite = { title: undefined } as any;
+
+      const html = BaseLayout({
+        title: "Corrupt Data Test",
+        children: "Content",
+        site: partialSite,
+        nav: emptyNav,
+        footer,
+        theme,
+      })!.toString();
+
+      expect(html).toContain("EZ EDGE");
+      expect(html).toContain("<header");
+      expect(html).toContain("<footer");
+    });
   });
 
   describe("AdminLayout", () => {

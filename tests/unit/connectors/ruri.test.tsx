@@ -153,6 +153,42 @@ describe("Ruri Theme Connector", () => {
     expect(result).toBeDefined();
   });
 
+  it("should evaluate Header and Nav to valid HTML string during SSR", () => {
+    const siteWithLogo = { ...site, logoSvg: "<svg id='ruri-logo'></svg>" };
+    const navWithItems = {
+      schemaVersion: "1.0.0",
+      items: [
+        { label: "HOME", path: "/" },
+        { label: "DOCS", path: "/docs/" },
+        { label: "ARTICLES", path: "/articles/" },
+      ],
+    };
+
+    const headerNode = ruri.components.Header({
+      site: siteWithLogo,
+      nav: navWithItems,
+      title: site.title,
+      currentPath: "/docs/",
+    } as any);
+
+    const html = (headerNode as any).toString();
+    expect(html).toContain("ruri-nav");
+    expect(html).toContain("HOME");
+    expect(html).toContain("/docs/");
+    expect(html).toContain("/articles/");
+  });
+
+  it("should safely evaluate Nav component with partial or uninitialized props during SSR", () => {
+    const navNode = ruri.components.Nav!({
+      site: {} as any,
+      nav: {} as any,
+      currentPath: "/",
+    });
+
+    const html = (navNode as any).toString();
+    expect(html).toContain("ruri-nav");
+  });
+
   it("should invoke Footer component", () => {
     const result = ruri.components.Footer({
       site: site,
