@@ -151,6 +151,7 @@ body.admin-body h3::before {
 .admin-card {
   background: var(--theme-surface, rgba(10, 26, 26, 0.7));
   border: 1px solid var(--theme-accent-glow, rgba(0, 255, 255, 0.2));
+  border-radius: 0px !important;
   padding: 1.5rem;
   margin-bottom: 1rem;
   backdrop-filter: blur(8px);
@@ -170,21 +171,22 @@ body.admin-body h3::before {
 
 .admin-card-title {
   font-family: var(--font-header, "Orbitron", sans-serif);
-  font-size: 1.2rem;
+  font-size: 1rem;
   letter-spacing: 1px;
-  margin: 0;
+  margin: 0 0 0.25rem 0;
   color: var(--theme-accent, #00ffff);
   text-transform: uppercase;
 }
 
 .admin-card-desc {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--theme-text-dim, #a0baba);
-  margin-top: 0.25rem;
+  margin: 0;
 }
 
 .admin-card-content {
   margin-top: 1rem;
+  color: var(--theme-text-main, #e0f2f2);
 }
 
 /* Admin Table Resets & Alignment */
@@ -667,5 +669,50 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--theme-accent, #00ffff);
+}
+
+/* Futuristic Cyberpunk Select & Option Styling */
+select.admin-input,
+.admin-card select,
+#modal-block-fields select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #090d16;
+  color: var(--theme-text-main, #f8fafc);
+  border: 1px solid var(--theme-accent-glow, rgba(0, 255, 255, 0.3));
+  border-radius: 0px;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300ffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  cursor: pointer;
+}
+
+select.admin-input:focus,
+.admin-card select:focus,
+#modal-block-fields select:focus {
+  border-color: var(--theme-accent, #00ffff);
+  box-shadow: 0 0 12px var(--theme-accent-glow, rgba(0, 255, 255, 0.4));
+  outline: none;
+}
+
+select.admin-input option,
+.admin-card select option,
+#modal-block-fields select option {
+  background-color: #090d16;
+  color: #f8fafc;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono, monospace);
+}
+
+select.admin-input option:hover,
+select.admin-input option:focus,
+select.admin-input option:checked,
+.admin-card select option:checked {
+  background-color: var(--theme-accent, #00ffff) !important;
+  color: #050a0a !important;
 }
 `;

@@ -152,16 +152,43 @@ export class RuriThemeConnector implements ThemeConnector {
       );
     },
 
-    Image: (props) => (
-      <HoneycombImage
-        src={props.src}
-        alt={props.alt || ""}
-        header={props.header}
-        footer={props.footer || props.caption}
-        withPanel={props.withPanel === true}
-        class={props.class || "my-6"}
-      />
-    ),
+    Image: (props) => {
+      const isSimple =
+        props.variant === "simple" ||
+        props.simple === true ||
+        (props.withPanel !== true && props.variant !== "styled");
+
+      if (isSimple) {
+        return (
+          <figure class={`my-6 text-center ${props.class || ""}`.trim()}>
+            <img
+              src={props.src}
+              alt={props.alt || ""}
+              class={`max-w-full h-auto rounded-none mx-auto border border-ruriBorderOutline/40 ${
+                props.stretched ? "w-full" : ""
+              }`.trim()}
+              loading="lazy"
+            />
+            {props.caption || props.footer ? (
+              <figcaption class="mt-2 text-xs font-mono tracking-wider uppercase text-ruriTextMuted text-center">
+                {props.caption || props.footer}
+              </figcaption>
+            ) : null}
+          </figure>
+        );
+      }
+
+      return (
+        <HoneycombImage
+          src={props.src}
+          alt={props.alt || ""}
+          header={props.header}
+          footer={props.footer || props.caption}
+          withPanel={props.withPanel === true}
+          class={props.class || "my-6"}
+        />
+      );
+    },
 
     CodeBlock: (props) => (
       <Panel shape="rectangle" title={props.filename} class="my-6">

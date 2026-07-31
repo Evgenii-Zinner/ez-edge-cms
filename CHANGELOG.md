@@ -167,3 +167,7 @@
 ## [0.3.2] - 2026-07-31
 
 - Hotfix: add React.createElement polyfill for external pre-compiled ruri-ui package
+
+## [0.3.3] - 2026-07-31
+
+- feat(image): add simple image display variant and cyberpunk editor styling

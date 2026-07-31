@@ -220,6 +220,7 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                   name,
                   currentValue,
                   type = "text",
+                  options = [],
                 ) => {
                   const wrapper = document.createElement("div");
                   wrapper.className = "flex flex-col gap-2 mb-4";
@@ -236,8 +237,24 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                     textarea.value = currentValue || "";
                     textarea.rows = 6;
                     textarea.className =
-                      "w-full admin-input font-mono bg-[rgba(0,0,0,0.4)] border border-solid border-[var(--theme-accent-glow)] p-3 text-white outline-none focus:border-[var(--theme-accent)] rounded-lg";
+                      "w-full admin-input font-mono bg-[rgba(0,0,0,0.4)] border border-solid border-[var(--theme-accent-glow)] p-3 text-white outline-none focus:border-[var(--theme-accent)] rounded-none";
                     wrapper.appendChild(textarea);
+                  } else if (type === "select") {
+                    const select = document.createElement("select");
+                    select.name = name;
+                    select.className =
+                      "w-full admin-input font-mono bg-[#090d16] border border-solid border-[var(--theme-accent-glow)] p-3 text-white outline-none focus:border-[var(--theme-accent)] rounded-none cursor-pointer";
+                    options.forEach((opt) => {
+                      const option = document.createElement("option");
+                      option.value = typeof opt === "object" ? opt.value : opt;
+                      option.textContent =
+                        typeof opt === "object" ? opt.label : opt;
+                      if (option.value === (currentValue || "styled")) {
+                        option.selected = true;
+                      }
+                      select.appendChild(option);
+                    });
+                    wrapper.appendChild(select);
                   } else {
                     const inputContainer = document.createElement("div");
                     inputContainer.className = "flex gap-2 w-full";
@@ -247,7 +264,7 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                     input.name = name;
                     input.value = currentValue || "";
                     input.className =
-                      "flex-grow admin-input bg-[rgba(0,0,0,0.4)] border border-solid border-[var(--theme-accent-glow)] p-3 text-white outline-none focus:border-[var(--theme-accent)] rounded-lg";
+                      "flex-grow admin-input bg-[rgba(0,0,0,0.4)] border border-solid border-[var(--theme-accent-glow)] p-3 text-white outline-none focus:border-[var(--theme-accent)] rounded-none";
                     inputContainer.appendChild(input);
 
                     if (name === "url" || name === "imageUrl") {
@@ -283,6 +300,16 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                   createField("Image URL / File", "url", value.url);
                   createField("Alt Text", "alt", value.alt);
                   createField("Caption", "caption", value.caption);
+                  createField(
+                    "Display Style",
+                    "variant",
+                    value.variant || (value.simple ? "simple" : "styled"),
+                    "select",
+                    [
+                      { value: "styled", label: "Styled (Theme Frame)" },
+                      { value: "simple", label: "Simple (Clean Image)" },
+                    ],
+                  );
                 } else if (blockType === "video") {
                   createField("Video URL", "url", value.url);
                   createField("Caption", "caption", value.caption);
@@ -316,7 +343,7 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
 
                   const gridContainer = document.createElement("div");
                   gridContainer.className =
-                    "my-2 overflow-x-auto border border-solid border-[var(--theme-accent-glow)] rounded-lg bg-[rgba(0,0,0,0.2)]";
+                    "my-2 overflow-x-auto border border-solid border-[var(--theme-accent-glow)] rounded-none bg-[rgba(0,0,0,0.2)]";
 
                   const renderGrid = () => {
                     gridContainer.innerHTML = "";
@@ -444,8 +471,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                 if (blockType !== "table") {
                   currentEditCallback = () => {
                     const updatedFields = {};
-                    const inputs =
-                      modalFields.querySelectorAll("input, textarea");
+                    const inputs = modalFields.querySelectorAll(
+                      "input, textarea, select",
+                    );
                     inputs.forEach((input) => {
                       if (input.name) {
                         updatedFields[input.name] = input.value;

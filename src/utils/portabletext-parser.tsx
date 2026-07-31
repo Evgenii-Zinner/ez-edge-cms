@@ -146,6 +146,7 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
 
       image: ({ value }: any) => {
         const url = value.url || value.file?.url || "";
+        const variant = value.variant || (value.simple ? "simple" : "styled");
         if (themeComponents.Image) {
           return renderJsxToString(
             <themeComponents.Image
@@ -155,6 +156,8 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
               stretched={value.stretched}
               withBorder={value.withBorder}
               withBackground={value.withBackground}
+              variant={variant}
+              simple={variant === "simple"}
               class=""
             />,
           );

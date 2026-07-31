@@ -52,6 +52,8 @@ export interface ImageProps {
   withBorder?: boolean;
   withBackground?: boolean;
   withPanel?: boolean;
+  variant?: "simple" | "styled" | string;
+  simple?: boolean;
   class?: string;
 }
 
