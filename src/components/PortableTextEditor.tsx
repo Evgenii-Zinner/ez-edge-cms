@@ -20,6 +20,23 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
   const editorId = `portable-text-editor-${uniqueId}`;
   const inputId = `portabletext-content-input-${uniqueId}`;
 
+  const customBlocks = [
+    {
+      name: "hero",
+      title: "Hero",
+      icon: "⚡",
+      defaultValue: {
+        imageUrl: "",
+        title: "",
+        subtitle: "",
+      },
+    },
+  ];
+  const customBlocksJson = JSON.stringify(customBlocks).replace(
+    /</g,
+    "\\u003c",
+  );
+
   return (
     <div class="portabletext-editor-wrapper relative">
       <input type="hidden" name="content" id={inputId} value={contentJson} />
@@ -27,6 +44,7 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
         id={editorId}
         class="admin-card p-4 min-h-[500px] bg-[rgba(0,0,0,0.3)] border-solid block"
         data-initial-value={contentJson}
+        data-custom-blocks={customBlocksJson}
       ></ez-portable-text>
       {/* Dynamic Cyberpunk Block Edit Modal */}
       <div
@@ -94,25 +112,13 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
 
               /**
                * Prevent Enter key from submitting the form during content editing.
+              /**
+               * Prevent Enter key from submitting the form during content editing.
                */
               editor.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
                   e.stopPropagation();
                 }
-              });
-
-              /**
-               * Register custom block schemas.
-               */
-              editor.registerBlockType({
-                name: "hero",
-                title: "Hero",
-                icon: "⚡",
-                defaultValue: {
-                  imageUrl: "",
-                  title: "",
-                  subtitle: "",
-                },
               });
 
               let isInitialized = false;
