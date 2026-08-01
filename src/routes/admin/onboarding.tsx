@@ -195,13 +195,12 @@ onboarding.post("/complete", async (c): Promise<Response> => {
       validatedSite.author || "Admin",
     );
 
-    // Save and publish legal pages immediately using savePage(..., "live")
-    // This ensures they are both persisted and correctly indexed in the live page list.
-    await Promise.all([
-      savePage(c.env, termsPage, "live"),
-      savePage(c.env, privacyPage, "live"),
-      setOnboardingStatus(c.env, true),
-    ]);
+    // Save and publish legal pages sequentially using savePage(..., "live")
+    // This ensures they are both persisted and correctly indexed in the live page list
+    // without triggering KV race conditions when updating the list index concurrently.
+    await savePage(c.env, termsPage, "live");
+    await savePage(c.env, privacyPage, "live");
+    await setOnboardingStatus(c.env, true);
 
     return c.redirect("/admin");
   } catch (e: any) {

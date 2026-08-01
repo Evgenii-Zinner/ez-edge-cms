@@ -5,7 +5,7 @@
  */
 
 import type { FC } from "hono/jsx";
-import { html } from "hono/html";
+import { html, raw } from "hono/html";
 import type { PortableTextBlock } from "@utils/portabletext-parser";
 
 export interface PortableTextEditorProps {
@@ -28,7 +28,9 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
       <ez-portable-text
         id="portable-text-editor"
         class="admin-card p-4 min-h-[500px] bg-[rgba(0,0,0,0.3)] border-solid block"
-      ></ez-portable-text>
+      >
+        {raw(contentJson)}
+      </ez-portable-text>
       {/* Dynamic Cyberpunk Block Edit Modal */}
       <div
         id="block-edit-modal"
@@ -103,24 +105,6 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
                   e.stopPropagation();
                 }
               });
-
-              /**
-               * Initialize the editor value once the internal Preact reference is ready.
-               */
-              const setInitialValue = () => {
-                if (editor._editorRef) {
-                  try {
-                    if (input.value) {
-                      editor.value = JSON.parse(input.value);
-                    }
-                  } catch (e) {
-                    console.error("Failed to parse initial PortableText", e);
-                  }
-                } else {
-                  requestAnimationFrame(setInitialValue);
-                }
-              };
-              setInitialValue();
 
               /**
                * Register custom block schemas.
