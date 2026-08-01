@@ -191,3 +191,7 @@
 ## [0.3.8] - 2026-08-01
 
 - hotfix: generate spec-compliant portabletext blocks for default pages
+
+## [0.3.9] - 2026-08-01
+
+- hotfix: graceful recovery for corrupted portable text data

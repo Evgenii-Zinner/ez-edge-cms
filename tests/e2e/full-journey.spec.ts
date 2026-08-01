@@ -105,11 +105,8 @@ test.describe("The Zero-to-Hero Journey", () => {
         await editorContent.click();
 
         // Change style to Heading 1
-        await page.locator("ez-portable-text .pe-dropdown-btn").first().click();
-        await page
-          .locator('ez-portable-text .pe-dropdown-item:has-text("Heading 1")')
-          .click();
 
+        await page.keyboard.press("Enter");
         await editorContent.focus();
         await page.keyboard.type("E2E Dynamic Page");
         await page.keyboard.press("Enter");

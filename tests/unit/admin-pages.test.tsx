@@ -155,7 +155,7 @@ describe("Admin Pages Routes", () => {
       expect(html).toContain("2024");
     });
 
-    it("should return 500 on unexpected errors", async () => {
+    it("should load Data Recovery Mode on unexpected errors", async () => {
       const app = setupApp();
       const originalConsoleError = console.error;
       console.error = () => {};
@@ -169,8 +169,8 @@ describe("Admin Pages Routes", () => {
           },
         }),
       );
-      expect(res.status).toBe(500);
-      expect(await res.text()).toContain("500 EDITOR ERROR");
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain("Data Recovery Mode");
 
       console.error = originalConsoleError;
     });

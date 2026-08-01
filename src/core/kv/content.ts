@@ -30,7 +30,7 @@ export const getPage = async (
   try {
     const rawText = await env.EZ_CONTENT.get(key, { type: "text" });
     if (!rawText) return null;
-    const raw = JSON.parse(rawText);
+    const raw = typeof rawText === "string" ? JSON.parse(rawText) : rawText;
     return parsePage(raw);
   } catch (e) {
     console.error(`KV Parse Error for ${key}:`, e);
@@ -84,12 +84,12 @@ const modifyPageList = async (
   try {
     const slug = typeof pageOrSlug === "string" ? pageOrSlug : pageOrSlug.slug;
     const key = KEYS.PAGE_LIST(mode);
-    
+
     let raw: any = null;
     try {
       const rawText = await env.EZ_CONTENT.get(key, { type: "text" });
-      raw = rawText ? JSON.parse(rawText) : null;
-    } catch(e) {
+      raw = typeof rawText === "string" ? JSON.parse(rawText) : rawText;
+    } catch (e) {
       console.warn(`Recovering corrupted page list ${key}`);
     }
 
@@ -264,8 +264,8 @@ export const listPages = async (
   const rawText = await env.EZ_CONTENT.get(key, { type: "text" });
   let raw: any;
   try {
-    raw = rawText ? JSON.parse(rawText) : null;
-  } catch(e) {
+    raw = typeof rawText === "string" ? JSON.parse(rawText) : rawText;
+  } catch (e) {
     console.error("CORRUPTED JSON FOR KEY", key, ":", rawText);
     return [];
   }
