@@ -5,7 +5,7 @@
  */
 
 import type { FC } from "hono/jsx";
-import { html, raw } from "hono/html";
+import { html } from "hono/html";
 import type { PortableTextBlock } from "@utils/portabletext-parser";
 
 export interface PortableTextEditorProps {
@@ -16,21 +16,18 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
   content,
 }) => {
   const contentJson = JSON.stringify(content || []).replace(/</g, "\\u003c");
+  const uniqueId = Math.random().toString(36).slice(2, 9);
+  const editorId = `portable-text-editor-${uniqueId}`;
+  const inputId = `portabletext-content-input-${uniqueId}`;
 
   return (
     <div class="portabletext-editor-wrapper relative">
-      <input
-        type="hidden"
-        name="content"
-        id="portabletext-content-input"
-        value={contentJson}
-      />
+      <input type="hidden" name="content" id={inputId} value={contentJson} />
       <ez-portable-text
-        id="portable-text-editor"
+        id={editorId}
         class="admin-card p-4 min-h-[500px] bg-[rgba(0,0,0,0.3)] border-solid block"
-      >
-        {raw(contentJson)}
-      </ez-portable-text>
+        data-initial-value={contentJson}
+      ></ez-portable-text>
       {/* Dynamic Cyberpunk Block Edit Modal */}
       <div
         id="block-edit-modal"
@@ -74,10 +71,8 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
         <script>
           (function () {
             const initPortableText = () => {
-              const editor = document.getElementById("portable-text-editor");
-              const input = document.getElementById(
-                "portabletext-content-input",
-              );
+              const editor = document.getElementById("${editorId}");
+              const input = document.getElementById("${inputId}");
 
               if (!editor || !input) return;
 

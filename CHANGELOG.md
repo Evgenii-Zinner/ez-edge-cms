@@ -175,3 +175,7 @@
 ## [0.3.4] - 2026-08-01
 
 - Maintenance release
+
+## [0.3.5] - 2026-08-01
+
+- Maintenance release
