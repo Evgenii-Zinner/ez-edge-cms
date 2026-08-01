@@ -195,3 +195,7 @@
 ## [0.3.9] - 2026-08-01
 
 - hotfix: graceful recovery for corrupted portable text data
+
+## [0.3.10] - 2026-08-01
+
+- feat: new link functionality in editor
