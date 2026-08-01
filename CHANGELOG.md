@@ -187,3 +187,7 @@
 ## [0.3.7] - 2026-08-01
 
 - hotfix: resolve editor race condition
+
+## [0.3.8] - 2026-08-01
+
+- hotfix: generate spec-compliant portabletext blocks for default pages
