@@ -88,6 +88,10 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
   const themeComponents = themeRegistry.get(stylingSystem).components;
 
   return {
+    marks: {
+      link: ({ children, value }: any) =>
+        `<a href="${value?.href || '#'}">${renderJsxToString(children)}</a>`,
+    },
     types: {
       hero: ({ value }: any) =>
         renderJsxToString(

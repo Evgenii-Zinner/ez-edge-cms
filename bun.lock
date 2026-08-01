@@ -430,7 +430,7 @@
 
     "estree-walker": ["estree-walker@3.0.3", "", { "dependencies": { "@types/estree": "^1.0.0" } }, "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g=="],
 
-    "ez-portable-text": ["ez-portable-text@github:Evgenii-Zinner/ez-portable-text#98f7e6a", { "dependencies": { "@portabletext/editor": "^7.5.2", "htm": "^3.1.1", "preact": "^10.29.2" } }, "Evgenii-Zinner-ez-portable-text-98f7e6a", "sha512-15YdtE5QLuJAvBoW+DvXRBbdzjvgC1YK3XgSbhfMwWyrYMNkVGoORrTUnL0mX5axpr+Yh6IC6E7JG6qLvulhNQ=="],
+    "ez-portable-text": ["ez-portable-text@github:Evgenii-Zinner/ez-portable-text#bd517ca", { "dependencies": { "@portabletext/editor": "^7.5.2", "htm": "^3.1.1", "preact": "^10.29.2" } }, "Evgenii-Zinner-ez-portable-text-bd517ca", "sha512-gQ5V50KXzhZBT93/WSmG8ewr1Kz48sa2IpjHjAYgKk9+WqEBzEX2WKsIgq2k3vN4rgbKdJ2MaYyjperSWJCBOA=="],
 
     "fdir": ["fdir@6.5.0", "", { "peerDependencies": { "picomatch": "^3 || ^4" }, "optionalPeers": ["picomatch"] }, "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg=="],
 
