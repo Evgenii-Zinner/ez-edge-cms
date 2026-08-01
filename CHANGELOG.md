@@ -199,3 +199,7 @@
 ## [0.3.10] - 2026-08-01
 
 - feat: new link functionality in editor
+
+## [0.3.11] - 2026-08-01
+
+- fix: extend fallbacks
