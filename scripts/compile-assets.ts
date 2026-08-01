@@ -3,11 +3,11 @@ import { join } from "path";
 
 const jsPath = join(
   __dirname,
-  "../node_modules/ez-portable-text/dist/ez-portable-text.umd.js",
+  "../../editor/dist/ez-portable-text.umd.js",
 );
 const cssPath = join(
   __dirname,
-  "../node_modules/ez-portable-text/dist/ez-portable-text.umd.css",
+  "../../editor/dist/ez-portable-text.umd.css",
 );
 
 try {
