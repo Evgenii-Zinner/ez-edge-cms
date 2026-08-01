@@ -171,3 +171,7 @@
 ## [0.3.3] - 2026-07-31
 
 - feat(image): add simple image display variant and cyberpunk editor styling
+
+## [0.3.4] - 2026-08-01
+
+- Maintenance release
