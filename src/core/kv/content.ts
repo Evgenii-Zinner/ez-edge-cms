@@ -27,8 +27,42 @@ export const getPage = async (
   mode: "draft" | "live" = "live",
 ): Promise<PageConfig | null> => {
   const key = KEYS.PAGE(mode, slug);
-  const raw = await env.EZ_CONTENT.get(key, { type: "json" });
-  return parsePage(raw);
+  try {
+    const rawText = await env.EZ_CONTENT.get(key, { type: "text" });
+    if (!rawText) return null;
+    const raw = JSON.parse(rawText);
+    return parsePage(raw);
+  } catch (e) {
+    console.error(`KV Parse Error for ${key}:`, e);
+    return {
+      schemaVersion: VERSIONS.PAGE,
+      slug,
+      title: "⚠️ Data Recovery Mode",
+      status: "draft",
+      content: [
+        {
+          _type: "block",
+          style: "normal",
+          children: [
+            {
+              _type: "span",
+              text: "The data for this page was corrupted in the database. You are in recovery mode. Please re-enter your content and save to repair it.",
+            },
+          ],
+        },
+      ],
+      tags: [],
+      category: "Recovery",
+      seo: {},
+      appearance: { layout: "post" },
+      metadata: {
+        author: "System",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        usedBlocks: [],
+      },
+    } as any;
+  }
 };
 
 /**
@@ -50,7 +84,14 @@ const modifyPageList = async (
   try {
     const slug = typeof pageOrSlug === "string" ? pageOrSlug : pageOrSlug.slug;
     const key = KEYS.PAGE_LIST(mode);
-    const raw: any = await env.EZ_CONTENT.get(key, { type: "json" });
+    
+    let raw: any = null;
+    try {
+      const rawText = await env.EZ_CONTENT.get(key, { type: "text" });
+      raw = rawText ? JSON.parse(rawText) : null;
+    } catch(e) {
+      console.warn(`Recovering corrupted page list ${key}`);
+    }
 
     let indexObj: PageListIndex = {
       schemaVersion: VERSIONS.PAGE_LIST,
@@ -220,7 +261,14 @@ export const listPages = async (
   if (cached && Array.isArray(cached.items)) return cached.items;
 
   const key = KEYS.PAGE_LIST(mode);
-  const raw: any = await env.EZ_CONTENT.get(key, { type: "json" });
+  const rawText = await env.EZ_CONTENT.get(key, { type: "text" });
+  let raw: any;
+  try {
+    raw = rawText ? JSON.parse(rawText) : null;
+  } catch(e) {
+    console.error("CORRUPTED JSON FOR KEY", key, ":", rawText);
+    return [];
+  }
 
   if (!raw) return [];
 
