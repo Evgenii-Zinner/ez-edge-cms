@@ -183,3 +183,7 @@
 ## [0.3.6] - 2026-08-01
 
 - Maintenance release
+
+## [0.3.7] - 2026-08-01
+
+- hotfix: resolve editor race condition

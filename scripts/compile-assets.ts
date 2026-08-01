@@ -1,14 +1,8 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 
-const jsPath = join(
-  __dirname,
-  "../../editor/dist/ez-portable-text.umd.js",
-);
-const cssPath = join(
-  __dirname,
-  "../../editor/dist/ez-portable-text.umd.css",
-);
+const jsPath = join(__dirname, "../../editor/dist/ez-portable-text.umd.js");
+const cssPath = join(__dirname, "../../editor/dist/ez-portable-text.umd.css");
 
 try {
   const jsContent = readFileSync(jsPath, "utf8");

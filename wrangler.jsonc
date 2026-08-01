@@ -11,9 +11,9 @@
   ],
   "observability": {
     "enabled": true,
-    "head_sampling_rate": 0.1
+    "head_sampling_rate": 0.1,
   },
   "alias": {
-    "@oxc-parser/binding-wasm32-wasi": "./oxc-noop.js"
-  }
+    "@oxc-parser/binding-wasm32-wasi": "./oxc-noop.js",
+  },
 }
