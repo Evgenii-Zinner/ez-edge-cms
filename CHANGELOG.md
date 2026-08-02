@@ -203,3 +203,7 @@
 ## [0.3.11] - 2026-08-01
 
 - fix: extend fallbacks
+
+## [0.3.12] - 2026-08-02
+
+- fix: import Fragment functionality

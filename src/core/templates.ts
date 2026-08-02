@@ -16,7 +16,7 @@ type PortableTextBlock = z.infer<typeof PortableTextBlockSchema>;
  * @returns A random 10-character alphanumeric string.
  */
 export const generateId = (): string =>
-  Math.random().toString(36).substring(2, 12);
+  Math.random().toString(36).substring(2, 12).padEnd(10, "0");
 
 /**
  * Helper to create a fully-formed PortableTextBlock with required keys and arrays.

@@ -9,11 +9,15 @@
 
 import { Hono } from "hono";
 import * as HonoJSX from "hono/jsx";
+import { Fragment } from "hono/jsx/jsx-runtime";
 
-// Provide global React fallback for external pre-compiled packages (e.g. ruri-ui)
-if (typeof (globalThis as any).React === "undefined") {
-  (globalThis as any).React = HonoJSX;
-}
+// Provide robust global React fallback for external pre-compiled packages (e.g. ruri-ui)
+const globalReact = (globalThis as any).React || {};
+Object.assign(globalReact, HonoJSX, {
+  createElement: HonoJSX.createElement,
+  Fragment: HonoJSX.Fragment || Fragment || ((props: any) => props.children),
+});
+(globalThis as any).React = globalReact;
 
 import { BaseLayout } from "@layouts/BaseLayout";
 import {
