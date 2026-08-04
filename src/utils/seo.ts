@@ -6,6 +6,7 @@
  */
 
 import { SiteConfig, PageConfig } from "@core/schema";
+import { getFirstImageForPortableText } from "./portabletext-parser";
 
 /**
  * Normalizes a navigation path to ensure it is absolute if it is an internal link.
@@ -27,6 +28,30 @@ export const normalizePath = (path: string): string => {
     return p;
   }
   return `/${p}`;
+};
+
+/**
+ * Extracts plain text from an array of PortableText blocks.
+ * Used for generating automatic meta descriptions and article bodies.
+ */
+const extractPlainText = (content?: any[], maxLength: number = 160): string => {
+  if (!content || !Array.isArray(content)) return "";
+  let text = content
+    .map((b) => {
+      if (b.children && Array.isArray(b.children)) {
+        return b.children.map((c: any) => c.text || "").join("");
+      }
+      return "";
+    })
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (maxLength > 0 && text.length > maxLength) {
+    text = text.substring(0, maxLength).trim() + "...";
+  }
+  return text;
 };
 
 /**
@@ -85,10 +110,19 @@ export const generateMetaTags = (
 
   const metaTitle =
     page?.seo?.metaTitle || page?.title || site?.title || "EZ EDGE";
+    
+  const autoDesc = page?.content ? extractPlainText(page.content, 160) : "";
   const metaDescription =
-    page?.seo?.metaDescription || page?.description || site?.tagline || "";
+    page?.seo?.metaDescription || page?.description || autoDesc || site?.tagline || "";
 
-  const image = page?.seo?.ogImage || page?.featuredImage || site?.ogImage;
+  let image = page?.seo?.ogImage || page?.featuredImage || site?.ogImage;
+  if (!image && page?.content) {
+    const extractedImage = getFirstImageForPortableText(page.content);
+    if (extractedImage) {
+      image = extractedImage;
+    }
+  }
+  
   const type = page?.seo?.pageType === "Article" ? "article" : "website";
 
   const tags: MetaTag[] = [
@@ -178,21 +212,33 @@ export const generateJsonLd = (
     const isArticle = page.seo?.pageType === "Article";
     const pageUrl = getPageUrl(baseUrl, page);
 
-    // Breadcrumbs generation for hierarchical path structures
-    const breadcrumbs: any = {
-      "@type": "BreadcrumbList",
-      "@id": `${pageUrl}#breadcrumb`,
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: baseUrl,
-        },
-      ],
+    const autoDesc = page.content ? extractPlainText(page.content, 160) : "";
+
+    // Specific WebPage identity
+    const pageLd: any = {
+      "@type": page.seo?.pageType || "WebPage",
+      "@id": `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: page.title,
+      description: page.seo?.metaDescription || page.description || autoDesc || site?.tagline || "",
+      isPartOf: { "@id": `${baseUrl}/#website` },
     };
 
     if (page.slug !== "index") {
+      // Breadcrumbs generation for hierarchical path structures
+      const breadcrumbs: any = {
+        "@type": "BreadcrumbList",
+        "@id": `${pageUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: baseUrl,
+          },
+        ],
+      };
+
       const parts = page.slug.split("/");
       parts.forEach((part, i) => {
         breadcrumbs.itemListElement.push({
@@ -202,32 +248,42 @@ export const generateJsonLd = (
           item: `${baseUrl}/${parts.slice(0, i + 1).join("/")}`,
         });
       });
-    }
-    graph.push(breadcrumbs);
+      graph.push(breadcrumbs);
 
-    // Specific WebPage identity
-    const pageLd: any = {
-      "@type": page.seo?.pageType || "WebPage",
-      "@id": `${pageUrl}#webpage`,
-      url: pageUrl,
-      name: page.title,
-      description: page.description,
-      isPartOf: { "@id": `${baseUrl}/#website` },
-    };
-
-    // The 'breadcrumb' property is only valid on WebPage and its subtypes
-    const webPageTypes = ["WebPage", "AboutPage", "ContactPage"];
-    if (webPageTypes.includes(page.seo?.pageType || "WebPage")) {
-      pageLd.breadcrumb = { "@id": `${pageUrl}#breadcrumb` };
+      // The 'breadcrumb' property is only valid on WebPage and its subtypes
+      const webPageTypes = ["WebPage", "AboutPage", "ContactPage"];
+      if (webPageTypes.includes(page.seo?.pageType || "WebPage")) {
+        pageLd.breadcrumb = { "@id": `${pageUrl}#breadcrumb` };
+      }
     }
 
     // Article-specific enhancements (Published/Modified dates, Author attribution)
     if (isArticle) {
       pageLd.headline = page.title;
       pageLd.datePublished =
-        page.metadata.publishedAt || page.metadata.createdAt;
-      pageLd.dateModified = page.metadata.updatedAt;
+        page.metadata?.publishedAt || page.metadata?.createdAt || new Date().toISOString();
+      pageLd.dateModified = page.metadata?.updatedAt || new Date().toISOString();
       pageLd.author = { "@id": `${baseUrl}/#identity` };
+      pageLd.publisher = { "@id": `${baseUrl}/#identity` };
+      
+      let articleImage = page.seo?.ogImage || page.featuredImage || site.ogImage;
+      if (!articleImage && page.content) {
+        const extractedImage = getFirstImageForPortableText(page.content);
+        if (extractedImage) {
+          articleImage = extractedImage;
+        }
+      }
+
+      if (articleImage) {
+        pageLd.image = articleImage.startsWith("/") ? `${baseUrl}${articleImage}` : articleImage;
+      }
+
+      if (page.content && Array.isArray(page.content)) {
+        const text = extractPlainText(page.content, 0); // 0 means no limit
+        if (text) {
+          pageLd.articleBody = text;
+        }
+      }
     }
     graph.push(pageLd);
   }

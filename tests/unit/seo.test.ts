@@ -237,13 +237,13 @@ describe("SEO Utilities", () => {
       expect(article.author["@id"]).toBe("https://base.com/#identity");
     });
 
-    it("should correctly handle index page breadcrumbs by returning only the root", () => {
+    it("should not generate breadcrumbs for the index page to prevent single-element trail warnings", () => {
       const indexPage = { ...mockPage, slug: "index" };
       const jsonLd = generateJsonLd(mockSite, indexPage, "https://base.com");
       const breadcrumbs = jsonLd["@graph"].find(
         (i: any) => i["@type"] === "BreadcrumbList",
       );
-      expect(breadcrumbs.itemListElement).toHaveLength(1);
+      expect(breadcrumbs).toBeUndefined();
     });
 
     it("should fall back to data URI logos when explicitly missing in identity", () => {
