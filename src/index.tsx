@@ -184,7 +184,30 @@ app.get("/robots.txt", async (c) => {
 /**
  * Metadata Files (LLMs, humans, ads).
  */
-app.get("/llms.txt", (c) => c.text(c.var.site.txtFiles?.llms || ""));
+app.get("/llms.txt", async (c) => {
+  const site = c.var.site;
+  const baseUrl = site.baseUrl || new URL(c.req.url).origin;
+
+  let content = `# ${site.title || "Site Content"}\n`;
+  if (site.tagline) content += `> ${site.tagline}\n\n`;
+
+  const livePages = await listPages(c.env, "live");
+  const pages = livePages.filter(
+    (p) => p.slug !== "index" && p.slug !== "terms" && p.slug !== "privacy",
+  );
+
+  if (pages.length > 0) {
+    content += `## Articles\n\n`;
+    for (const page of pages) {
+      const url = `${baseUrl}/${page.slug}`;
+      const desc = page.description ? ` - ${page.description}` : "";
+      content += `- [${page.title}](${url})${desc}\n`;
+    }
+    content += `\n`;
+  }
+
+  return c.text(content.trim());
+});
 app.get("/llms-full.txt", async (c) => {
   // Generate a brief overview of the site directly from the index metadata
   const livePages = await listPages(c.env, "live");

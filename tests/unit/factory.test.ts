@@ -29,7 +29,7 @@ describe("Factory Utilities", () => {
       expect(files.robots).toContain("User-agent: *");
       expect(files.humans).toContain("Developer: John Doe");
       expect(files.humans).toContain("Site: https://example.com");
-      expect(files.llms).toContain("# AI Crawler Instructions");
+
       expect(files.ads).toContain("# Add your authorized digital sellers here");
       expect(files.security).toContain("Contact: mailto:john@example.com");
       expect(files.mtaSts).toContain("version: STSv1");

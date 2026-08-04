@@ -91,31 +91,7 @@ filesAdmin.get("/", async (c): Promise<Response> => {
               />
             </AdminCard>
 
-            <AdminCard
-              title="llms.txt"
-              description={
-                <>
-                  A standard for providing concise information and specific
-                  instructions to AI crawlers and LLMs.{" "}
-                  <a
-                    href="https://llmstxt.org/"
-                    target="_blank"
-                    class="color-[var(--theme-accent)] no-underline border-b border-b-solid border-[var(--theme-accent-glow)]"
-                  >
-                    Learn more
-                  </a>
-                </>
-              }
-            >
-              <AdminField
-                label=""
-                name="txtFiles.llms"
-                type="textarea"
-                rows={10}
-                value={files.llms || ""}
-                placeholder="Describe your site for AI agents..."
-              />
-            </AdminCard>
+
           </FormGrid>
 
           <FormGrid>

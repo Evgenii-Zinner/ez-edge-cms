@@ -210,8 +210,7 @@ export const SiteSchema = z.object({
     .object({
       /** robots.txt content. */
       robots: z.string().optional(),
-      /** llms.txt content (for AI crawler instructions). */
-      llms: z.string().optional(),
+
       /** humans.txt content (for credits/team info). */
       humans: z.string().optional(),
       /** ads.txt content (for advertising authorization). */

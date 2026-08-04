@@ -55,7 +55,6 @@ describe("Admin Files Route", () => {
       ...createDefaultSite(),
       txtFiles: {
         robots: "User-agent: *\nAllow: /",
-        llms: "Custom LLM Info",
         humans: "Custom Human Info",
         ads: "google.com, pub-123, DIRECT",
         security: "Custom Security Info",
@@ -78,7 +77,6 @@ describe("Admin Files Route", () => {
 
       expect(html).toContain("Text Files Manager");
       expect(html).toContain("User-agent: *\nAllow: /"); // Check textarea values
-      expect(html).toContain("Custom LLM Info");
       expect(html).toContain("Custom Human Info");
       expect(html).toContain("google.com, pub-123, DIRECT");
       expect(html).toContain("Custom Security Info");
@@ -102,7 +100,6 @@ describe("Admin Files Route", () => {
     it("should update text files in KV", async () => {
       const formData = new FormData();
       formData.append("txtFiles.robots", "User-agent: Googlebot\nDisallow: /");
-      formData.append("txtFiles.llms", "Updated LLM Content");
       formData.append("txtFiles.security", "Updated Security Content");
 
       const res = await app.request(
@@ -122,7 +119,6 @@ describe("Admin Files Route", () => {
       const siteRes = await app.request("/admin/files", {}, env);
       const html = await siteRes.text();
       expect(html).toContain("User-agent: Googlebot\nDisallow: /");
-      expect(html).toContain("Updated LLM Content");
       expect(html).toContain("Updated Security Content");
     });
 

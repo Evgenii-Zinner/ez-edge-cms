@@ -337,7 +337,7 @@ describe("Public Routes & Archive Explorer", () => {
       expect(xml).toContain("<loc>http://localhost/about</loc>");
     });
 
-    it("GET /llms.txt - should return llms.txt content", async () => {
+    it("GET /llms.txt - should return formatted markdown with site info", async () => {
       const res = await app.request(
         "http://localhost/llms.txt",
         { method: "GET" },
@@ -345,15 +345,17 @@ describe("Public Routes & Archive Explorer", () => {
           initialData: {
             "config:site": {
               ...createDefaultSite(),
-              txtFiles: {
-                llms: "llms-content",
-              },
+              title: "Test Site Title",
+              tagline: "Test Tagline",
             },
+            "list:pages:live": { items: [], version: "2.0.0" },
           },
         }),
       );
       expect(res.status).toBe(200);
-      expect(await res.text()).toBe("llms-content");
+      const text = await res.text();
+      expect(text).toContain("# Test Site Title");
+      expect(text).toContain("> Test Tagline");
     });
 
     it("GET /humans.txt - should return humans.txt content", async () => {
