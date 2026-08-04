@@ -110,10 +110,14 @@ export const generateMetaTags = (
 
   const metaTitle =
     page?.seo?.metaTitle || page?.title || site?.title || "EZ EDGE";
-    
+
   const autoDesc = page?.content ? extractPlainText(page.content, 160) : "";
   const metaDescription =
-    page?.seo?.metaDescription || page?.description || autoDesc || site?.tagline || "";
+    page?.seo?.metaDescription ||
+    page?.description ||
+    autoDesc ||
+    site?.tagline ||
+    "";
 
   let image = page?.seo?.ogImage || page?.featuredImage || site?.ogImage;
   if (!image && page?.content) {
@@ -122,7 +126,7 @@ export const generateMetaTags = (
       image = extractedImage;
     }
   }
-  
+
   const type = page?.seo?.pageType === "Article" ? "article" : "website";
 
   const tags: MetaTag[] = [
@@ -220,7 +224,12 @@ export const generateJsonLd = (
       "@id": `${pageUrl}#webpage`,
       url: pageUrl,
       name: page.title,
-      description: page.seo?.metaDescription || page.description || autoDesc || site?.tagline || "",
+      description:
+        page.seo?.metaDescription ||
+        page.description ||
+        autoDesc ||
+        site?.tagline ||
+        "",
       isPartOf: { "@id": `${baseUrl}/#website` },
     };
 
@@ -261,12 +270,16 @@ export const generateJsonLd = (
     if (isArticle) {
       pageLd.headline = page.title;
       pageLd.datePublished =
-        page.metadata?.publishedAt || page.metadata?.createdAt || new Date().toISOString();
-      pageLd.dateModified = page.metadata?.updatedAt || new Date().toISOString();
+        page.metadata?.publishedAt ||
+        page.metadata?.createdAt ||
+        new Date().toISOString();
+      pageLd.dateModified =
+        page.metadata?.updatedAt || new Date().toISOString();
       pageLd.author = { "@id": `${baseUrl}/#identity` };
       pageLd.publisher = { "@id": `${baseUrl}/#identity` };
-      
-      let articleImage = page.seo?.ogImage || page.featuredImage || site.ogImage;
+
+      let articleImage =
+        page.seo?.ogImage || page.featuredImage || site.ogImage;
       if (!articleImage && page.content) {
         const extractedImage = getFirstImageForPortableText(page.content);
         if (extractedImage) {
@@ -275,7 +288,9 @@ export const generateJsonLd = (
       }
 
       if (articleImage) {
-        pageLd.image = articleImage.startsWith("/") ? `${baseUrl}${articleImage}` : articleImage;
+        pageLd.image = articleImage.startsWith("/")
+          ? `${baseUrl}${articleImage}`
+          : articleImage;
       }
 
       if (page.content && Array.isArray(page.content)) {

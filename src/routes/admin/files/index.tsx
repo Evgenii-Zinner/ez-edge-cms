@@ -90,8 +90,6 @@ filesAdmin.get("/", async (c): Promise<Response> => {
                 placeholder="User-agent: *\nAllow: /"
               />
             </AdminCard>
-
-
           </FormGrid>
 
           <FormGrid>

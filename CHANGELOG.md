@@ -207,3 +207,7 @@
 ## [0.3.12] - 2026-08-02
 
 - fix: import Fragment functionality
+
+## [0.3.13] - 2026-08-04
+
+- SEO fixes
