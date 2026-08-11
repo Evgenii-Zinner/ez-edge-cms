@@ -159,8 +159,12 @@ body.admin-body h3::before {
   position: relative;
 }
 
-.admin-card:focus-within {
+.admin-card:focus-within,
+ez-portable-text:focus,
+ez-portable-text:focus-within {
   z-index: 100;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .admin-card-header {
