@@ -2,9 +2,60 @@ import { describe, it, expect } from "bun:test";
 import {
   renderPortableText,
   getFirstImageForPortableText,
+  formatUrl,
+  resolveEmbedUrl,
 } from "@utils/portabletext-parser";
 
 describe("PortableText Parser Utility", () => {
+  describe("formatUrl", () => {
+    it("should return # for empty or missing url", () => {
+      expect(formatUrl("")).toBe("#");
+      expect(formatUrl(null as any)).toBe("#");
+      expect(formatUrl(undefined as any)).toBe("#");
+    });
+
+    it("should preserve valid protocols and relative URLs", () => {
+      expect(formatUrl("http://example.com")).toBe("http://example.com");
+      expect(formatUrl("https://example.com")).toBe("https://example.com");
+      expect(formatUrl("/relative/path")).toBe("/relative/path");
+      expect(formatUrl("#section-1")).toBe("#section-1");
+      expect(formatUrl("mailto:test@example.com")).toBe("mailto:test@example.com");
+      expect(formatUrl("tel:+1234567890")).toBe("tel:+1234567890");
+    });
+
+    it("should auto-prepend https:// to raw domain names", () => {
+      expect(formatUrl("example.com")).toBe("https://example.com");
+      expect(formatUrl("  sub.domain.com/path  ")).toBe("https://sub.domain.com/path");
+    });
+  });
+
+  describe("resolveEmbedUrl", () => {
+    it("should return empty string for empty or invalid URL strings", () => {
+      expect(resolveEmbedUrl("")).toBe("");
+      expect(resolveEmbedUrl("not-a-valid-url")).toBe("");
+      expect(resolveEmbedUrl(null as any)).toBe("");
+    });
+
+    it("should correctly resolve YouTube URLs", () => {
+      expect(
+        resolveEmbedUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+      ).toBe("https://www.youtube.com/embed/dQw4w9WgXcQ");
+      expect(resolveEmbedUrl("https://youtu.be/dQw4w9WgXcQ")).toBe(
+        "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      );
+    });
+
+    it("should correctly resolve Vimeo URLs", () => {
+      expect(resolveEmbedUrl("https://vimeo.com/123456789")).toBe(
+        "https://player.vimeo.com/video/123456789",
+      );
+    });
+
+    it("should return empty string for non-embeddable hosts", () => {
+      expect(resolveEmbedUrl("https://example.com/video.mp4")).toBe("");
+    });
+  });
+
   describe("renderPortableText", () => {
     it("should return an empty string for invalid inputs", () => {
       expect(renderPortableText(null as any)).toBe("");
@@ -21,6 +72,21 @@ describe("PortableText Parser Utility", () => {
       ];
       const html = renderPortableText(blocks);
       expect(html).toContain("Hello World");
+    });
+
+    it("should render link marks with formatted URLs", () => {
+      const blocks = [
+        {
+          _type: "block",
+          markDefs: [{ _key: "l1", _type: "link", href: "example.com" }],
+          children: [
+            { _type: "span", marks: ["l1"], text: "Clickable Link" },
+          ],
+        },
+      ];
+      const html = renderPortableText(blocks);
+      expect(html).toContain('href="https://example.com"');
+      expect(html).toContain("Clickable Link");
     });
 
     it("should render a hero block", () => {
@@ -204,14 +270,61 @@ describe("PortableText Parser Utility", () => {
       expect(html).toContain("My Widget");
     });
 
-    it("should render a card block and quote block", () => {
+    it("should render a card block with image, badge, and linkUrl", () => {
       const cardBlock = [
         {
           _type: "card",
           title: "Card Title",
           description: "Card Description Text",
+          imageUrl: "/card.png",
+          badge: "FEATURED",
+          linkUrl: "example.com/card",
         },
       ];
+      const html = renderPortableText(cardBlock);
+      expect(html).toContain("Card Title");
+      expect(html).toContain("Card Description Text");
+      expect(html).toContain('src="/card.png"');
+      expect(html).toContain("FEATURED");
+      expect(html).toContain('href="https://example.com/card"');
+    });
+
+    it("should render a bentoGrid block with cards and column spans", () => {
+      const bentoBlock = [
+        {
+          _type: "bentoGrid",
+          sectionTitle: "Bento Highlights",
+          columns: 3,
+          cards: [
+            {
+              _key: "b1",
+              title: "Feature One",
+              description: "First Feature Details",
+              imageUrl: "/f1.png",
+              badge: "NEW",
+              colSpan: 2,
+            },
+            {
+              _key: "b2",
+              title: "Feature Two",
+              description: "Second Feature Details",
+              colSpan: 1,
+            },
+          ],
+        },
+      ];
+      const html = renderPortableText(bentoBlock);
+      expect(html).toContain("Bento Highlights");
+      expect(html).toContain("Feature One");
+      expect(html).toContain("First Feature Details");
+      expect(html).toContain('src="/f1.png"');
+      expect(html).toContain("NEW");
+      expect(html).toContain("grid-column: span 2;");
+      expect(html).toContain("Feature Two");
+      expect(html).toContain("grid-column: span 1;");
+    });
+
+    it("should render a quote block", () => {
       const quoteBlock = [
         {
           _type: "quote",
@@ -219,10 +332,9 @@ describe("PortableText Parser Utility", () => {
           caption: "Author Name",
         },
       ];
-      expect(renderPortableText(cardBlock)).toContain("Card Title");
-      expect(renderPortableText(cardBlock)).toContain("Card Description Text");
-      expect(renderPortableText(quoteBlock)).toContain("Inspiring Quote");
-      expect(renderPortableText(quoteBlock)).toContain("Author Name");
+      const html = renderPortableText(quoteBlock);
+      expect(html).toContain("Inspiring Quote");
+      expect(html).toContain("Author Name");
     });
 
     it("should render a delimiter block", () => {
