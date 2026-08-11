@@ -337,7 +337,7 @@ describe("Public Routes & Archive Explorer", () => {
       expect(xml).toContain("<loc>http://localhost/about</loc>");
     });
 
-    it("GET /llms.txt - should return formatted markdown with site info", async () => {
+    it("GET /llms.txt - should return formatted markdown with site info and article list", async () => {
       const res = await app.request(
         "http://localhost/llms.txt",
         { method: "GET" },
@@ -348,7 +348,17 @@ describe("Public Routes & Archive Explorer", () => {
               title: "Test Site Title",
               tagline: "Test Tagline",
             },
-            "list:pages:live": { items: [], version: "2.0.0" },
+            "list:pages:live": {
+              items: [
+                {
+                  slug: "my-article",
+                  title: "My Article Title",
+                  description: "My Article Description",
+                  status: "published",
+                },
+              ],
+              version: "2.0.0",
+            },
           },
         }),
       );
@@ -356,6 +366,8 @@ describe("Public Routes & Archive Explorer", () => {
       const text = await res.text();
       expect(text).toContain("# Test Site Title");
       expect(text).toContain("> Test Tagline");
+      expect(text).toContain("## Articles");
+      expect(text).toContain("- [My Article Title](http://localhost/my-article) - My Article Description");
     });
 
     it("GET /humans.txt - should return humans.txt content", async () => {
