@@ -121,6 +121,23 @@ describe("SEO Utilities", () => {
       );
     });
 
+    it("should extract OG image from page content if ogImage and featuredImage are missing", () => {
+      const pageWithContentImg: PageConfig = {
+        ...mockPage,
+        featuredImage: undefined,
+        seo: { ...mockPage.seo, ogImage: undefined },
+        content: [{ _type: "image", url: "/extracted-content.jpg" }],
+      };
+      const tags = generateMetaTags(
+        mockSite,
+        pageWithContentImg,
+        "https://test.com",
+      );
+      expect(findTag(tags, "og:image")?.content).toBe(
+        "https://test.com/extracted-content.jpg",
+      );
+    });
+
     it("should include twitter:site attribution if handle is configured in identity", () => {
       const siteWithTwitter = {
         ...mockSite,
@@ -144,6 +161,29 @@ describe("SEO Utilities", () => {
   });
 
   describe("generateJsonLd", () => {
+    it("should extract article image from page content when featuredImage/ogImage is missing", () => {
+      const longText = "Very long paragraph text that will test plain text truncation ".repeat(5);
+      const articleWithContentImg: PageConfig = {
+        ...mockPage,
+        featuredImage: undefined,
+        seo: { ...mockPage.seo, pageType: "Article", ogImage: undefined },
+        content: [
+          { _type: "block", children: [{ _type: "span", text: longText }] },
+          { _type: "block", children: [{ _type: "span" }] }, // Empty child without text property
+          { _type: "image", url: "/article-content.jpg" },
+        ],
+      };
+      const jsonLd = generateJsonLd(
+        mockSite,
+        articleWithContentImg,
+        "https://base.com",
+      );
+      const article = jsonLd["@graph"].find(
+        (i: any) => i["@type"] === "Article",
+      );
+      expect(article.image).toBe("https://base.com/article-content.jpg");
+      expect(article.articleBody).toContain("Very long paragraph");
+    });
     it("should generate a multi-entity graph with valid @context and linkages", () => {
       const jsonLd = generateJsonLd(mockSite, mockPage, "https://base.com");
       expect(jsonLd["@context"]).toBe("https://schema.org");

@@ -63,14 +63,15 @@ admin.use("*", async (c, next) => {
   c.header("X-Content-Type-Options", "nosniff");
   c.header("Referrer-Policy", "strict-origin-when-cross-origin");
 
-  // Content Security Policy: Allows self-origin assets, Google Fonts, HTMX and Editor.js plugins
+  // Content Security Policy: Allows self-origin assets, Google Fonts, video embeds, HTMX and Editor.js plugins
   c.header(
     "Content-Security-Policy",
     "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' data: https://fonts.gstatic.com; " +
-      "img-src 'self' data: blob:; " +
+      "img-src 'self' data: blob: https:; " +
+      "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; " +
       "connect-src 'self'; " +
       (isPreviewFrame ? "frame-ancestors 'self';" : "frame-ancestors 'none';"),
   );
