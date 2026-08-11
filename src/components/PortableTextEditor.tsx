@@ -20,18 +20,7 @@ export const PortableTextEditor: FC<PortableTextEditorProps> = ({
   const editorId = `portable-text-editor-${uniqueId}`;
   const inputId = `portabletext-content-input-${uniqueId}`;
 
-  const customBlocks = [
-    {
-      name: "hero",
-      title: "Hero",
-      icon: "⚡",
-      defaultValue: {
-        imageUrl: "",
-        title: "",
-        subtitle: "",
-      },
-    },
-  ];
+  const customBlocks: any[] = [];
   const customBlocksJson = JSON.stringify(customBlocks).replace(
     /</g,
     "\\u003c",

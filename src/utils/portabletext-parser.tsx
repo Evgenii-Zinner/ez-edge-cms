@@ -81,6 +81,26 @@ export const resolveEmbedUrl = (url: string): string => {
 };
 
 /**
+ * Ensures user-entered URL strings are valid absolute/relative links.
+ * Auto-prepends 'https://' if domain string is entered without a protocol.
+ */
+export const formatUrl = (url: string): string => {
+  if (!url) return "#";
+  const trimmed = url.trim();
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("mailto:") ||
+    trimmed.startsWith("tel:")
+  ) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
+/**
  * Creates PortableText custom component serializers for the active styling system.
  * Every handler delegates entirely to the connector — no inline CSS here.
  */
@@ -90,7 +110,7 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
   return {
     marks: {
       link: ({ children, value }: any) =>
-        `<a href="${value?.href || "#"}">${renderJsxToString(children)}</a>`,
+        `<a href="${formatUrl(value?.href)}">${renderJsxToString(children)}</a>`,
     },
     types: {
       hero: ({ value }: any) =>
@@ -102,17 +122,93 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
           />,
         ),
 
-      card: ({ value }: any) =>
-        renderJsxToString(
+      card: ({ value }: any) => {
+        const title = value.title || "";
+        const desc = value.description || value.text || value.content || "";
+        const imageUrl = value.imageUrl || value.url || "";
+        const badge = value.badge || value.status || "";
+        const rawLinkUrl = value.linkUrl || "";
+        const linkUrl = rawLinkUrl ? formatUrl(rawLinkUrl) : "";
+
+        return renderJsxToString(
           <themeComponents.Card
-            title={value.title}
-            status={value.status}
-            shape={value.shape}
-            glow={value.glow}
+            title={title}
+            status={badge}
+            shape={value.shape || "sci-fi"}
+            glow={value.glow !== false}
+            class="my-6"
           >
-            {value.text || value.description || value.content}
+            <div class="flex flex-col gap-4">
+              {imageUrl && (
+                <img
+                  src={imageUrl}
+                  alt={title}
+                  class="w-full max-h-72 object-cover rounded-md border border-ruriBorderOutline/30"
+                  loading="lazy"
+                />
+              )}
+              {desc && <p class="m-0 leading-relaxed text-sm">{desc}</p>}
+              {linkUrl && (
+                <a
+                  href={linkUrl}
+                  class="text-xs font-mono font-semibold uppercase tracking-wider text-ruriPrimary hover:underline w-fit mt-2 inline-flex items-center gap-1"
+                >
+                  Learn more →
+                </a>
+              )}
+            </div>
           </themeComponents.Card>,
-        ),
+        );
+      },
+
+      bentoGrid: ({ value }: any) => {
+        const sectionTitle = value.sectionTitle || "";
+        const columns = value.columns || 3;
+        const cards = value.cards || [];
+
+        return renderJsxToString(
+          <div class="my-8 flex flex-col gap-6">
+            {sectionTitle && (
+              <h2 class="text-xl font-mono font-bold tracking-wider uppercase text-center m-0">
+                {sectionTitle}
+              </h2>
+            )}
+            <themeComponents.Grid
+              cols={{ sm: 1, md: columns }}
+              gap={6}
+            >
+              {cards.map((card: any, idx: number) => {
+                const title = card.title || "";
+                const desc = card.description || card.text || "";
+                const imageUrl = card.imageUrl || card.url || "";
+                const badge = card.badge || card.status || "";
+
+                return (
+                  <themeComponents.Card
+                    key={card._key || idx}
+                    title={title}
+                    status={badge}
+                    shape={card.shape || "sci-fi"}
+                    glow={card.glow !== false}
+                  >
+                    <div class="flex flex-col gap-3">
+                      {imageUrl && (
+                        <img
+                          src={imageUrl}
+                          alt={title}
+                          class="w-full h-36 object-cover rounded-md border border-ruriBorderOutline/30"
+                          loading="lazy"
+                        />
+                      )}
+                      {desc && <p class="m-0 text-sm leading-normal">{desc}</p>}
+                    </div>
+                  </themeComponents.Card>
+                );
+              })}
+            </themeComponents.Grid>
+          </div>,
+        );
+      },
 
       quote: ({ value }: any) =>
         renderJsxToString(
