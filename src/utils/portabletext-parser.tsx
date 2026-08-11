@@ -182,27 +182,33 @@ const createPortableTextComponents = (stylingSystem = "ruri") => {
                 const desc = card.description || card.text || "";
                 const imageUrl = card.imageUrl || card.url || "";
                 const badge = card.badge || card.status || "";
+                const span = Math.min(card.colSpan || 1, columns);
 
                 return (
-                  <themeComponents.Card
+                  <div
                     key={card._key || idx}
-                    title={title}
-                    status={badge}
-                    shape={card.shape || "sci-fi"}
-                    glow={card.glow !== false}
+                    style={`grid-column: span ${span};`}
+                    class="w-full"
                   >
-                    <div class="flex flex-col gap-3">
-                      {imageUrl && (
-                        <img
-                          src={imageUrl}
-                          alt={title}
-                          class="w-full h-36 object-cover rounded-md border border-ruriBorderOutline/30"
-                          loading="lazy"
-                        />
-                      )}
-                      {desc && <p class="m-0 text-sm leading-normal">{desc}</p>}
-                    </div>
-                  </themeComponents.Card>
+                    <themeComponents.Card
+                      title={title}
+                      status={badge}
+                      shape={card.shape || "sci-fi"}
+                      glow={card.glow !== false}
+                    >
+                      <div class="flex flex-col gap-3">
+                        {imageUrl && (
+                          <img
+                            src={imageUrl}
+                            alt={title}
+                            class="w-full h-36 object-cover rounded-md border border-ruriBorderOutline/30"
+                            loading="lazy"
+                          />
+                        )}
+                        {desc && <p class="m-0 text-sm leading-normal">{desc}</p>}
+                      </div>
+                    </themeComponents.Card>
+                  </div>
                 );
               })}
             </themeComponents.Grid>
