@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.14] - 2026-08-12
+
+- Refine PortableText parser for Bento Grid and Card block types
+- Allow YouTube and Vimeo embed URLs in CSP frame-src headers
+- Remove bright white focus outlines around editor containers
+- Expand unit test coverage across KV content, SEO, and llms.txt utilities
+
 ## [0.1.1] - 2026-03-14
 
 - Fix deployment by removing unnecessary static assets

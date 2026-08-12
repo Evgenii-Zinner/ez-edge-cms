@@ -535,5 +535,31 @@ describe("KV Core Data Utilities", () => {
       expect(pages).toBeInstanceOf(Array);
       expect(pages.length).toBe(0);
     });
+
+    it("modifyPageList should handle KV put failure gracefully", async () => {
+      const page = createDefaultPage("Put Fail Page", "put-fail");
+      const badPutEnv = {
+        EZ_CONTENT: {
+          get: async () => JSON.stringify({ schemaVersion: 2, items: [] }),
+          put: async (k: string) => {
+            if (k.includes("list:pages") || k.includes("_index:pages") || k.includes("index")) {
+              throw new Error("KV Put Error");
+            }
+          },
+        },
+      } as any;
+
+      await savePage(badPutEnv, page, "live");
+    });
+
+    it("listPages should return empty array when JSON is corrupted", async () => {
+      env = createMockEnv();
+      clearCache();
+
+      await env.EZ_CONTENT.put(KEYS.PAGE_LIST("live"), "{corrupted-json");
+
+      const pages = await listPages(env, "live");
+      expect(pages).toEqual([]);
+    });
   });
 });

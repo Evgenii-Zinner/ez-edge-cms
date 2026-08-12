@@ -1,9 +1,11 @@
 name: 🚀 Release Please
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Branch to target for release'
+        required: true
 
 permissions:
   contents: write
@@ -17,3 +19,4 @@ jobs:
         id: release
         with:
           release-type: node
+          target-branch: main
