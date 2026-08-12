@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.0](https://github.com/Evgenii-Zinner/ez-edge-cms/compare/v0.3.13...v0.4.0) (2026-08-12)
+
+
+### Features
+
+* add release-please workflow and remove legacy release scripts ([1a26429](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/1a2642908fb7648b78c0a84e2f8190940705c0fa))
+
+
+### Bug Fixes
+
+* **cms:** apply grid-column span style to bento grid card items ([d0a318e](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/d0a318ec518bc459589676c2485e7e8934f22f18))
+* **cms:** delegate PortableText card rendering to ThemeConnector.Card and format link URLs ([d51ef0f](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/d51ef0f404c22f2bd17338c82dbcc39e210ca669))
+* **cms:** update asset bundle and allow video frame-src in CSP header ([9b7db8c](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/9b7db8cc115cfc052369a5073e6e9696719183c4))
+* **cms:** update compiled bundle with refined TableBlock controls ([a525bbd](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/a525bbdc710f7208c4f15cd11a3bd1d8d65031e1))
+* **cms:** update portabletext parser, video CSP frame-src, and admin card focus outline ([e000d22](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/e000d22d1deb2253ffbbd35030d88531accea408))
+* make editor tabs and toolbar sticky during long document scrolling ([#13](https://github.com/Evgenii-Zinner/ez-edge-cms/issues/13)) ([1273acb](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/1273acb4708e938b20a9a9b3bbbfce2a42e306e1))
+
 ## [0.1.1] - 2026-03-14
 
 - Fix deployment by removing unnecessary static assets
