@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/Evgenii-Zinner/ez-edge-cms/compare/v0.3.13...v0.4.0) (2026-08-12)
+
+
+### Features
+
+* add release-please workflow and remove legacy release scripts ([1a26429](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/1a2642908fb7648b78c0a84e2f8190940705c0fa))
+
+
+### Bug Fixes
+
+* make editor tabs and toolbar sticky during long document scrolling ([#13](https://github.com/Evgenii-Zinner/ez-edge-cms/issues/13)) ([1273acb](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/1273acb4708e938b20a9a9b3bbbfce2a42e306e1))
+
 ## [0.1.1] - 2026-03-14
 
 - Fix deployment by removing unnecessary static assets
