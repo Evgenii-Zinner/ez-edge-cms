@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.14](https://github.com/Evgenii-Zinner/ez-edge-cms/compare/v0.3.13...v0.3.14) (2026-08-12)
+
+
+### Bug Fixes
+
+* **cms:** make editor tabs and toolbar sticky during long document scrolling ([#13](https://github.com/Evgenii-Zinner/ez-edge-cms/issues/13)) ([d5b5d30](https://github.com/Evgenii-Zinner/ez-edge-cms/commit/d5b5d30047d2a643e3913cdffcc48b93a6d103db))
+
 ## [0.1.1] - 2026-03-14
 
 - Fix deployment by removing unnecessary static assets
