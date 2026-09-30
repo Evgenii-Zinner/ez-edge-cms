@@ -88,10 +88,6 @@ export const renderWithUno = async (
     return html.replace(/<style id="ez-unocss">.*?<\/style>/s, () => styleTag);
   }
 
-  if (isHtmx) {
-    return `${html}\n${styleTag}`;
-  }
-
   if (html.includes("<!-- CSS_INJECTION_POINT -->")) {
     return html.replace("<!-- CSS_INJECTION_POINT -->", styleTag);
   }
@@ -100,5 +96,11 @@ export const renderWithUno = async (
     return html.replace("</head>", `${styleTag}\n</head>`);
   }
 
+  if (isHtmx) {
+    if (!generatedCss) return html;
+    return `${html}\n${styleTag}`;
+  }
+
+  if (!generatedCss) return html;
   return `${html}\n${styleTag}`;
 };
