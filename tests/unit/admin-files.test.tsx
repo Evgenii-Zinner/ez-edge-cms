@@ -118,7 +118,7 @@ describe("Admin Files Route", () => {
       // Verify KV state directly
       const siteRes = await app.request("/admin/files", {}, env);
       const html = await siteRes.text();
-      expect(html).toContain("User-agent: Googlebot\nDisallow: /");
+      expect(html.replace(/\r\n/g, "\n")).toContain("User-agent: Googlebot\nDisallow: /");
       expect(html).toContain("Updated Security Content");
     });
 
