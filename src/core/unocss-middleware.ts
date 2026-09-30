@@ -23,6 +23,14 @@ export const injectUnoCSS = (): MiddlewareHandler => {
       const html = await responseClone.text();
 
       const isHtmx = c.req.header("HX-Request") === "true";
+
+      // Skip admin HTMX partials (mutations/fragments without head tag).
+      // Admin HUD styling is fully self-contained in ADMIN_CSS, and appending
+      // <style> tags to fragments pollutes target elements (like #save-time).
+      if (isHtmx && c.req.path.startsWith("/admin/") && !html.includes("</head>")) {
+        return;
+      }
+
       // Check if the route has explicitly marked this as an editor payload
       const isEditor = c.get("isEditor" as any) === true;
 

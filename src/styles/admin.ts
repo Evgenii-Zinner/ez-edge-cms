@@ -5,6 +5,13 @@
  */
 
 export const ADMIN_CSS = `
+:root {
+  --color-success: #00ff00;
+  --color-error: #ff4444;
+  --color-warning: #ffcc00;
+  --color-info: #00ccff;
+}
+
 /* Admin Body & Reset */
 body.admin-body {
   margin: 0;
@@ -542,6 +549,14 @@ tr > td {
   color: var(--theme-accent, #00ffff);
 }
 
+#global-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  pointer-events: none;
+}
+
 .toast-notification {
   background: var(--theme-surface-solid, #0a1a1a);
   border: 1px solid var(--theme-accent-glow, rgba(0, 255, 255, 0.2));
@@ -549,7 +564,7 @@ tr > td {
   padding: 1rem 2rem;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
   font-family: var(--font-nav, "Chakra Petch", sans-serif);
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 /* Custom Radio & Checkbox Inputs */

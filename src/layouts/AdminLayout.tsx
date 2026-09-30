@@ -62,12 +62,7 @@ export const AdminLayout: FC<AdminLayoutProps> = (props) => {
           <div class={props.hideSidebar ? "admin-auth-shell" : "admin-shell"}>
             {/* Sidebar Navigation */}
             {!props.hideSidebar && (
-              <aside
-                class="admin-sidebar"
-                hx-boost="true"
-                hx-target="body"
-                hx-swap="outerHTML"
-              >
+              <aside class="admin-sidebar">
                 <div class="logo mb-8 pl-2">EZ-ADMIN</div>
                 <a href="/admin" class="nav-item">
                   DASHBOARD
@@ -91,11 +86,10 @@ export const AdminLayout: FC<AdminLayoutProps> = (props) => {
                   <a
                     href="/admin/logout"
                     class="nav-item color-[var(--theme-text-dim)]"
-                    hx-boost="false"
                   >
                     LOGOUT
                   </a>
-                  <a href="/" class="nav-item" hx-boost="false">
+                  <a href="/" class="nav-item">
                     BACK TO SITE
                   </a>
                 </div>
@@ -142,7 +136,7 @@ export const AdminLayout: FC<AdminLayoutProps> = (props) => {
           </div>
 
           {/* Global target for toast notifications */}
-          <div id="global-toast" class="fixed bottom-8 right-8 z-9999"></div>
+          <div id="global-toast"></div>
 
           {/* Admin Client-Side Logic */}
           <script

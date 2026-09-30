@@ -37,10 +37,10 @@ export async function toastResponse(
     return c.html(`${extraHtml}${toastInner}`, 200);
   }
 
-  // Otherwise, return it as an OOB swap that replaces the whole container
-  // We include the fixed positioning classes to ensure it's visible.
+  // Otherwise, return it as an OOB swap that replaces the whole container.
+  // Positioning and styling are fully handled by ADMIN_CSS (#global-toast).
   return c.html(
-    `${extraHtml}<div id="global-toast" hx-swap-oob="true" class="fixed bottom-8 right-8 z-9999">${toastInner}</div>`,
+    `${extraHtml}<div id="global-toast" hx-swap-oob="true">${toastInner}</div>`,
     200,
   );
 }
